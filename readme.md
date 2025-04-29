@@ -1,4 +1,4 @@
-🧠 Online Exams Platform — Monorepo
+🧠 Online Application Platform — Monorepo
 Welcome to the Online Exams Application Platform!
 This project manages Candidates, School Directors, and National Exam Board Staff within a unified full-stack system using:
 
@@ -14,8 +14,8 @@ Architecture: Monorepo (single repository for frontend + backend + infra)
 
 📂 Project Structure
 /
-├── backend/            # Spring Boot Application (API server)
-├── frontend/           # Angular Application (Client app)
+├── applycam(backend)/            # Spring Boot Application (API server)
+├── Admin(frontend)/           # Angular Application (Client app)
 ├── docker-compose.yml  # Docker Compose Orchestration
 ├── Dockerfile.backend  # Backend Dockerfile
 ├── Dockerfile.frontend # Frontend Dockerfile

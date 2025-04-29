@@ -18,13 +18,17 @@ spring:
     database-plateform: org.hibernate.dialect.MysqlDialect
   mail:
     #host: localhost
-    host: smtp.gmail.com
+    #host: smtp.gmail.com
+    host: ${EMAIL_HOSTNAME}
+
     #port: 1025
     port: 465
     #username: applycam
-    username: jotsamikael@gmail.com
+    #username: jotsamikael@gmail.com
+    username:  ${EMAIL_USER_NAME}
     #password: applycam
-    password: bmutcptpxacspogj
+    #password: bmutcptpxacspogj
+    password:  ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -43,6 +47,8 @@ application:
   mailing:
     frontend:
       activation-url: http://localhost:4200/activate-account
+  cors:
+    origins: http://localhost:4200,http://localhost:8080 
   file:
     upload:
       files-output-path: ./uploads

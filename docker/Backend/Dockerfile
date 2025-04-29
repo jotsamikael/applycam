@@ -19,5 +19,9 @@ EXPOSE 8088
 ENV DB_URL=jdbc:mysql://mysql:3306/applycam
 ENV ACTIVE_PROFILE=${PROFILE}
 ENV JAR_VERSION=${APP_VERSION}
+ENV EMAIL_HOSTNAME=missing_host_name
+ENV EMAIL_USER_NAME=missing_user_name
+ENV EMAIL_PASSWORD=missing_password
+
 
 CMD java -jar -Dspring.profiles.active=${ACTIVE_PROFILE} -Dspring.datasource.url=${DB_URL} applycam-${JAR_VERSION}.jar
