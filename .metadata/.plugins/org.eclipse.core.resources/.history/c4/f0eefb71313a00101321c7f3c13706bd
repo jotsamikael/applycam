@@ -1,0 +1,62 @@
+package com.jotsamikael.applycam.speciality;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.jotsamikael.applycam.common.PageResponse;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/specialities")
+@RequiredArgsConstructor
+public class SpecialityController {
+
+    private final SpecialityService specialityService;
+
+    @PatchMapping("/add-speciality")
+    public ResponseEntity<String> addSpeciality(@RequestBody @Valid SpecialityRequest specialityRequest) {
+
+        return ResponseEntity.ok(specialityService.addSpecialitybyTrainingCenterId(specialityRequest));
+
+    }
+    
+    @GetMapping("/get-by-trainingcenter")
+    public ResponseEntity<PageResponse<SpecialityResponse>> getAllSpeciality(
+        @RequestBody SpecialityRequest specialityRequest,
+        @RequestParam(defaultValue = "0", required = false) int offset,
+        @RequestParam(defaultValue = "10", required = false) int pageSize,
+        @RequestParam(defaultValue = "name", required = false) String field,
+        @RequestParam(defaultValue = "true", required = false) boolean order
+    ){
+
+    return ResponseEntity.ok(specialityService.getallSpecialityOfTrainingCenter(specialityRequest,offset,pageSize, field,order));
+    }
+    
+    @PostMapping("/create")
+    public ResponseEntity<String> createSpeciality(@RequestBody @Valid CreateSpecialityRequest createSpecialityRequest) {
+    	
+        return ResponseEntity.ok(specialityService.createSpeciality(createSpecialityRequest));
+    }
+    
+
+    @GetMapping("/all")
+    public ResponseEntity<PageResponse<SpecialityResponse>> getall( 
+        @RequestParam(name = "offset", defaultValue = "0", required = false) int offset,
+        @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize,
+        @RequestParam(name = "field", defaultValue = "name", required = false) String field,
+        @RequestParam(name = "order", defaultValue = "true", required = false) boolean order
+){
+    return ResponseEntity.ok(specialityService.getAllSpeciality( offset, pageSize, field, order));
+
+}
+
+
+}

@@ -1,0 +1,461 @@
+<div class="container-fluid">
+    <div class="container pt-4">
+        <mat-tab-group dynamicHeight [(selectedIndex)]="selectedTabIndex">
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <i class="bx bxs-graduation"></i>
+                    Candidate
+                </ng-template>
+                <!-- Register Candidate -->
+                <div class="row align-items-center mt-5">
+                    <div class="col-md-5 order-2 order-md-1">
+                        <img src="../../assets/images/candidate-register.jpg" class="img-fluid rounded-5" alt="" srcset="">
+                    </div>
+                    <div class="col-md-7 order-1 order-md-2">
+                        <div type="danger" class="alert alert-danger" *ngIf="this.errorMsg.length">
+
+                            <p *ngFor="let msg of this.errorMsg">{{msg}}</p>
+                        </div>
+                    
+                        <form [formGroup]="registerCandidateForm" class="p-3 border border-1 rounded-5">
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Firstname</label>
+
+                                        <input name="firstname" formControlName="firstname" class="form-control"
+                                            type="text" placeholder="" >
+                                        <small *ngIf="g.firstname.touched && g.firstname.invalid">
+
+                                            <small *ngIf="g.firstname.errors.required">firstname is
+                                                required.</small>
+                                            <small *ngIf="g.firstname.errors.maxlength">firstname should be less
+                                                than
+                                                64
+                                                characters.</small>
+                                            <small *ngIf="g.firstname.errors.minlength">firstname can't be empty.
+                                            </small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Lastname</label>
+
+                                        <input name="lastname" formControlName="lastname" class="form-control"
+                                            type="text" placeholder="" >
+                                        <small *ngIf="g.lastname.touched && g.lastname.invalid">
+
+                                            <small *ngIf="g.lastname.errors.required">lastname is required.</small>
+                                            <small *ngIf="g.lastname.errors.maxlength">lastname should be less than
+                                                64
+                                                characters.</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Email</label>
+
+                                        <input formControlName="email" name="email" class="form-control" type="email"
+                                           >
+                                        <small *ngIf="g.email.touched && g.email.invalid">
+
+                                            <small *ngIf="g.email.errors.required">firstname is required.</small>
+                                            <small *ngIf="g.email.errors.email">Invalide email.</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+
+                                    <div class="mb-3">
+                                        <label for="example-phone-input" class="col-form-label">Tel.</label>
+
+                                        <input formControlName="phoneNumber" name="phoneNumber" class="form-control"
+                                            type="text" >
+                                        <small *ngIf="g.phoneNumber.touched && g.phoneNumber.invalid">
+
+                                            <small *ngIf="g.phoneNumber.errors.required">phoneNumber is required.
+                                            </small>
+                                            <small *ngIf="g.phoneNumber.errors.maxlength">phoneNumber should be less
+                                                than 64
+                                                characters.</small>
+                                            <small *ngIf="g.phoneNumber.errors.minlength">phoneNumber can't be 1
+                                                character
+                                            </small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label  class="col-form-label">national Id
+                                            Number</label>
+
+                                        <input formControlName="nationalIdNumber" name="nationalIdNumber"
+                                            class="form-control" type="text">
+                                        <small *ngIf="g.nationalIdNumber.touched && g.nationalIdNumber.invalid">
+
+                                            <small *ngIf="g.nationalIdNumber.errors.required">nationalIdNumber is
+                                                required.
+                                            </small>
+                                            <small *ngIf="g.nationalIdNumber.errors.maxlength">nationalIdNumber
+                                                should be less
+                                                than 64
+                                                characters.</small>
+                                            <small *ngIf="g.nationalIdNumber.errors.minlength">nationalIdNumber
+                                                can't be 1
+                                                character
+                                            </small>
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-password-input" class="col-form-label">Sex
+                                            </label><br>
+                                <mat-radio-group name="sex" formControlName="sex" aria-label="Select an option">
+                                    <mat-radio-button value="M">M</mat-radio-button>
+                                    <mat-radio-button value="F">F</mat-radio-button>
+                                  </mat-radio-group>
+                                </div>
+
+                            </div>
+                            
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-password-input" class="col-form-label">Password</label>
+
+                                        <input formControlName="password" name="password" class="form-control"
+                                            type="password" >
+                                        <small *ngIf="g.password.touched && g.password.invalid">
+
+                                            <small *ngIf="g.password.errors.required">password is required.</small>
+                                            <small *ngIf="g.password.errors.maxlength">password should be less than
+                                                64
+                                                characters.
+                                            </small>
+                                            <small *ngIf="g.password.errors.minlength">password can't be 1
+                                                character</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-password-input" class="col-form-label">confirm
+                                            Password</label>
+                                        <input formControlName="confirmPassword" name="confirmPassword"
+                                            class="form-control" type="password" >
+                                        <small *ngIf="g.confirmPassword.touched && g.confirmPassword.invalid">
+
+                                            <small *ngIf="g.confirmPassword.errors.required">password is
+                                                required.</small>
+                                            <small *ngIf="g.password != f.confirmPassword">Confirm password should
+                                                match password
+                                            </small>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="mb-3">
+
+                                    <mat-checkbox class="example-margin" formControlName="termsAccepted">
+                                        By creating an account, you agree to our Terms and have read and acknowledge the
+                                        Global Privacy Statement.
+                                    </mat-checkbox>
+
+
+                                </div>
+
+
+                            </div>
+
+                            <div class="row mx-1 mt-3">
+                                <button mat-raised-button [disabled]="!registerCandidateForm.valid || (processing)"
+                                    (click)="registerFunCandidate()" type="button"
+                                    class="btn btn-primary  mb-3 pt-2 pb-2"><span
+                                        class="fw-semibold font-size-18">Register</span></button>
+                            </div>
+
+
+                            <p class="text-center">You already have an account <span class="text-primary"
+                                    (click)="geTolLogin()" style="cursor: pointer;">Login</span></p>
+                        </form>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <i class="bx bx-male"></i>
+                    Promoter
+                </ng-template>
+                <!-- Promoter Candidate -->
+                <div class="row align-items-center mt-5">
+                    <div class="col-md-5 justify-content-center order-2 order-md-1">
+                        <img src="../../assets/images/promoter-register.jpg" class="img-fluid rounded-5" alt=""
+                            srcset="">
+                    </div>
+                    <div class="col-md-7 order-1 order-md-2">
+                        <div type="danger" class="alert alert-danger" *ngIf="this.errorMsg.length">
+
+                            <p *ngFor="let msg of this.errorMsg">{{msg}}</p>
+                        </div>
+                        <div type="danger" class="alert alert-danger" *ngIf="this.errorMsgBusiness">
+
+                            <p>{{this.errorMsgBusiness}}</p>
+                        </div>
+
+                        <form [formGroup]="registerPromoterForm" class="p-3 border border-1 rounded-5">
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Firstname</label>
+
+                                        <input name="firstname" formControlName="firstname" class="form-control"
+                                            type="text" placeholder="" >
+                                        <small *ngIf="f.firstname.touched && f.firstname.invalid">
+
+                                            <small *ngIf="f.firstname.errors.required">firstname is
+                                                required.</small>
+                                            <small *ngIf="f.firstname.errors.maxlength">firstname should be less
+                                                than
+                                                64
+                                                characters.</small>
+                                            <small *ngIf="f.firstname.errors.minlength">firstname can't be empty.
+                                            </small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Lastname</label>
+
+                                        <input name="lastname" formControlName="lastname" class="form-control"
+                                            type="text" placeholder="" >
+                                        <small *ngIf="f.lastname.touched && f.lastname.invalid">
+
+                                            <small *ngIf="f.lastname.errors.required">lastname is required.</small>
+                                            <small *ngIf="f.lastname.errors.maxlength">lastname should be less than
+                                                64
+                                                characters.</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Email</label>
+
+                                        <input formControlName="email" name="email" class="form-control" type="email"
+                                           >
+                                        <small *ngIf="f.email.touched && f.email.invalid">
+
+                                            <small *ngIf="f.email.errors.required">firstname is required.</small>
+                                            <small *ngIf="f.email.errors.email">Invalide email.</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+
+                                    <div class="mb-3">
+                                        <label for="example-phone-input" class="col-form-label">Tel.</label>
+
+                                        <input formControlName="phoneNumber" name="phoneNumber" class="form-control"
+                                            type="text" >
+                                        <small *ngIf="f.phoneNumber.touched && f.phoneNumber.invalid">
+
+                                            <small *ngIf="f.phoneNumber.errors.required">phoneNumber is required.
+                                            </small>
+                                            <small *ngIf="f.phoneNumber.errors.maxlength">phoneNumber should be less
+                                                than 64
+                                                characters.</small>
+                                            <small *ngIf="f.phoneNumber.errors.minlength">phoneNumber can't be 1
+                                                character
+                                            </small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+
+                                        <label for="example-password-input" class="col-form-label">
+                                            dateOfBirth
+                                        </label>
+                                        <input class="form-control" formControlName="dateOfBirth" name="dateOfBirth"
+                                            type="date" value="2019-08-19" id="example-date-input">
+                                        <small *ngIf="f.dateOfBirth.touched && f.dateOfBirth.invalid">
+
+                                            <small *ngIf="f.dateOfBirth.errors.required">date Of birth is required.
+                                            </small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-text-input" class="col-form-label">Address</label>
+
+                                        <input formControlName="address" name="address" class="form-control" type="text"
+                                            >
+                                        <small *ngIf="f.address.touched && f.address.invalid">
+                                            <small *ngIf="f.address.errors.required">address is required.</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-password-input" class="col-form-label">national Id
+                                            Number</label>
+
+                                        <input formControlName="nationalIdNumber" name="nationalIdNumber"
+                                            class="form-control" type="text" >
+                                        <small *ngIf="f.nationalIdNumber.touched && f.nationalIdNumber.invalid">
+
+                                            <small *ngIf="f.nationalIdNumber.errors.required">nationalIdNumber is
+                                                required.
+                                            </small>
+                                            <small *ngIf="f.nationalIdNumber.errors.maxlength">nationalIdNumber
+                                                should be less
+                                                than 64
+                                                characters.</small>
+                                            <small *ngIf="f.nationalIdNumber.errors.minlength">nationalIdNumber
+                                                can't be 1
+                                                character
+                                            </small>
+                                        </small>
+
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label  class="col-form-label">school Level
+                                        </label>
+                                        <select class="form-select" formControlName="schoolLevel" name="schoolLevel">
+                                            <option value="">Select</option>
+                                            <option value="Primary">Primary</option>
+                                            <option value="Junior Secondary">Junior Scondary</option>
+                                            <option value="High School">High School</option>
+                                            <option value="Bachelor">Bachelor </option>
+                                            <option value="Master">Master </option>
+                                            <option value="Doctorate">Doctorate</option>
+                                        </select>
+
+                                        <small *ngIf="f.schoolLevel.touched && f.schoolLevel.invalid">
+
+                                            <small *ngIf="f.schoolLevel.errors.required">school Level is required.
+                                            </small>
+                                        </small>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-password-input" class="col-form-label">Password</label>
+
+                                        <input formControlName="password" name="password" class="form-control"
+                                            type="password">
+                                        <small *ngIf="f.password.touched && f.password.invalid">
+
+                                            <small *ngIf="f.password.errors.required">password is required.</small>
+                                            <small *ngIf="f.password.errors.maxlength">password should be less than
+                                                64
+                                                characters.
+                                            </small>
+                                            <small *ngIf="f.password.errors.minlength">password can't be 1
+                                                character</small>
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="example-password-input" class="col-form-label">confirm
+                                            Password</label>
+                                        <input formControlName="confirmPassword" name="confirmPassword"
+                                            class="form-control" type="password" id="example-password-confirm-input">
+                                        <small *ngIf="f.confirmPassword.touched && f.confirmPassword.invalid">
+
+                                            <small *ngIf="f.confirmPassword.errors.required">password is
+                                                required.</small>
+                                            <small *ngIf="f.password != f.confirmPassword">Confirm password should
+                                                match password
+                                            </small>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="mb-3">
+
+                                    <mat-checkbox class="example-margin" formControlName="termsAccepted">
+                                        By creating an account, you agree to our Terms and have read and acknowledge the
+                                        Global Privacy Statement.
+                                    </mat-checkbox>
+
+
+                                </div>
+
+
+                            </div>
+
+                            <div class="row mx-1 mt-3">
+                                <button mat-raised-button [disabled]="!registerPromoterForm.valid || (processing)"
+                                    (click)="registerFunPromoter()" type="button"
+                                    class="btn btn-primary  mb-3 pt-2 pb-2"><span
+                                        class="fw-semibold font-size-18">Register</span></button>
+                            </div>
+
+
+                            <p class="text-center">You already have an account <span class="text-primary"
+                                    (click)="geTolLogin()" style="cursor: pointer;">Login</span></p>
+                        </form>
+                    </div>
+                </div>
+            </mat-tab>
+
+        </mat-tab-group>
+
+    </div>
+</div>
+

@@ -1,0 +1,288 @@
+<div class="container-fluid">
+    <app-page-title title="My Training Centers" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+    <div class="row justify-content-end mb-3">
+        <div class="col-md-4 text-end">
+            <button class="btn btn-soft-primary  waves-effect waves-light mx-2" (click)="openCreateNewModal(addNew)"
+                data-bs-target=".bs-example-modal-xl">Create Training Center</button>
+            <button class="btn btn-soft-primary  waves-effect waves-light">Export Data</button>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div *ngFor="let stat of followUpStat" class="col-md-4">
+            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+        </div>
+    </div>
+
+    <div class="row justify-content-end">
+        <div class="col-md-3">
+            <mat-form-field>
+                <mat-label>Filter</mat-label>
+                <input matInput (keyup)="applyFilter($event)" #input>
+            </mat-form-field>
+        </div>
+        <div class="mat-elevation-z8">
+            <table mat-table [dataSource]="dataSource" matSort>
+
+                <!-- ID Column -->
+                <ng-container matColumnDef="fullName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> fullName </th>
+                    <td mat-cell *matCellDef="let row"> {{row.fullName}} </td>
+                </ng-container>
+
+
+                <!-- acronym Column -->
+                <ng-container matColumnDef="acronym">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> acronym </th>
+                    <td mat-cell *matCellDef="let row"> {{row.acronym}} </td>
+                </ng-container>
+
+                <!-- agreementNumber Column -->
+                <ng-container matColumnDef="agreementNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> agreementNumber </th>
+                    <td mat-cell *matCellDef="let row"> {{row.agreementNumber}} </td>
+                </ng-container>
+
+                <!-- centerPresentCandidateForCqp Column -->
+                <ng-container matColumnDef="centerPresentCandidateForCqp">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> centerPresentCandidateForCqp </th>
+                    <td mat-cell *matCellDef="let row">
+                        <mat-icon *ngIf="row.centerPresentCandidateForCqp" class="text-success">check_circle</mat-icon>
+                        <mat-icon *ngIf="!row.centerPresentCandidateForCqp" class="text-danger">cancel</mat-icon>
+
+                    </td>
+                </ng-container>
+
+                <!-- centerPresentCandidateForDqp Column -->
+                <ng-container matColumnDef="centerPresentCandidateForDqp">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> centerPresentCandidateForDqp </th>
+                    <td mat-cell *matCellDef="let row">
+                        <mat-icon *ngIf="row.centerPresentCandidateForDqp" class="text-success">check_circle</mat-icon>
+                        <mat-icon *ngIf="!row.centerPresentCandidateForDqp" class="text-danger">cancel</mat-icon>
+                    </td>
+                </ng-container>
+
+                <!-- division Column -->
+                <ng-container matColumnDef="division">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> division </th>
+                    <td mat-cell *matCellDef="let row"> {{row.division}} </td>
+                </ng-container>
+
+
+
+                <!-- actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> actions </th>
+                    <td mat-cell *matCellDef="let row">
+
+                        <button mat-button [matMenuTriggerFor]="menu" #menuTrigger>
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item (click)="goToTrainingCenterDetails(row)">
+                                <i class="bx bx-book-open"></i> details
+                            </button>
+
+                            <button mat-menu-item (click)="edit(row)">
+                                <i class="bx bx-edit"></i> edit
+                            </button>
+                            <button mat-menu-item (click)="delete(row)">
+                                <i class="bx bx-trash"></i> delete
+                            </button>
+                        </mat-menu>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- Row shown when there is no matching data. -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+                </tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of clients"></mat-paginator>
+        </div>
+
+
+
+    </div>
+    <!-- end row -->
+
+</div>
+
+<!--  Add new modal example -->
+<ng-template #addNew let-modal>
+      <div class="modal-header">
+            <h5 class="modal-title" id="myLargeModalLabel">Create client</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"      
+            (click)="modalRef?.hide()"></button>
+          </div>
+      <form [formGroup]="CreateTrainingCenterForm" (ngSubmit)="createNewTrainingCenter()">
+
+          <div class="modal-body">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-2">
+                                <label class="form-label">Full name</label>
+                                <input class="form-control" name="fullName" formControlName="fullName" type="text"
+                            placeholder="fullName">
+                                <small *ngIf="f.fullName.touched && f.fullName.invalid" class="error">
+
+                                      <div *ngIf="f.fullName.errors.required">fullName is required.</div>
+                                      <div *ngIf="f.fullName.errors.maxlength">fullName should be less than 64
+                                characters.</div>
+                                      <div *ngIf="f.fullName.errors.minlength">fullName should be atleast 1 character.
+                            </div>
+                                    </small>
+                           </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2">
+                          <label class="form-label">acronym</label>
+                        <input class="form-control" name="acronym" formControlName="acronym" type="text"
+                            placeholder="acronym">
+                                <small *ngIf="f.acronym.touched && f.acronym.invalid" class="error">
+                                      <div *ngIf="f.acronym.errors.maxlength">acronym should be less than 64 characters.
+                            </div>
+                                      <div *ngIf="f.acronym.errors.minlength">acronym should be atleast 1 character.
+                            </div>
+                                    </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-2">
+                          <label for="example-datetime-local-input"
+                            class="col-md-2 col-form-label">agreementNumber</label>
+                            <input class="form-control" name="agreementNumber" formControlName="agreementNumber" type="text"
+                            placeholder="agreementNumber">
+                                <small *ngIf="f.agreementNumber.touched && f.agreementNumber.invalid" class="error">
+                                      <div *ngIf="f.agreementNumber.errors.required">agreementNumber is required.</div>
+                                      <div *ngIf="f.agreementNumber.errors.maxlength">agreementNumber should be less
+                                than 64
+                                characters.</div>
+                                      <div *ngIf="f.agreementNumber.errors.minlength">agreementNumber should be atleast
+                                1
+                                character.</div>
+                                    </small>
+
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-2">
+                          <label for="example-datetime-local-input"
+                            class="col-md-2 col-form-label">startDateOfAgreement</label>
+                        <input class="form-control" name="startDateOfAgreement" formControlName="startDateOfAgreement"
+                            type="date">
+                                <small *ngIf="f.startDateOfAgreement.touched && f.startDateOfAgreement.invalid"
+                            class="error">
+
+                                      <small *ngIf="f.startDateOfAgreement.errors.required">startDateOfAgreement is
+                                required.</small>
+                                    </small>
+
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-2">
+                          <label for="example-datetime-local-input"
+                            class="col-md-2 col-form-label">endDateOfAgreement</label>
+                        <input class="form-control" name="endDateOfAgreement" formControlName="endDateOfAgreement"
+                            type="date">
+                                <small *ngIf="f.endDateOfAgreement.touched && f.endDateOfAgreement.invalid"
+                            class="error">
+
+                                      <small *ngIf="f.endDateOfAgreement.errors.required">endDateOfAgreement is
+                                required.</small>
+                                    </small>
+
+                    </div>
+                       
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="example-password-input" class="col-form-label">isCenterPresentCandidateForCqp
+                        </label><br>
+                        <mat-radio-group name="isCenterPresentCandidateForCqp"
+                            formControlName="isCenterPresentCandidateForCqp" aria-label="Select an option">
+                            <mat-radio-button value='Yes'>Yes</mat-radio-button>
+                            <mat-radio-button value='No'>No</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="example-password-input" class="col-form-label">isCenterPresentCandidateForDqp
+                        </label><br>
+                        <mat-radio-group name="isCenterPresentCandidateForDqp"
+                            formControlName="isCenterPresentCandidateForDqp" aria-label="Select an option">
+                            <mat-radio-button value='Yes'>Yes</mat-radio-button>
+                            <mat-radio-button value='No'>No</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="example-password-input" class="col-form-label">Region
+                        </label>
+                        <select class="form-select" formControlName="region" name="region">
+                            <option value="">Select</option>
+                            <option *ngFor="let region of regions" [value]="region">{{region}}</option>
+
+                        </select>
+
+                        <small *ngIf="f.region.touched && f.region.invalid">
+
+                            <small *ngIf="f.region.errors.required">region is required.
+                            </small>
+                        </small>
+
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <label for="example-password-input" class="col-form-label">Division
+                    </label>
+                    <select class="form-select" formControlName="division" name="division">
+                        <option value="">Select</option>
+                        <option *ngFor="let division of divisions" [value]="division.department">{{division.department
+                            }}</option>
+                    </select>
+                    <small *ngIf="f.division.touched && f.division.invalid">
+
+                        <small *ngIf="f.division.errors.required">division is required.
+                        </small>
+                    </small>
+
+                </div>
+            </div>
+
+
+             
+        </div>
+          <div class="modal-footer">
+                <mat-spinner [diameter]="25" *ngIf="this.processing"></mat-spinner>
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                (click)="modalRef?.hide()">Close</button>
+                <button type="submit" class="btn btn-soft-primary  waves-effect waves-light mx-2" mat-raised-button
+                [disabled]="!CreateTrainingCenterForm.valid  || (processing)"      
+                class="btn btn-primary">Submit</button>
+              </div>
+    </form>
+</ng-template><!-- /.modal -->

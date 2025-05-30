@@ -1,0 +1,325 @@
+package com.jotsamikael.applycam.promoter;
+
+import com.jotsamikael.applycam.auth.RegistrationResponse;
+import com.jotsamikael.applycam.common.FileStorageService;
+import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.email.EmailService;
+import com.jotsamikael.applycam.email.EmailTemplateName;
+import com.jotsamikael.applycam.exception.OperationNotPermittedException;
+import com.jotsamikael.applycam.role.RoleRepository;
+import com.jotsamikael.applycam.staff.*;
+import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
+import com.jotsamikael.applycam.user.Token;
+import com.jotsamikael.applycam.user.TokenRepository;
+import com.jotsamikael.applycam.user.User;
+import com.jotsamikael.applycam.user.UserRepository;
+import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class PromoterService {
+    private final PromoterRepository repository;
+    private final TrainingCenterRepository trainingCenterRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final PromoterMapper mapper;
+    private final TokenRepository tokenRepository;
+    private final FileStorageService fileStorageService;
+
+    @Value("${application.mailing.frontend.activation-url}")
+    String activationUrl;
+
+    public void createPromoter(@Valid CreatePromoterRequest request1, @Valid CreateTainingCenterRequest request2,
+    		MultipartFile nationalIdCard,MultipartFile agreementFile,MultipartFile promoterPhoto,
+    		MultipartFile signLetter,MultipartFile localisationFile,MultipartFile internalRegulation,
+    		LocalDate validUntil,LocalDate validFrom, LocalDate validTo,String nationalIdNumber,
+    		String agreementNumber) throws MessagingException {
+
+        var userRole = roleRepository.findByName("PROMOTER")
+                //todo - better exception handling
+                .orElseThrow(() -> new IllegalStateException("ROLE PROMOTER was not initialized"));
+        // Check if email already exists
+        if (userRepository.existsByEmail(request1.getEmail())) {
+            throw new DataIntegrityViolationException("Email already taken");
+        }
+        // Check if phone number already exists
+        if (userRepository.existsByPhoneNumber(request1.getPhoneNumber())) {
+            throw new DataIntegrityViolationException("Phone number already taken");
+        }
+
+        // Check if nationalId number already exists
+        if (userRepository.existsByNationalIdNumber(request1.getNationalIdNumber())) {
+            throw new DataIntegrityViolationException("National Id number already taken");
+        }
+        if(trainingCenterRepository.existsByAgreementNumber(request2.getAgreementNumber())) {
+        	throw new DataIntegrityViolationException("AgreementNumber number already taken");
+        }
+        
+        // create the Promoter
+       
+
+        var promoter = Promoter.builder()
+                .firstname(request1.getFirstname())
+                .lastname(request1.getLastname())
+                .email(request1.getEmail())
+                .SchoolLevel(request1.getSchoolLevel())
+                .dateOfBirth(LocalDate.parse(request1.getDateOfBirth()))
+                .phoneNumber(request1.getPhoneNumber())
+                .nationalIdNumber(request1.getNationalIdNumber())
+                .address(request1.getAddress())
+                .sex(request1.getSex())     
+                .createdDate(LocalDateTime.now())
+                .roles(List.of(userRole))
+                .enabled(false)
+                .accountLocked(false)
+               .password(passwordEncoder.encode(request1.getPassword())) //set a random password
+               .trainingCenterList(new ArrayList<>())
+                .build();
+        	
+        //Create The training Center
+        var trainingCenter = TrainingCenter.builder()
+                .fullName(request2.getFullName())
+                .acronym(request2.getAcronym())
+                .agreementNumber(request2.getAgreementNumber())
+                .division(request2.getDivision())
+                .fullAddress(request2.getFullAddress())
+                .startDateOfAgreement(request2.getStartDateOfAgreement())
+                .endDateOfAgreement(request2.getEndDateOfAgreement())
+                .isCenterPresentCandidateForCqp(request2.isCenterPresentCandidateForCqp())
+                .isCenterPresentCandidateForDqp(request2.isCenterPresentCandidateForDqp())
+                .promoter(promoter) //add promoter reference
+                
+                .createdDate(LocalDateTime.now())
+                .build();
+        
+        promoter.getTrainingCenterList().add(trainingCenter);//add the training center create to a list 
+        
+         
+         trainingCenter.setCreatedBy(promoter.getIdUser());
+         
+         trainingCenterRepository.save(trainingCenter);
+         
+      // to See if the Current Date is not Empty or Null	
+    	 LocalDate currentDate = LocalDate.now();
+    	    if (validUntil == null || !validUntil.isAfter(currentDate)) {
+    	        throw new IllegalArgumentException("La date de validité de la carte doit être postérieure à la date actuelle.");
+    	    }
+    	    
+    	    //to Verify that the id is uniaue
+    	    if (userRepository.existsByNationalIdNumber(nationalIdNumber)) {
+    	        throw new IllegalArgumentException("Ce numéro de carte nationale est déjà utilisé.");
+    	    }
+        //get user object from connected user
+      //  User user = ((User) connectedUser.getPrincipal());
+
+        //check connected user is promoter
+       // Promoter promoter = repository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+
+        
+        var nationalIdCardUrl = fileStorageService.saveFile(nationalIdCard, promoter.getIdUser());
+         promoter.setNationalIdCardUrl(nationalIdCardUrl);//set the nationalId card url of the promoter
+         repository.save(promoter);
+
+        //send email
+        sendValidationEmail(promoter);
+    }
+
+    public PageResponse<PromoterResponse> getAllPromoter(int offset, int pageSize, String field, boolean order) {
+        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+
+        Page<Promoter> list = repository.getAllPromoters(
+                PageRequest.of(offset, pageSize, sort));
+
+        List<PromoterResponse> responses = list.stream().map(mapper::toPromoterResponse).toList();
+        return new PageResponse<>(
+                responses,
+                list.getNumber(),
+                list.getSize(),
+                list.getTotalElements(),
+                list.getTotalPages(),
+                list.isFirst(),
+                list.isLast()
+        );
+    }
+
+    public PromoterResponse findPromoterByEmail(String email) {
+        //get promoter by email of throw exception
+        Promoter promoter = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No Promoter Member found with email: "+email));
+        return mapper.toPromoterResponse(promoter);
+    }
+
+    public String updateProfile(String email, CreatePromoterRequest request, Authentication connectedUser) {
+        //start by getting the staff by email or throw an exception
+        Promoter promoter = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No promoter with found email"+ email));
+
+        //modify the staff object using the request data
+        promoter.setFirstname(request.getFirstname());
+        promoter.setLastname(request.getLastname());
+        promoter.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
+        promoter.setPhoneNumber(request.getPhoneNumber());
+        promoter.setNationalIdNumber(request.getNationalIdNumber());
+        promoter.setAddress(request.getAddress());
+        promoter.setLastModifiedDate(LocalDateTime.now());
+
+
+        //get connected user and date time for audit purpose
+        User user = ((User) connectedUser.getPrincipal());
+        promoter.setLastModifiedBy(user.getIdUser());
+
+        //save the modified candidate object
+        repository.save(promoter);
+
+        //return
+        return email;
+    }
+
+
+    private String generateActivationCode(int length) {
+        String characters = "0123456789";
+        StringBuilder codeBuilder = new StringBuilder();//to transform to string
+        SecureRandom secureRandom = new SecureRandom(); //cryptographically secured
+        for (int i = 0; i < length; i++) {
+            int randomIndex = secureRandom.nextInt(characters.length()); //0..9
+            codeBuilder.append(characters.charAt(randomIndex));//append the caracter sercurily and ramdomly created
+        }
+        return codeBuilder.toString();
+    }
+
+    private String generateAndSaveActivationToken(User user) {
+        //generate a token
+        String generatedToken = generateActivationCode(6);//generate a 6 digit code
+        var token = Token.builder()
+                .token(generatedToken)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .user(user)
+                .build();
+        tokenRepository.save(token);
+
+
+        return generatedToken;
+    }
+
+    private void sendValidationEmail(User user) throws MessagingException {
+        var newToken = generateAndSaveActivationToken(user);
+        //send email
+        emailService.sendEmail( //use the service to send the email
+                user.getEmail(),
+                user.getFirstname(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                activationUrl,
+                newToken,
+                "Account activation"
+        );
+
+    }
+    public String resetPassword(String email, Authentication connectedUser) throws MessagingException {
+
+        //start by getting the promoter by email or throw an exception
+        Promoter promoter = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No promoter with found email"+ email));
+        //generate new password
+        String activationCode = generateActivationCode(8);//generate a random password
+
+        //modify the promoter's password
+        promoter.setPassword(passwordEncoder.encode(activationCode)); //set a random password
+
+        //get connected user and date time for audit purpose
+        User user = ((User) connectedUser.getPrincipal());
+        promoter.setLastModifiedBy(user.getIdUser());
+        promoter.setLastModifiedDate(LocalDateTime.now());
+
+        //save the modified candidate object
+        repository.save(promoter);
+
+        //send email with new password
+        sendResetPasswordEmail(email, activationCode);
+        return repository.save(promoter).getEmail();
+    }
+
+    private void sendResetPasswordEmail(String email, String newPassword) throws MessagingException {
+        emailService.sendEmail(
+                email,
+                email,
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                newPassword,
+                null,
+                "Account activation"
+        );
+    }
+    public void togglePromoter(String email, Authentication connectedUser) {
+        Promoter promoter = repository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("No promoter found with email: " + email));
+        
+        User user = (User) connectedUser.getPrincipal();
+        if (promoter.isActived()) {
+            // Désactivation
+            promoter.setEnabled(false);
+            promoter.setActived(false);
+            promoter.setArchived(true);
+        } else {
+            // Réactivation
+            promoter.setEnabled(true);
+            promoter.setActived(true);
+            promoter.setArchived(false);
+        }
+      //get connected user and date time for audit purpose
+        promoter.setLastModifiedBy(user.getIdUser());
+        promoter.setLastModifiedDate(LocalDateTime.now());
+        // saving the promoter and it status
+        repository.save(promoter);
+        
+        
+    }
+    
+    public void nationalIdCardFileUpload(MultipartFile file, Authentication connectedUser,LocalDate validUntil,String nationalIdNumber) {
+    	
+    	// to See if the Current Date is not Empty or Null	
+    	 LocalDate currentDate = LocalDate.now();
+    	    if (validUntil == null || !validUntil.isAfter(currentDate)) {
+    	        throw new IllegalArgumentException("La date de validité de la carte doit être postérieure à la date actuelle.");
+    	    }
+    	    
+    	    //to Verify that the id is uniaue
+    	    if (userRepository.existsByNationalIdNumber(nationalIdNumber)) {
+    	        throw new IllegalArgumentException("Ce numéro de carte nationale est déjà utilisé.");
+    	    }
+        //get user object from connected user
+        User user = ((User) connectedUser.getPrincipal());
+
+        //check connected user is promoter
+        Promoter promoter = repository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+
+        
+        var nationalIdCardUrl = fileStorageService.saveFile(file, promoter.getIdUser());
+         promoter.setNationalIdCardUrl(nationalIdCardUrl);//set the nationalId card url of the promoter
+         repository.save(promoter);
+    }
+    
+    
+
+
+		
+	
+}

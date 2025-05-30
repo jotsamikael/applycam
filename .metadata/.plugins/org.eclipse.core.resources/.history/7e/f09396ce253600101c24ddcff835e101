@@ -1,0 +1,61 @@
+package com.jotsamikael.applycam.candidate;
+
+import com.jotsamikael.applycam.common.PageResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("candidate")
+@Tag(name = "candidate")
+public class CandidateController {
+
+    private final CandidateService candidateService;
+
+
+    @GetMapping("/get-all")
+    public ResponseEntity<PageResponse<CandidateResponse>> getAllCandidates(
+            @RequestParam(defaultValue = "0", required = false) int offset,
+            @RequestParam(defaultValue = "10", required = false) int pageSize,
+            @RequestParam(defaultValue = "name", required = false) String field,
+            @RequestParam(defaultValue = "true", required = false) boolean order
+    ) {
+        return ResponseEntity.ok(candidateService.getAllCandidates(offset, pageSize, field, order));
+    }
+
+    @GetMapping("/find-by-email")
+    public ResponseEntity<CandidateResponse> findCandidateByEmail(
+            @RequestParam(required = false) String email) {
+        return ResponseEntity.ok(candidateService.findCandidateByEmail(email));
+    }
+
+    @PatchMapping("/update/{email}")
+    public ResponseEntity<String> updateCandidate(@PathVariable String email,
+                                                @RequestBody CandidateRequest request,
+                                                Authentication connectedUser) {
+        return ResponseEntity.ok(candidateService.updateProfile(email, request,connectedUser));
+    }
+    
+    @GetMapping("get-by-trainingCenter")
+    public ResponseEntity<PageResponse<CandidateResponse>> getAllCandidatesBytrainingCenterid(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0", required = false) int offset,
+            @RequestParam(defaultValue = "10", required = false) int pageSize,
+            @RequestParam(defaultValue = "name", required = false) String field,
+            @RequestParam(defaultValue = "true", required = false) boolean order
+    ) {
+        return ResponseEntity.ok(candidateService.getAllCandidatesByTrainingCenterId(id,offset, pageSize, field, order));
+    }
+    
+    @GetMapping("find")
+    public ResponseEntity<CandidateResponse> findCandidate(
+        @RequestParam(required= true) Long trainingCenterId,
+        @RequestParam(required = true) String name
+    ){
+    return ResponseEntity.ok(candidateService.findByName(trainingCenterId, name));
+    }
+
+}
