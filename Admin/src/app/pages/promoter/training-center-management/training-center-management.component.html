@@ -1,0 +1,517 @@
+<div class="container-fluid">
+    <app-page-title [title]="'My Training Centers'" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+    <div class="row justify-content-end mb-3">
+        <div class="row-md-4 text-end">
+            <button class="btn btn-soft-primary waves-effect waves-light mx-2" 
+                    (click)="openCreateModal()"
+                    [disabled]="processing">
+                <i class="bx bx-plus me-1"></i> Create Training Center
+            </button>
+            <button class="btn btn-soft-primary waves-effect waves-light" 
+                    [disabled]="!dataSource.data?.length || processing">
+                <i class="bx bx-download me-1"></i> Export Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div *ngFor="let stat of stats" class="col-md-4">
+            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+        </div>
+    </div>
+
+    <!-- Filter and Table Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-between mb-3">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filter</mat-label>
+                                <input matInput 
+                                       (keyup)="applyFilter($event)" 
+                                       #input
+                                       placeholder="Filter centers...">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                            <!-- Full Name Column -->
+                            <ng-container matColumnDef="fullName">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Center Name</th>
+                                <td mat-cell *matCellDef="let row" class="text-nowrap">{{row.fullName}}</td>
+                            </ng-container>
+
+                            <!-- Acronym Column -->
+                            <ng-container matColumnDef="acronym">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Acronym</th>
+                                <td mat-cell *matCellDef="let row">{{row.acronym || 'N/A'}}</td>
+                            </ng-container>
+
+                            <!-- Agreement Number Column -->
+                            <ng-container matColumnDef="agreementNumber">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Agreement #</th>
+                                <td mat-cell *matCellDef="let row">{{row.agreementNumber}}</td>
+                            </ng-container>
+
+                            <!-- CQP Column -->
+                            <ng-container matColumnDef="centerPresentCandidateForCqp">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>CQP</th>
+                                <td mat-cell *matCellDef="let row">
+                                    <mat-icon [class.text-success]="row.centerPresentCandidateForCqp" 
+                                              [class.text-danger]="!row.centerPresentCandidateForCqp">
+                                        {{row.centerPresentCandidateForCqp ? 'check_circle' : 'cancel'}}
+                                    </mat-icon>
+                                </td>
+                            </ng-container>
+
+                            <!-- DQP Column -->
+                            <ng-container matColumnDef="centerPresentCandidateForDqp">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>DQP</th>
+                                <td mat-cell *matCellDef="let row">
+                                    <mat-icon [class.text-success]="row.centerPresentCandidateForDqp" 
+                                              [class.text-danger]="!row.centerPresentCandidateForDqp">
+                                        {{row.centerPresentCandidateForDqp ? 'check_circle' : 'cancel'}}
+                                    </mat-icon>
+                                </td>
+                            </ng-container>
+
+                            <!-- Division Column -->
+                            <ng-container matColumnDef="division">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Division</th>
+                                <td mat-cell *matCellDef="let row">{{row.division || 'N/A'}}</td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="text-end">Actions</th>
+                                <td mat-cell *matCellDef="let row" class="text-end">
+                                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                                        <mat-icon>more_vert</mat-icon>
+                                    </button>
+                                    <mat-menu #menu="matMenu">
+                                        <button mat-menu-item (click)="viewCenterDetails(row)">
+                                            <mat-icon>visibility</mat-icon>
+                                            <span>View Details</span>
+                                        </button>
+                                        <button mat-menu-item (click)="openEditModal(row)">
+                                            <mat-icon>edit</mat-icon>
+                                            <span>Edit</span>
+                                        </button>
+                                        <button mat-menu-item (click)="confirmDelete(row)">
+                                            <mat-icon color="warn">delete</mat-icon>
+                                            <span>Delete</span>
+                                        </button>
+                                    </mat-menu>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                            <!-- No data row -->
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4" [attr.colspan]="displayedColumns.length">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">
+                                            folder_off
+                                        </mat-icon>
+                                        <h4 class="text-muted">
+                                            {{input.value ? 
+                                             'No centers match the filter "' + input.value + '"' : 
+                                             'No training centers found'}}
+                                        </h4>
+                                        <button mat-raised-button 
+                                                color="primary" 
+                                                class="mt-2"
+                                                (click)="openCreateModal()">
+                                            Create New Center
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
+                                   showFirstLastButtons
+                                   aria-label="Select page of training centers">
+                    </mat-paginator>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Training Center Modal -->
+<ng-template #createModal>
+  <div class="modal-content">
+    <div class="modal-header bg-light">
+      <h5 class="modal-title">Create New Training Center</h5>
+      <button type="button"
+              class="btn-close"
+              aria-label="Close"
+              (click)="modalRef?.hide()"
+              [disabled]="processing">
+      </button>
+    </div>
+
+    <form [formGroup]="centerForm" (ngSubmit)="createTrainingCenter()">
+      <div class="modal-body">
+        <div *ngIf="errorMessages.length" class="alert alert-danger">
+          <ul class="mb-0">
+            <li *ngFor="let error of errorMessages">{{ error }}</li>
+          </ul>
+        </div>
+
+        <div class="row g-3">
+          <!-- Full Name -->
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Full Name</mat-label>
+              <input matInput formControlName="fullName" required autocomplete="off" aria-label="Full Name">
+              <mat-error *ngIf="formControls.fullName?.errors?.['required']">
+                Center name is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Acronym -->
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Acronym</mat-label>
+              <input matInput formControlName="acronym" required autocomplete="off" aria-label="Acronym">
+              <mat-error *ngIf="formControls.acronym?.errors?.['required']">
+                Acronym is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Agreement Info -->
+          <div class="col-md-4">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Agreement Number</mat-label>
+              <input matInput formControlName="agreementNumber" required autocomplete="off" aria-label="Agreement Number">
+              <mat-error *ngIf="formControls.agreementNumber?.errors?.['required']">
+                Agreement number is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-4">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Start Date</mat-label>
+              <input matInput type="date" formControlName="startDateOfAgreement" required aria-label="Start Date">
+              <mat-error *ngIf="formControls.startDateOfAgreement?.errors?.['required']">
+                Start date is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-4">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>End Date</mat-label>
+              <input matInput type="date" formControlName="endDateOfAgreement" required aria-label="End Date">
+              <mat-error *ngIf="formControls.endDateOfAgreement?.errors?.['required']">
+                End date is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Certification Options -->
+          <div class="col-md-6">
+            <mat-checkbox formControlName="centerPresentCandidateForCqp">
+              Center presents candidates for CQP
+            </mat-checkbox>
+          </div>
+
+          <div class="col-md-6">
+            <mat-checkbox formControlName="centerPresentCandidateForDqp">
+              Center presents candidates for DQP
+            </mat-checkbox>
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Region</mat-label>
+              <mat-select formControlName="region" required aria-label="Region">
+                <mat-option *ngFor="let region of regions" [value]="region">
+                  {{ region }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="formControls.region?.errors?.['required']">
+                Region is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Division</mat-label>
+              <mat-select formControlName="division" [disabled]="!centerForm.get('region')?.value" required aria-label="Division">
+                <mat-option *ngFor="let division of divisions" [value]="division">
+                  {{ division }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="formControls.division?.errors?.['required']">
+                Division is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Address -->
+          <div class="col-12">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Full Address</mat-label>
+              <textarea matInput formControlName="fullAddress" rows="3" required aria-label="Full Address"></textarea>
+              <mat-error *ngIf="formControls.fullAddress?.errors?.['required']">
+                Address is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light">
+        <button type="button"
+                class="btn btn-secondary"
+                (click)="modalRef?.hide()"
+                [disabled]="processing">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="btn btn-primary"
+                [disabled]="centerForm.invalid || processing">
+          <ng-container *ngIf="!processing">Create Center</ng-container>
+          <ng-container *ngIf="processing">
+            <span class="d-flex align-items-center">
+              <mat-spinner diameter="20" class="me-2"></mat-spinner>
+              Processing...
+            </span>
+          </ng-container>
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+
+<!-- View Details Modal -->
+<ng-template #detailsModal>
+    <div class="modal-header bg-light">
+        <h5 class="modal-title">Center Details</h5>
+        <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedCenter">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mb-3">Basic Information</h6>
+                <div class="mb-2">
+                    <strong>Name:</strong> {{selectedCenter.fullName}}
+                </div>
+                <div class="mb-2">
+                    <strong>Acronym:</strong> {{selectedCenter.acronym || 'N/A'}}
+                </div>
+                <div class="mb-2">
+                    <strong>Agreement Number:</strong> {{selectedCenter.agreementNumber}}
+                </div>
+                <div class="mb-2">
+                    <strong>Agreement Period:</strong> 
+                    {{selectedCenter.startDateOfAgreement | date}} - {{selectedCenter.endDateOfAgreement | date}}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h6 class="mb-3">Certifications</h6>
+                <div class="mb-2">
+                    <mat-icon [class.text-success]="selectedCenter.centerPresentCandidateForCqp" 
+                              [class.text-danger]="!selectedCenter.centerPresentCandidateForCqp">
+                        {{selectedCenter.centerPresentCandidateForCqp ? 'check_circle' : 'cancel'}}
+                    </mat-icon>
+                    <span>CQP Certification</span>
+                </div>
+                <div class="mb-2">
+                    <mat-icon [class.text-success]="selectedCenter.centerPresentCandidateForDqp" 
+                              [class.text-danger]="!selectedCenter.centerPresentCandidateForDqp">
+                        {{selectedCenter.centerPresentCandidateForDqp ? 'check_circle' : 'cancel'}}
+                    </mat-icon>
+                    <span>DQP Certification</span>
+                </div>
+                
+                <h6 class="mb-3 mt-3">Location</h6>
+                <div class="mb-2">
+                    <strong>Region:</strong> {{selectedCenter.region}}
+                </div>
+                <div class="mb-2">
+                    <strong>Division:</strong> {{selectedCenter.division}}
+                </div>
+                <div class="mb-2">
+                    <strong>Address:</strong> {{selectedCenter.fullAddress}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-primary" (click)="modalRef?.hide()">Close</button>
+    </div>
+</ng-template>
+
+<!-- Edit Training Center Modal -->
+<ng-template #editModal>
+    <div class="modal-header bg-light">
+        <h5 class="modal-title">Edit Training Center</h5>
+        <button type="button" class="btn-close" 
+                (click)="modalRef?.hide()"
+                [disabled]="processing"></button>
+    </div>
+    
+    <form [formGroup]="editForm" (ngSubmit)="updateTrainingCenter()">
+        <div class="modal-body">
+            <div *ngIf="errorMessages.length" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li *ngFor="let error of errorMessages">{{error}}</li>
+                </ul>
+            </div>
+
+            <div class="row g-3">
+                <!-- Basic Information -->
+                <div class="col-md-6">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Full Name</mat-label>
+                        <input matInput formControlName="fullName" required>
+                        <mat-error *ngIf="editFormControls.fullName.errors?.required">
+                            Center name is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                
+                <div class="col-md-6">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Acronym</mat-label>
+                        <input matInput formControlName="acronym" required>
+                        <mat-error *ngIf="editFormControls.acronym.errors?.required">
+                            Acronym is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <!-- Agreement Information -->
+                <div class="col-md-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Agreement Number</mat-label>
+                        <input matInput formControlName="agreementNumber" required>
+                        <mat-error *ngIf="editFormControls.agreementNumber.errors?.required">
+                            Agreement number is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                
+                <div class="col-md-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Start Date</mat-label>
+                        <input matInput formControlName="startDateOfAgreement" type="date" required>
+                        <mat-error *ngIf="editFormControls.startDateOfAgreement.errors?.required">
+                            Start date is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                
+                <div class="col-md-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>End Date</mat-label>
+                        <input matInput formControlName="endDateOfAgreement" type="date" required>
+                        <mat-error *ngIf="editFormControls.endDateOfAgreement.errors?.required">
+                            End date is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <!-- Certification Options -->
+                <div class="col-md-6">
+                    <mat-label class="d-block mb-2">Present Candidates for CQP</mat-label>
+                    <mat-radio-group formControlName="isCenterPresentCandidateForCqp" class="d-block">
+                        <mat-radio-button value="Yes" class="me-3">Yes</mat-radio-button>
+                        <mat-radio-button value="No">No</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+                
+                <div class="col-md-6">
+                    <mat-label class="d-block mb-2">Present Candidates for DQP</mat-label>
+                    <mat-radio-group formControlName="isCenterPresentCandidateForDqp" class="d-block">
+                        <mat-radio-button value="Yes" class="me-3">Yes</mat-radio-button>
+                        <mat-radio-button value="No">No</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+
+                <!-- Location Information -->
+                <div class="col-md-6">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Region</mat-label>
+                        <mat-select formControlName="region" required>
+                            <mat-option *ngFor="let region of regions" [value]="region">
+                                {{region}}
+                            </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="editFormControls.region.errors?.required">
+                            Region is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                
+                <div class="col-md-6">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Division</mat-label>
+                        <mat-select formControlName="division" required [disabled]="!editForm.value.region">
+                            <mat-option *ngFor="let division of divisions" [value]="division.department">
+                                {{division.department}}
+                            </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="editFormControls.division.errors?.required">
+                            Division is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <!-- Full Address -->
+                <div class="col-12">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Full Address</mat-label>
+                        <textarea matInput formControlName="fullAddress" rows="2" required></textarea>
+                        <mat-error *ngIf="editFormControls.fullAddress.errors?.required">
+                            Address is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer bg-light">
+            <button type="button" 
+                    class="btn btn-secondary" 
+                    (click)="modalRef?.hide()"
+                    [disabled]="processing">
+                Cancel
+            </button>
+            
+            <button type="submit" 
+                    class="btn btn-primary" 
+                    [disabled]="editForm.invalid || processing">
+                <span *ngIf="!processing">Update Center</span>
+                <span *ngIf="processing" class="d-flex align-items-center">
+                    <mat-spinner diameter="20" class="me-2"></mat-spinner>
+                    Processing...
+                </span>
+            </button>
+        </div>
+    </form>
+</ng-template>

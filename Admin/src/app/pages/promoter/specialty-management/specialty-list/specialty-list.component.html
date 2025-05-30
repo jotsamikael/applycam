@@ -1,0 +1,185 @@
+<div class="container-fluid">
+    <app-page-title title="Specialties Management" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+    <div class="row justify-content-end mb-3">
+        <div class="col-md-4 text-end">
+            <button class="btn btn-soft-primary waves-effect waves-light mx-2" 
+                    (click)="openCreateModal()"
+                    matTooltip="Create new specialty">
+                <i class="bx bx-plus"></i> Create Specialty
+            </button>
+            <button class="btn btn-soft-primary waves-effect waves-light" matTooltip="Export data">
+                <i class="bx bx-export"></i> Export
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div *ngFor="let stat of followUpStat" class="col-md-4">
+            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-between mb-3">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filter specialties</mat-label>
+                                <input matInput 
+                                       (keyup)="applyFilter($event)" 
+                                       #input
+                                       placeholder="Search by name or description">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button mat-icon-button matTooltip="Refresh list" (click)="loadSpecialties()">
+                                <mat-icon>refresh</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                                <td mat-cell *matCellDef="let specialty"> 
+                                    <span class="fw-semibold">{{specialty.name || 'N/A'}}</span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Description Column -->
+                            <ng-container matColumnDef="description">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Description </th>
+                                <td mat-cell *matCellDef="let specialty"> 
+                                    {{specialty.description || 'No description available'}}
+                                </td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="text-end"> Actions </th>
+                                <td mat-cell *matCellDef="let specialty" class="text-end">
+                                    <div class="d-flex justify-content-end">
+                                        <button mat-icon-button color="accent"
+                                                matTooltip="Edit"
+                                                (click)="edit(specialty)">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn"
+                                                matTooltip="Delete"
+                                                (click)="delete(specialty)"
+                                                [disabled]="processing">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                            <!-- Row shown when there is no matching data. -->
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4" colspan="3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">search_off</mat-icon>
+                                        <h4 class="text-muted">No specialties found</h4>
+                                        <p *ngIf="input.value" class="text-muted">
+                                            No matching results for "{{input.value}}"
+                                        </p>
+                                        <button mat-raised-button color="primary" 
+                                                class="mt-2"
+                                                (click)="openCreateModal()"
+                                                *ngIf="!input.value">
+                                            Create your first specialty
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
+                                   showFirstLastButtons
+                                   aria-label="Select page of specialties"
+                                   class="mt-3">
+                    </mat-paginator>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade show" [ngClass]="{'d-block': showModal}" tabindex="-1" role="dialog" *ngIf="showModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{isEditMode ? 'Edit' : 'Create'}} Specialty</h5>
+                    <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
+                </div>
+                <form [formGroup]="specialtyForm" (ngSubmit)="onSubmit()">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control" formControlName="name" placeholder="Specialty name">
+                                    <div *ngIf="f.name.touched && f.name.invalid" class="text-danger">
+                                        <small *ngIf="f.name.errors.required">Name is required</small>
+                                        <small *ngIf="f.name.errors.maxlength">Max 100 characters</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Code</label>
+                                    <input type="text" class="form-control" formControlName="code" placeholder="Specialty code">
+                                    <div *ngIf="f.code.touched && f.code.invalid" class="text-danger">
+                                        <small *ngIf="f.code.errors.required">Code is required</small>
+                                        <small *ngIf="f.code.errors.maxlength">Max 20 characters</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" formControlName="description" rows="3" placeholder="Specialty description"></textarea>
+                            <div *ngIf="f.description.touched && f.description.invalid" class="text-danger">
+                                <small *ngIf="f.description.errors.maxlength">Max 500 characters</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                        <label class="form-label">Training Center</label>
+                        <select class="form-select" formControlName="trainingCenterId">
+                            <option value="">Select Training Center</option>
+                            <option *ngFor="let center of trainingCenters" 
+                                    [value]="center.id">
+                                {{ center.name }} ({{ center.code }})
+                            </option>
+                        </select>
+                        <div *ngIf="f.trainingCenterId.touched && f.trainingCenterId.invalid" class="text-danger">
+                            <small *ngIf="f.trainingCenterId.errors.required">Training Center is required</small>
+                        </div>
+                    </div>
+            
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="specialtyForm.invalid || processing">
+                            <span *ngIf="!processing">{{isEditMode ? 'Update' : 'Create'}}</span>
+                            <span *ngIf="processing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" *ngIf="showModal"></div>
+</div>

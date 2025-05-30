@@ -1,0 +1,34 @@
+// Styles pour les boutons d'action
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    
+    .btn {
+        padding: 0.25rem 0.5rem;
+        line-height: 1;
+        
+        i {
+            font-size: 1rem;
+        }
+    }
+}
+
+// Assurez-vous que le tableau est responsive
+.mat-table {
+    width: 100%;
+    
+    .mat-cell, .mat-header-cell {
+        padding: 0.5rem;
+        
+        &:last-child {
+            padding-right: 1rem;
+        }
+    }
+}
+
+// Correction spécifique pour les icônes Boxicons
+.bx {
+    vertical-align: middle;
+    font-size: 1.25rem;
+}

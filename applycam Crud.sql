@@ -1,0 +1,941 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Hôte : 127.0.0.1
+-- Généré le : mer. 28 mai 2025 à 11:18
+-- Version du serveur : 10.4.32-MariaDB
+-- Version de PHP : 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de données : `applycam`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `application`
+--
+
+CREATE TABLE `application` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `end_academic_year` date DEFAULT NULL,
+  `start_academic_year` date DEFAULT NULL,
+  `candidate_id` bigint(20) DEFAULT NULL,
+  `speciality` bigint(20) DEFAULT NULL,
+  `application_region` varchar(255) DEFAULT NULL,
+  `exam_type` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `application_seq`
+--
+
+CREATE TABLE `application_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `application_seq`
+--
+
+INSERT INTO `application_seq` (`next_val`) VALUES
+(1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `course`
+--
+
+CREATE TABLE `course` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `code` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `course`
+--
+
+INSERT INTO `course` (`id`, `created_by`, `created_date`, `is_actived`, `is_archived`, `last_modified_by`, `last_modified_date`, `code`, `description`, `name`) VALUES
+(2, 602, '2025-05-26 11:36:52.000000', b'0', b'1', 602, '2025-05-26 13:05:59.000000', 'GI', 'filière qui forme des ingénieurs spécialisés dans la conception, le développement, l\'implémentation et la maintenance des programmes.  ', 'Genie Informatique'),
+(3, 602, '2025-05-26 11:47:29.000000', b'0', b'1', 602, '2025-05-26 12:53:36.000000', 'IS', 'filière qui forme des ingénieurs spécialisés dans la conception, le développement, l\'implémentation et la maintenance des systèmes d\'information.  ', 'Ingénierie des Systèmes d\'Information'),
+(52, 1152, '2025-05-28 09:49:08.000000', b'0', b'1', 602, '2025-05-28 09:53:22.000000', 'UF', 'Ceci est une filiere', 'Une filiere');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `course_seq`
+--
+
+CREATE TABLE `course_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `course_seq`
+--
+
+INSERT INTO `course_seq` (`next_val`) VALUES
+(151);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `has_schooled`
+--
+
+CREATE TABLE `has_schooled` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `end_year` date DEFAULT NULL,
+  `start_year` date DEFAULT NULL,
+  `candidate_id` bigint(20) DEFAULT NULL,
+  `training_center_id` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `has_schooled_seq`
+--
+
+CREATE TABLE `has_schooled_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `has_schooled_seq`
+--
+
+INSERT INTO `has_schooled_seq` (`next_val`) VALUES
+(1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `offers_speciality`
+--
+
+CREATE TABLE `offers_speciality` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `agreement` varchar(255) DEFAULT NULL,
+  `speciality_id` bigint(20) DEFAULT NULL,
+  `training_center_id` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `offers_speciality`
+--
+
+INSERT INTO `offers_speciality` (`id`, `created_by`, `created_date`, `is_actived`, `is_archived`, `last_modified_by`, `last_modified_date`, `agreement`, `speciality_id`, `training_center_id`) VALUES
+(1, 602, '2025-05-16 09:58:21.000000', b'0', b'0', 602, NULL, NULL, 102, 52),
+(2, 602, '2025-05-16 10:00:53.000000', b'0', b'0', 602, NULL, NULL, 103, 52),
+(52, 602, '2025-05-16 10:35:12.000000', b'0', b'0', 602, NULL, NULL, 152, 52),
+(202, 602, '2025-05-16 11:08:34.000000', b'0', b'0', 602, NULL, NULL, 202, 52),
+(203, 602, '2025-05-16 11:10:00.000000', b'0', b'0', 602, NULL, NULL, 202, 52),
+(204, 602, '2025-05-16 11:10:45.000000', b'0', b'0', 602, NULL, NULL, 252, 52);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `offers_speciality_seq`
+--
+
+CREATE TABLE `offers_speciality_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `offers_speciality_seq`
+--
+
+INSERT INTO `offers_speciality_seq` (`next_val`) VALUES
+(301);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `role_entity`
+--
+
+CREATE TABLE `role_entity` (
+  `id_role` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `role_entity`
+--
+
+INSERT INTO `role_entity` (`id_role`, `created_date`, `last_modified_date`, `name`) VALUES
+(1, '2025-05-02 11:40:07.000000', '2025-05-02 11:40:07.000000', 'CANDIDATE'),
+(2, '2025-03-10 16:44:01.000000', '2025-03-10 16:44:01.000000', 'STAFF'),
+(3, '2025-03-05 15:35:29.000000', '2025-03-05 15:35:29.000000', 'PROMOTER');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `role_entity_seq`
+--
+
+CREATE TABLE `role_entity_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `role_entity_seq`
+--
+
+INSERT INTO `role_entity_seq` (`next_val`) VALUES
+(1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `speciality`
+--
+
+CREATE TABLE `speciality` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `code` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `course_id` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `speciality`
+--
+
+INSERT INTO `speciality` (`id`, `created_by`, `created_date`, `is_actived`, `is_archived`, `last_modified_by`, `last_modified_date`, `code`, `description`, `name`, `course_id`) VALUES
+(1, 602, '2025-05-14 12:33:23.000000', b'1', b'0', 602, '2025-05-28 09:59:05.000000', 'GI', 'les genies', 'genie Informatique', 52),
+(2, 602, '2025-05-14 12:49:39.000000', b'0', b'0', 602, NULL, 'GI', 'les genies', 'Lettre moderne', NULL),
+(102, 602, '2025-05-16 09:58:21.000000', b'0', b'0', 602, NULL, 'GI', 'les genies', 'Lettre moderne', NULL),
+(103, 602, '2025-05-16 10:00:53.000000', b'0', b'0', 602, NULL, 'GI', 'les genies', 'mathematique', NULL),
+(152, 602, '2025-05-16 10:35:12.000000', b'0', b'0', 602, NULL, 'GI', 'les genies', 'mathematique', NULL),
+(202, 602, '2025-05-16 10:56:23.000000', b'0', b'0', 602, '2025-05-16 11:10:00.000000', 'GI', 'les genies', 'pop', NULL),
+(252, 602, '2025-05-16 11:09:50.000000', b'1', b'0', 602, '2025-05-28 10:10:21.000000', 'GL', 'batiments et autres', 'grnie civil', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `speciality_seq`
+--
+
+CREATE TABLE `speciality_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `speciality_seq`
+--
+
+INSERT INTO `speciality_seq` (`next_val`) VALUES
+(351);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `speciality_subject`
+--
+
+CREATE TABLE `speciality_subject` (
+  `speciality_id` bigint(20) NOT NULL,
+  `subject_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `speciality_subject`
+--
+
+INSERT INTO `speciality_subject` (`speciality_id`, `subject_id`) VALUES
+(2, 53),
+(1, 52),
+(1, 103);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `subjects`
+--
+
+CREATE TABLE `subjects` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `code` varchar(255) DEFAULT NULL,
+  `credits` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `subjects`
+--
+
+INSERT INTO `subjects` (`id`, `created_by`, `created_date`, `is_actived`, `is_archived`, `last_modified_by`, `last_modified_date`, `code`, `credits`, `description`, `name`) VALUES
+(1, 602, '2025-05-14 12:33:47.000000', b'0', b'0', 602, NULL, '123', '12', 'le cours de francais lol', 'francais'),
+(2, 602, '2025-05-14 12:34:32.000000', b'0', b'0', 602, NULL, '123', '12', 'le cours de francais lol', 'securite'),
+(52, 602, '2025-05-14 12:47:38.000000', b'0', b'0', 602, NULL, '123', '12', 'le cours de francais lol', 'securite'),
+(53, 602, '2025-05-14 12:50:23.000000', b'0', b'0', 602, NULL, '123', '12', 'le cours de dissertation', 'dissertation'),
+(102, 602, '2025-05-16 16:42:38.000000', b'0', b'0', 602, NULL, '123', NULL, 'apprener l\'anglais en 10 lecons', 'anglais'),
+(103, 602, '2025-05-16 16:42:49.000000', b'0', b'0', 602, NULL, '123', NULL, 'apprener l\'anglais en 10 lecons', 'anglais');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `subjects_seq`
+--
+
+CREATE TABLE `subjects_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `subjects_seq`
+--
+
+INSERT INTO `subjects_seq` (`next_val`) VALUES
+(201);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `token_entity`
+--
+
+CREATE TABLE `token_entity` (
+  `id_token` bigint(20) NOT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `expires_at` datetime(6) DEFAULT NULL,
+  `token` varchar(255) DEFAULT NULL,
+  `validated_at` datetime(6) DEFAULT NULL,
+  `user_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `token_entity`
+--
+
+INSERT INTO `token_entity` (`id_token`, `created_at`, `expires_at`, `token`, `validated_at`, `user_id`) VALUES
+(1, '2025-05-04 19:25:21.000000', '2025-05-04 19:40:21.000000', '765501', NULL, 102),
+(2, '2025-05-04 19:30:32.000000', '2025-05-04 19:45:32.000000', '876575', NULL, 152),
+(52, '2025-05-04 19:34:06.000000', '2025-05-04 19:49:06.000000', '921745', '2025-05-04 19:48:45.000000', 202),
+(102, '2025-05-05 16:03:25.000000', '2025-05-05 16:18:25.000000', '182105', NULL, 202),
+(152, '2025-05-06 16:13:30.000000', '2025-05-06 16:28:30.000000', '997266', NULL, 252),
+(202, '2025-05-06 16:19:11.000000', '2025-05-06 16:34:11.000000', '921297', NULL, 302),
+(252, '2025-05-06 16:20:19.000000', '2025-05-06 16:35:19.000000', '717201', NULL, 352),
+(302, '2025-05-06 16:34:51.000000', '2025-05-06 16:49:51.000000', '469626', NULL, 402),
+(303, '2025-05-06 16:36:17.000000', '2025-05-06 16:51:17.000000', '842029', NULL, 403),
+(352, '2025-05-06 16:37:21.000000', '2025-05-06 16:52:21.000000', '564997', NULL, 452),
+(402, '2025-05-06 16:43:32.000000', '2025-05-06 16:58:32.000000', '222622', NULL, 502),
+(452, '2025-05-06 16:49:47.000000', '2025-05-06 17:04:47.000000', '023355', NULL, 552),
+(502, '2025-05-06 16:53:47.000000', '2025-05-06 17:08:47.000000', '145699', '2025-05-06 16:56:21.000000', 602),
+(503, '2025-05-06 17:24:39.000000', '2025-05-06 17:39:39.000000', '183118', NULL, 602),
+(552, '2025-05-22 12:18:30.000000', '2025-05-22 12:33:30.000000', '065040', NULL, 652),
+(602, '2025-05-22 12:21:42.000000', '2025-05-22 12:36:42.000000', '125950', '2025-05-22 12:22:59.000000', 702),
+(652, '2025-05-23 17:51:16.000000', '2025-05-23 18:06:16.000000', '753581', NULL, 902),
+(752, '2025-05-23 18:54:05.000000', '2025-05-23 19:09:05.000000', '726000', NULL, 1152);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `token_entity_seq`
+--
+
+CREATE TABLE `token_entity_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `token_entity_seq`
+--
+
+INSERT INTO `token_entity_seq` (`next_val`) VALUES
+(851);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `training_center`
+--
+
+CREATE TABLE `training_center` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `acronym` varchar(255) DEFAULT NULL,
+  `agreement_file_url` varchar(255) DEFAULT NULL,
+  `agreement_number` varchar(255) DEFAULT NULL,
+  `division` varchar(255) DEFAULT NULL,
+  `end_date_of_agreement` date DEFAULT NULL,
+  `full_name` varchar(255) DEFAULT NULL,
+  `is_center_present_candidate_for_cqp` bit(1) NOT NULL,
+  `is_center_present_candidate_for_dqp` bit(1) NOT NULL,
+  `start_date_of_agreement` date DEFAULT NULL,
+  `promoter_id` bigint(20) DEFAULT NULL,
+  `agreement_status` varbinary(255) DEFAULT NULL,
+  `full_address` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `training_center`
+--
+
+INSERT INTO `training_center` (`id`, `created_by`, `created_date`, `is_actived`, `is_archived`, `last_modified_by`, `last_modified_date`, `acronym`, `agreement_file_url`, `agreement_number`, `division`, `end_date_of_agreement`, `full_name`, `is_center_present_candidate_for_cqp`, `is_center_present_candidate_for_dqp`, `start_date_of_agreement`, `promoter_id`, `agreement_status`, `full_address`) VALUES
+(1, 602, '2025-05-06 17:25:45.000000', b'0', b'0', 602, '2025-05-12 11:20:03.000000', 'jo', './uploads\\users\\602\\1747045203414.pdf', '101n0', 'mo', '2028-10-10', 'jeanTabi', b'0', b'1', '2024-10-10', 602, NULL, NULL),
+(2, 602, '2025-05-08 18:17:45.000000', b'0', b'0', 602, NULL, 'jo', NULL, '100n0', 'pop', '2025-10-10', 'jeano', b'1', b'0', '2024-10-10', 602, NULL, NULL),
+(52, 602, '2025-05-16 09:38:12.000000', b'0', b'0', 602, NULL, 'jooo', NULL, '100n00', 'pop', '2025-10-10', 'jeoooono', b'1', b'0', '2024-10-10', 602, NULL, NULL),
+(103, 602, '2025-05-22 11:56:12.000000', b'0', b'0', 602, NULL, 'jooop', NULL, '100n001', 'pop', '2025-10-10', 'jeoopno', b'1', b'0', '2024-10-10', 602, NULL, 'yaounde Mendong'),
+(152, 652, '2025-05-22 12:18:30.000000', b'0', b'0', 0, NULL, 'IST', NULL, 'AGT-2024-001', 'Littoral', '2029-12-31', 'Institut Supérieur de Technologie', b'1', b'0', '2024-01-01', 652, NULL, 'Bonapriso, Douala'),
+(202, 702, '2025-05-22 12:21:42.000000', b'0', b'0', 0, NULL, 'ISTY', NULL, 'ISTYT-2034-002', 'Littoral', '2029-12-31', 'Institut Supérieur de Technologie de Yaounde', b'1', b'1', '2024-01-01', 702, NULL, 'Bonapriso, Douala'),
+(253, 803, '2025-05-23 17:28:53.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'AGR123', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 803, NULL, 'BP 123 Yaoundé'),
+(302, 852, '2025-05-23 17:46:32.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'AGR122', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 852, NULL, 'BP 123 Yaoundé'),
+(352, 902, '2025-05-23 17:51:15.000000', b'0', b'0', 0, '2025-05-23 17:51:16.000000', 'CFA', './uploads\\users\\902\\1748019075896.docx', 'AGR1221', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 902, NULL, 'BP 123 Yaoundé'),
+(402, 952, '2025-05-23 17:58:30.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'AGR12211', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 952, NULL, 'BP 123 Yaoundé'),
+(452, 1002, '2025-05-23 18:17:16.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'AGr567', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 1002, NULL, 'BP 123 Yaoundé'),
+(453, 1003, '2025-05-23 18:20:33.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'AGr5679', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 1003, NULL, 'BP 123 Yaoundé'),
+(502, 1052, '2025-05-23 18:41:30.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'AGr56797', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 1052, NULL, 'BP 123 Yaoundé'),
+(503, 1053, '2025-05-23 18:42:43.000000', b'0', b'0', 0, NULL, 'CFA', NULL, 'lolo3456', 'Centre', '2025-12-31', 'Centre de Formation A', b'1', b'0', '2023-01-01', 1053, NULL, 'BP 123 Yaoundé'),
+(602, 1152, '2025-05-23 18:54:05.000000', b'0', b'0', 0, '2025-05-23 18:54:05.000000', 'CFAFA', './uploads\\users\\1152\\1748022845673.docx', 'ALRT56', 'Centre', '2025-12-31', 'Centre de Formation AFA', b'1', b'0', '2023-01-01', 1152, NULL, 'BP 123 Yaoundé');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `training_center_seq`
+--
+
+CREATE TABLE `training_center_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `training_center_seq`
+--
+
+INSERT INTO `training_center_seq` (`next_val`) VALUES
+(701);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_campus`
+--
+
+CREATE TABLE `_campus` (
+  `id` bigint(20) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `is_actived` bit(1) NOT NULL,
+  `is_archived` bit(1) NOT NULL,
+  `last_modified_by` bigint(20) DEFAULT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `capacity` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `quarter` varchar(255) DEFAULT NULL,
+  `town` varchar(255) DEFAULT NULL,
+  `x_coor` double NOT NULL,
+  `y_coor` double NOT NULL,
+  `id_training_center` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_campus_seq`
+--
+
+CREATE TABLE `_campus_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_campus_seq`
+--
+
+INSERT INTO `_campus_seq` (`next_val`) VALUES
+(1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_candidate`
+--
+
+CREATE TABLE `_candidate` (
+  `birth_certificate_url` varchar(255) DEFAULT NULL,
+  `content_status` tinyint(4) DEFAULT NULL,
+  `father_full_name` varchar(255) DEFAULT NULL,
+  `father_profession` varchar(255) DEFAULT NULL,
+  `highest_diplomat_url` varchar(255) DEFAULT NULL,
+  `highest_school_level` varchar(255) DEFAULT NULL,
+  `mother_full_name` varchar(255) DEFAULT NULL,
+  `mother_profession` varchar(255) DEFAULT NULL,
+  `national_id_card_url` varchar(255) DEFAULT NULL,
+  `nationality` varchar(255) DEFAULT NULL,
+  `place_of_birth` varchar(255) DEFAULT NULL,
+  `profile_picture_url` varchar(255) DEFAULT NULL,
+  `sex` varchar(255) DEFAULT NULL,
+  `town_of_residence` varchar(255) DEFAULT NULL,
+  `id_user` bigint(20) NOT NULL,
+  `free_candidate` bit(1) NOT NULL,
+  `repeat_candidate` bit(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_candidate`
+--
+
+INSERT INTO `_candidate` (`birth_certificate_url`, `content_status`, `father_full_name`, `father_profession`, `highest_diplomat_url`, `highest_school_level`, `mother_full_name`, `mother_profession`, `national_id_card_url`, `nationality`, `place_of_birth`, `profile_picture_url`, `sex`, `town_of_residence`, `id_user`, `free_candidate`, `repeat_candidate`) VALUES
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'masculin', NULL, 1, b'0', b'0'),
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'masculin', NULL, 4, b'0', b'0'),
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'masculin', NULL, 52, b'0', b'0'),
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'masculin', NULL, 54, b'0', b'0');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_promoter`
+--
+
+CREATE TABLE `_promoter` (
+  `school_level` varchar(255) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `id_user` bigint(20) NOT NULL,
+  `national_id_card_url` varchar(255) DEFAULT NULL,
+  `internal_regulation_file_url` varchar(255) DEFAULT NULL,
+  `localisation_file_url` varchar(255) DEFAULT NULL,
+  `photo_url` varchar(255) DEFAULT NULL,
+  `signature_letter_url` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_promoter`
+--
+
+INSERT INTO `_promoter` (`school_level`, `address`, `id_user`, `national_id_card_url`, `internal_regulation_file_url`, `localisation_file_url`, `photo_url`, `signature_letter_url`) VALUES
+('master', 'mendong', 152, NULL, NULL, NULL, NULL, NULL),
+('master', 'mendong', 202, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 252, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 302, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 352, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 402, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 403, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 452, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 502, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 552, NULL, NULL, NULL, NULL, NULL),
+('master', 'Mendo', 602, './uploads\\users\\602\\1747908417801.png', NULL, NULL, NULL, NULL),
+('BAC+3', 'Douala', 652, NULL, NULL, NULL, NULL, NULL),
+('BAC+3', 'Yaounde', 702, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 802, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 803, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 852, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 902, './uploads\\users\\902\\1748019075856.docx', './uploads\\users\\902\\1748019076006.sql', './uploads\\users\\902\\1748019076001.sql', './uploads\\users\\902\\1748019075931.sql', './uploads\\users\\902\\1748019075967.sql'),
+('Master', 'Yaoundé', 952, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 1002, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 1003, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 1052, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 1053, NULL, NULL, NULL, NULL, NULL),
+('Master', 'Yaoundé', 1152, './uploads\\users\\1152\\1748022845628.docx', './uploads\\users\\1152\\1748022845764.png', './uploads\\users\\1152\\1748022845741.png', './uploads\\users\\1152\\1748022845698.png', './uploads\\users\\1152\\1748022845718.png');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_staff`
+--
+
+CREATE TABLE `_staff` (
+  `position_name` varchar(255) DEFAULT NULL,
+  `id_user` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_staff`
+--
+
+INSERT INTO `_staff` (`position_name`, `id_user`) VALUES
+('Ministre des cabinets', 752),
+('Secrétaire général', 754);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_user`
+--
+
+CREATE TABLE `_user` (
+  `id_user` bigint(20) NOT NULL,
+  `account_locked` bit(1) NOT NULL,
+  `created_by` bigint(20) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `enabled` bit(1) NOT NULL,
+  `firstname` varchar(255) DEFAULT NULL,
+  `last_modified_by` bigint(20) NOT NULL,
+  `last_modified_date` datetime(6) DEFAULT NULL,
+  `lastname` varchar(255) DEFAULT NULL,
+  `national_id_number` varchar(255) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(255) DEFAULT NULL,
+  `actived` bit(1) NOT NULL,
+  `archived` bit(1) NOT NULL,
+  `sex` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_user`
+--
+
+INSERT INTO `_user` (`id_user`, `account_locked`, `created_by`, `created_date`, `date_of_birth`, `email`, `enabled`, `firstname`, `last_modified_by`, `last_modified_date`, `lastname`, `national_id_number`, `password`, `phone_number`, `actived`, `archived`, `sex`) VALUES
+(1, b'0', 0, '2025-05-02 11:45:48.000000', NULL, 'noupatchankio@gmail.com', b'0', 'noupa', 0, NULL, 'ricardo', '123456789', '$2a$10$xuEXWXv1DuBDgzQ6BOZk4eXR9rvfyz82OjKU6LKgNm1zU/jJnWbzO', '698610517', b'0', b'0', NULL),
+(4, b'0', 0, '2025-05-02 12:29:11.000000', NULL, 'noupatchankioo@gmail.com', b'0', 'noupaq', 0, NULL, 'ricardoq', '123456749', '$2a$10$i8ytek9JRI.EM/q3F/Gu4.yIgmGEmHs0s3D9qFlbk3lXdcv4iVkY.', '698610527', b'0', b'0', NULL),
+(52, b'0', 0, '2025-05-02 12:30:52.000000', NULL, 'noupatchankiooo@gmail.com', b'0', 'noupal', 0, NULL, 'ricardiq', '123459749', '$2a$10$hadise/Dxd1x4MROxrJ9EOuJa5Z/cxLS1JFXx0WpSYCbvv9ku0WxO', '698610547', b'0', b'0', NULL),
+(54, b'0', 0, '2025-05-02 12:32:06.000000', NULL, 'noupatchankioooo@gmail.com', b'0', 'noup', 0, NULL, 'ricardq', '128459749', '$2a$10$tUfL.0t9ABBEg2gOgcnmAe.dtC0If68KWRpXTCK4ItAiY/nyyoyvi', '698613547', b'0', b'0', NULL),
+(102, b'0', 0, '2025-05-04 19:25:21.000000', '2000-09-29', 'noupatchankioricardo0junior@gmail.com', b'0', 'noupaq', 0, NULL, 'ricardq', '128409749', '$2a$10$gBYvHen2IOyzwry2YcZJvOzcOdas0YOf/jKCMmd.a8QXsLP9UQhsW', '698613540', b'0', b'0', NULL),
+(152, b'0', 0, '2025-05-04 19:30:32.000000', '2000-09-29', 'noupatchankioricardojunio@gmail.com', b'0', 'noupaW', 0, NULL, 'ricardW', '128403749', '$2a$10$2Suu31pt4iUTQtOf76kaV.PXYkk9mlYkbeEQp1C.ZoULLe9EOPK4W', '698313540', b'0', b'0', NULL),
+(202, b'0', 0, '2025-05-04 19:34:06.000000', '2000-09-29', 'noupatchankioricardojunior@gmail.com', b'1', 'noupaW', 0, '2025-05-04 19:48:45.000000', 'ricardW', '128463749', '$2a$10$wSkWYY5cjntvGy7FZShdRem2aiughWFkuf7FOPkhoRjOdi0DlJfnO', '698313640', b'0', b'0', NULL),
+(252, b'0', 0, '2025-05-06 16:13:30.000000', '2009-09-09', 'noupal@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '134678903', '$2a$10$Yh05j88YtFSa7Rn9BwC9k.xsOryCJBYNv1M3NumWtuZq9jYF.w6DC', '677777777', b'0', b'0', NULL),
+(302, b'0', 0, '2025-05-06 16:19:11.000000', '2009-09-09', 'noupalo@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '133678903', '$2a$10$ZNQfhg7gYC34qX2mazkWQenyo2QDbqb3DdDuYi1uVBzS2ISd4D172', '677977777', b'0', b'0', NULL),
+(352, b'0', 0, '2025-05-06 16:20:19.000000', '2009-09-09', 'noupalol@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '130678903', '$2a$10$Q8jPWp3RCv5vxj9n50t.cea5EO6Hq3VtKpeN22s2XhOtNl/R2mQ5i', '677997777', b'0', b'0', NULL),
+(402, b'0', 0, '2025-05-06 16:34:51.000000', '2009-09-09', 'noupalolo@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '100678903', '$2a$10$EsPGLWfgJXb5tM5OUdjmjerX/Jv5LUSaWpDrwQjywNsaqmjRxHFB2', '677997977', b'0', b'0', NULL),
+(403, b'0', 0, '2025-05-06 16:36:17.000000', '2009-09-09', 'noupaulolo@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '100678703', '$2a$10$q7QAldFZ..DUxxz9bS/2huwaOCKKW.L.DmAC8e/TVkVxp8lCWPK9u', '677997907', b'0', b'0', NULL),
+(452, b'0', 0, '2025-05-06 16:37:21.000000', '2009-09-09', 'noupauilolo@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '100078703', '$2a$10$glHF2i0i5/EmZRRvFKbeYuGzmvoePS/3tRUUWD/mnT7X5ZWsUW7Fy', '674997907', b'0', b'0', NULL),
+(502, b'0', 0, '2025-05-06 16:43:32.000000', '2009-09-09', 'noupauiolo@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '100378703', '$2a$10$/AZTDv9FOpxBAoKXhXKPKeNL9TkyvG8zoDkJs7Q.2k5lS61v6yyXa', '674991907', b'0', b'0', NULL),
+(552, b'0', 0, '2025-05-06 16:49:47.000000', '2009-09-09', 'noupo@gmail.com', b'0', 'noupa', 0, NULL, 'tchankio', '000378703', '$2a$10$C7sJgISTatgVu1KWzXJcY.S7mL9k80vV2pfB6KWOBaZlfCVoYsk9y', '670991907', b'0', b'0', NULL),
+(602, b'0', 0, '2025-05-06 16:53:47.000000', '2009-09-09', 'noup@gmail.com', b'1', 'noupa', 0, '2025-05-22 11:06:57.000000', 'tchankio', '000078703', '$2a$10$QEQ2KtfVge6hBedJtB7PcO.I1329ViH1vMM4U1EWJzHf.rXehGs.q', '670901907', b'1', b'0', NULL),
+(652, b'0', 0, '2025-05-22 12:18:30.000000', '1990-01-01', 'jean.dupont@example.com', b'0', 'Jean', 0, NULL, 'Dupont', '1234098909', '$2a$10$4FrRipfD1EhqHAX6muzpEOeSAyRKSDvOiQx0uqvMnpCzGQ8qdIK5u', '690123456', b'0', b'0', 'MALE'),
+(702, b'0', 0, '2025-05-22 12:21:42.000000', '1990-01-01', 'ripere.dupont@example.com', b'1', 'Jean', 0, '2025-05-22 12:22:59.000000', 'Dupont', '1230998909', '$2a$10$ZPFdRg144tF/7d.0i8nLeuZvXBlKWRhDbW99.BeY/Quq4nwhd2tcW', '690093456', b'0', b'0', 'MALE'),
+(752, b'0', 1, '2025-05-22 14:02:34.000000', '1990-01-15', 'lolita.dupuit@example.com', b'1', 'Jean', 1, '2025-05-22 14:02:34.000000', 'Dupont', '123456788', '$2a$10$QqzOEG3fEbl0X/n1eMYH8eA3d5eYBphAAYmBF3gA00mOjdmJdV5De', '699112233', b'1', b'0', 'M'),
+(754, b'0', 602, '2025-05-23 13:47:51.000000', '1990-05-20', 'wilfried.sop@example.com', b'1', 'Wilfried Melang Melang', 602, NULL, 'Sont', '123456786', '$2a$10$pWeHtBy6jTwUfZwT./g0fuaQSFVrmFrk0JPFTFUDi55/8hAlax6Qe', '699112833', b'0', b'0', NULL),
+(802, b'0', 0, '2025-05-23 17:27:27.000000', '1990-01-01', 'john.doe@email.com', b'0', 'John\n', 0, NULL, 'Doe', '123456789012', '$2a$10$9xECKfB6aOtpSBDNGiIBU.eQ4NRRusn86K4LsjMJAUEPK94rQZWce', '620000000', b'0', b'0', 'Male'),
+(803, b'0', 0, '2025-05-23 17:28:53.000000', '1990-01-01', 'joeGoelberg@email.com', b'0', 'John\n', 0, NULL, 'Doe', '123456789015', '$2a$10$gzonQ/HVj/Jwcb0ONkv4SeGeQmioN650mHEPTwXdRkrTo8ANJGXSu', '620000001', b'0', b'0', 'Male'),
+(852, b'0', 0, '2025-05-23 17:46:31.000000', '1990-01-01', 'joeGoelberge@email.com', b'0', 'John\n', 0, NULL, 'Doe', '123456789016', '$2a$10$lAhnz90T8MQa2Z80J3rZ5Ow2DsiT81G1jJhNXlW90KetxtSQ2USwu', '620000011', b'0', b'0', 'Male'),
+(902, b'0', 0, '2025-05-23 17:51:15.000000', '1990-01-01', 'joeGoelbergee@email.com', b'0', 'John\n', 0, '2025-05-23 17:51:16.000000', 'Doe', '1234567890162', '$2a$10$4ICE6gL7i7glNYXkbvZ5F.i28OtcKTshb0qAS33jGhya500WmLjc.', '6200000111', b'0', b'0', 'Male'),
+(952, b'0', 0, '2025-05-23 17:58:30.000000', '1990-01-01', 'joeGoelbergeee@email.com', b'0', 'John\n', 0, NULL, 'Doe', '12345678901623', '$2a$10$sVQX4HG4KwANGVavvA9kIuDyff7Hpq6EyohsQilRxpfvrplwUyjTG', '62000001113', b'0', b'0', 'Male'),
+(1002, b'0', 0, '2025-05-23 18:17:16.000000', '1990-01-01', 'joeGoelber@email.com', b'0', 'John\n', 0, NULL, 'Doe', '1234567098', '$2a$10$iSB.epT14Yq6V8rMDmC6SuEZTqFS0XVN21ABJo.gCvxf7/4Iagv4m', '6909090909', b'0', b'0', 'Male'),
+(1003, b'0', 0, '2025-05-23 18:20:33.000000', '1990-01-01', 'joeGoelbr@email.com', b'0', 'John\n', 0, NULL, 'Doe', '12345670980', '$2a$10$qzMz4TicHAfRuMKX8Ce2C.EamAw9lfULMO8Y4.GtEjm86No2w8kfS', '69090909090', b'0', b'0', 'Male'),
+(1052, b'0', 0, '2025-05-23 18:41:30.000000', '1990-01-01', 'joeGoelr@email.com', b'0', 'John\n', 0, NULL, 'Doe', '1234567088', '$2a$10$STbLmSLFYk.pqSh4fgWZS.dJ9gaERPWYaM0Pu1A1Oi2U6gaurRpOu', '690909097', b'0', b'0', 'Male'),
+(1053, b'0', 0, '2025-05-23 18:42:43.000000', '1990-01-01', 'jlolitatar@email.com', b'0', 'John\n', 0, NULL, 'Doe', '3939393939', '$2a$10$rHuYEmZmq2ae3mOhEPAFX.jATh1naFL/gVTDCnRr3nHSayAkUWZU6', '8282828282', b'0', b'0', 'Male'),
+(1152, b'0', 0, '2025-05-23 18:54:05.000000', '1990-01-01', 'Niskaninho@email.com', b'1', 'Niska\n', 0, '2025-05-26 11:26:44.000000', 'MatuidiCharo', '0101020304', '$2a$10$GPEAKMMNnOikciZWS29p8ug2vtSEEOnpFbaW48e99sqFk2micr.ti', '678787878', b'1', b'0', 'Male');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_user_roles`
+--
+
+CREATE TABLE `_user_roles` (
+  `users_id_user` bigint(20) NOT NULL,
+  `roles_id_role` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_user_roles`
+--
+
+INSERT INTO `_user_roles` (`users_id_user`, `roles_id_role`) VALUES
+(1, 1),
+(4, 1),
+(52, 1),
+(54, 1),
+(102, 3),
+(152, 3),
+(202, 3),
+(252, 3),
+(302, 3),
+(352, 3),
+(402, 3),
+(403, 3),
+(452, 3),
+(502, 3),
+(552, 3),
+(602, 3),
+(652, 3),
+(702, 3),
+(752, 2),
+(754, 2),
+(802, 3),
+(803, 3),
+(852, 3),
+(902, 3),
+(952, 3),
+(1002, 3),
+(1003, 3),
+(1052, 3),
+(1053, 3),
+(1152, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `_user_seq`
+--
+
+CREATE TABLE `_user_seq` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `_user_seq`
+--
+
+INSERT INTO `_user_seq` (`next_val`) VALUES
+(1251);
+
+--
+-- Index pour les tables déchargées
+--
+
+--
+-- Index pour la table `application`
+--
+ALTER TABLE `application`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FK1v8a934gsu7u84hwljoo4deth` (`candidate_id`),
+  ADD KEY `FKm55c4lqy005l611lpvtxq0kpw` (`speciality`);
+
+--
+-- Index pour la table `course`
+--
+ALTER TABLE `course`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `has_schooled`
+--
+ALTER TABLE `has_schooled`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FKklh31b1eq09gpd95gjsfa4mq3` (`candidate_id`),
+  ADD KEY `FKcrjkkghsk1hu95vcpd61d5lq8` (`training_center_id`);
+
+--
+-- Index pour la table `offers_speciality`
+--
+ALTER TABLE `offers_speciality`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FK5c1tx9h1i3lj79vd2akfx335q` (`speciality_id`),
+  ADD KEY `FKac9ytcnkqor9vvmnhqdup5efn` (`training_center_id`);
+
+--
+-- Index pour la table `role_entity`
+--
+ALTER TABLE `role_entity`
+  ADD PRIMARY KEY (`id_role`),
+  ADD UNIQUE KEY `UK_2uqxlfg1dlwv0mtewrokr23ou` (`name`);
+
+--
+-- Index pour la table `speciality`
+--
+ALTER TABLE `speciality`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FK9kb42rotxijan6bpf4hub45ih` (`course_id`);
+
+--
+-- Index pour la table `speciality_subject`
+--
+ALTER TABLE `speciality_subject`
+  ADD KEY `FK407i3gbuh690x227thx6c03oe` (`subject_id`),
+  ADD KEY `FKi1h4260k9cra32fo5a8u3shpf` (`speciality_id`);
+
+--
+-- Index pour la table `subjects`
+--
+ALTER TABLE `subjects`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `token_entity`
+--
+ALTER TABLE `token_entity`
+  ADD PRIMARY KEY (`id_token`),
+  ADD KEY `FKsoupqu80xk7x0qsmdhnla950s` (`user_id`);
+
+--
+-- Index pour la table `training_center`
+--
+ALTER TABLE `training_center`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `UK_nkws0cj37dygqr7tltf5maop1` (`agreement_number`),
+  ADD KEY `FKe4h4g0ed9jetvu7lwi9bogpps` (`promoter_id`);
+
+--
+-- Index pour la table `_campus`
+--
+ALTER TABLE `_campus`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FKkumvr9pu487b976pwvsnhbmvi` (`id_training_center`);
+
+--
+-- Index pour la table `_candidate`
+--
+ALTER TABLE `_candidate`
+  ADD PRIMARY KEY (`id_user`);
+
+--
+-- Index pour la table `_promoter`
+--
+ALTER TABLE `_promoter`
+  ADD PRIMARY KEY (`id_user`);
+
+--
+-- Index pour la table `_staff`
+--
+ALTER TABLE `_staff`
+  ADD PRIMARY KEY (`id_user`);
+
+--
+-- Index pour la table `_user`
+--
+ALTER TABLE `_user`
+  ADD PRIMARY KEY (`id_user`),
+  ADD UNIQUE KEY `UK_k11y3pdtsrjgy8w9b6q4bjwrx` (`email`),
+  ADD UNIQUE KEY `UK_cwnk11b5hby4hdd4dfo3ppvaq` (`national_id_number`),
+  ADD UNIQUE KEY `UK_buoitwamy4goeykc8n0r8b5jd` (`phone_number`);
+
+--
+-- Index pour la table `_user_roles`
+--
+ALTER TABLE `_user_roles`
+  ADD KEY `FK4l65f01tr3klo5wj30o4yl4so` (`roles_id_role`),
+  ADD KEY `FKtpyt0qjubno38k3k3c6u7dkje` (`users_id_user`);
+
+--
+-- Contraintes pour les tables déchargées
+--
+
+--
+-- Contraintes pour la table `application`
+--
+ALTER TABLE `application`
+  ADD CONSTRAINT `FK1v8a934gsu7u84hwljoo4deth` FOREIGN KEY (`candidate_id`) REFERENCES `_candidate` (`id_user`),
+  ADD CONSTRAINT `FKm55c4lqy005l611lpvtxq0kpw` FOREIGN KEY (`speciality`) REFERENCES `speciality` (`id`);
+
+--
+-- Contraintes pour la table `has_schooled`
+--
+ALTER TABLE `has_schooled`
+  ADD CONSTRAINT `FKcrjkkghsk1hu95vcpd61d5lq8` FOREIGN KEY (`training_center_id`) REFERENCES `training_center` (`id`),
+  ADD CONSTRAINT `FKklh31b1eq09gpd95gjsfa4mq3` FOREIGN KEY (`candidate_id`) REFERENCES `_candidate` (`id_user`);
+
+--
+-- Contraintes pour la table `offers_speciality`
+--
+ALTER TABLE `offers_speciality`
+  ADD CONSTRAINT `FK5c1tx9h1i3lj79vd2akfx335q` FOREIGN KEY (`speciality_id`) REFERENCES `speciality` (`id`),
+  ADD CONSTRAINT `FKac9ytcnkqor9vvmnhqdup5efn` FOREIGN KEY (`training_center_id`) REFERENCES `training_center` (`id`);
+
+--
+-- Contraintes pour la table `speciality`
+--
+ALTER TABLE `speciality`
+  ADD CONSTRAINT `FK9kb42rotxijan6bpf4hub45ih` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`);
+
+--
+-- Contraintes pour la table `speciality_subject`
+--
+ALTER TABLE `speciality_subject`
+  ADD CONSTRAINT `FK407i3gbuh690x227thx6c03oe` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`),
+  ADD CONSTRAINT `FKi1h4260k9cra32fo5a8u3shpf` FOREIGN KEY (`speciality_id`) REFERENCES `speciality` (`id`);
+
+--
+-- Contraintes pour la table `token_entity`
+--
+ALTER TABLE `token_entity`
+  ADD CONSTRAINT `FKsoupqu80xk7x0qsmdhnla950s` FOREIGN KEY (`user_id`) REFERENCES `_user` (`id_user`);
+
+--
+-- Contraintes pour la table `training_center`
+--
+ALTER TABLE `training_center`
+  ADD CONSTRAINT `FKe4h4g0ed9jetvu7lwi9bogpps` FOREIGN KEY (`promoter_id`) REFERENCES `_promoter` (`id_user`);
+
+--
+-- Contraintes pour la table `_campus`
+--
+ALTER TABLE `_campus`
+  ADD CONSTRAINT `FKkumvr9pu487b976pwvsnhbmvi` FOREIGN KEY (`id_training_center`) REFERENCES `training_center` (`id`);
+
+--
+-- Contraintes pour la table `_candidate`
+--
+ALTER TABLE `_candidate`
+  ADD CONSTRAINT `FKevnfjdb4k8i9jq89va8n9wu6g` FOREIGN KEY (`id_user`) REFERENCES `_user` (`id_user`);
+
+--
+-- Contraintes pour la table `_promoter`
+--
+ALTER TABLE `_promoter`
+  ADD CONSTRAINT `FK8i0xe3wlmtwk3blvq2cw3j7j6` FOREIGN KEY (`id_user`) REFERENCES `_user` (`id_user`);
+
+--
+-- Contraintes pour la table `_staff`
+--
+ALTER TABLE `_staff`
+  ADD CONSTRAINT `FKq7r6hdn463s9vyd9um58p4bhg` FOREIGN KEY (`id_user`) REFERENCES `_user` (`id_user`);
+
+--
+-- Contraintes pour la table `_user_roles`
+--
+ALTER TABLE `_user_roles`
+  ADD CONSTRAINT `FK4l65f01tr3klo5wj30o4yl4so` FOREIGN KEY (`roles_id_role`) REFERENCES `role_entity` (`id_role`),
+  ADD CONSTRAINT `FKtpyt0qjubno38k3k3c6u7dkje` FOREIGN KEY (`users_id_user`) REFERENCES `_user` (`id_user`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -1,0 +1,25 @@
+.modal-backdrop {
+    opacity: 0.5;
+}
+
+.modal {
+    overflow-y: auto;
+}
+
+.error-snackbar {
+    background-color: #f44336;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0.5rem auto;
+        max-width: 95%;
+    }
+}
+
+/* Style for disabled buttons */
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

@@ -1,0 +1,45 @@
+/* Dashboard Styles */
+.card {
+  margin-bottom: 24px;
+  box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.avatar-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Chart Containers */
+canvas {
+  width: 100% !important;
+}
+
+/* Activity Timeline */
+.simplebar-content {
+  padding-right: 16px;
+}
+
+/* Upcoming Events Table */
+.table {
+  td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    border-color: #f6f6f6;
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .avatar-md {
+    width: 40px;
+    height: 40px;
+    font-size: 16px !important;
+  }
+}

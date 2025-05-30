@@ -1,0 +1,12 @@
+<div class="page-title">
+    <h4>{{title}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li *ngFor="let item of breadcrumbItems" 
+                class="breadcrumb-item" 
+                [class.active]="item.active">
+                {{item.label}}
+            </li>
+        </ol>
+    </nav>
+</div>

@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0 # Specify the version of MySQL, here it's MySQL 8.0
+    environment:
+      MYSQL_USER: username # Your MySQL username
+      MYSQL_PASSWORD: password # Your MySQL password
+      MYSQL_ROOT_PASSWORD: password # Root password
+      MYSQL_DATABASE: applycam # Optional: Initial database to create
+    ports:
+      - "3306:3306" # Map port 3306 from the container to the host
+    volumes:
+      - mysql_data:/var/lib/mysql # Persist data across container restarts
+    networks:
+      - mysql_network
+    restart: unless-stopped
+  mail-dev:
+    container_name: mail-dev-applycam
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+  #created backend image
+  applycam-api:
+   container_name: applycam-api
+   image: applycam/applycam:1.0.0   
+   ports:
+    - 8088:8088
+   networks:
+    - mysql_network
+   depends_on:
+    - mysql
+
+  #created frontend image
+  applycam-ui:
+   container_name: applycam-ui
+   image: applycam/applycam-ui:1.0.0   
+   ports:
+    - 8080:80
+   networks:
+    - mysql_network
+   depends_on:
+    - applycam-api  
+
+volumes:
+  mysql_data:
+
+networks:
+  mysql_network:
+    driver: bridge
+  
