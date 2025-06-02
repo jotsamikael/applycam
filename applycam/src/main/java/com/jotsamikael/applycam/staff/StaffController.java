@@ -48,5 +48,15 @@ public class StaffController {
                                                   Authentication connectedUser) {
         return ResponseEntity.ok(staffService.updateProfile(email, request,connectedUser));
     }
+    
+    @PatchMapping("/toggle-staff/{fullName}")
+	 public ResponseEntity<?> toogleStaff(
+			 @PathVariable String fullName,
+			 Authentication connectedUser){
+		 
+		 staffService.deleteStaff(fullName, connectedUser);
+		 
+		 return ResponseEntity.ok().build();
+	 }
 
 }

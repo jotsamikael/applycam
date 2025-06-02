@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +29,8 @@ public class StaffService {
     private final StaffMapper mapper;
 
     public StaffResponse findStaffByEmail(String email) {
+    	
+    	
         //get staff by email of throw exception
         Staff staff = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No Staff Member found with email: "+email));
         return mapper.toStaffResponse(staff);
@@ -82,7 +86,10 @@ public class StaffService {
     public String updateProfile(String email, CreateStaffRequest request, Authentication connectedUser) {
         //start by getting the staff by email or throw an exception
         Staff staff = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No staff with found email"+ email));
-
+        
+        if (!staff.isActived() ) {
+           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be updated.");
+           }
         //modify the staff object using the request data
         staff.setFirstname(request.getFirstname());
         staff.setLastname(request.getLastname());
@@ -103,6 +110,28 @@ public class StaffService {
         //return
         return email;
     }
+    
+    public void deleteStaff(String fullName, Authentication connectedUser){
+        User user =(User) connectedUser.getPrincipal();
+        Staff staff= repository.findByFullName(fullName)
+        .orElseThrow(()->new EntityNotFoundException("Staff Not found"));
+
+        if(staff.isActived()){
+        	staff.setActived(false);
+        	staff.setArchived(true);
+            
+        }else{
+        	staff.setActived(true);
+        	staff.setArchived(false);
+        }
+        staff.setLastModifiedBy(user.getIdUser());
+        staff.setLastModifiedDate(LocalDateTime.now());
+
+        repository.save(staff);
+    }
+
+    
+    
 
 
 }

@@ -8,10 +8,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.user.User;
@@ -46,10 +44,6 @@ public class SessionService {
 
         Session session= sessionRepository.findById(updateSessionRequest.getSessionId()).
         orElseThrow(()-> new EntityNotFoundException("Cette session n'existe pas"));
-        
-        if (!session.isActived() ) {
-           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be updated.");
-           }
 
         session.setExamType(updateSessionRequest.getExamType());
         session.setExamDate(updateSessionRequest.getExamDate());
@@ -84,7 +78,7 @@ public class SessionService {
         );
     }
 
-    public SessionResponse findByExamDate(LocalDate examDate){
+    public SessionResponse findBySessionYear(LocalDate examDate){
 
         Session session= sessionRepository.findByExamDate(examDate).
         orElseThrow(()->new EntityNotFoundException("This Session does not exist"));
@@ -123,28 +117,6 @@ public class SessionService {
         session.setLastModifiedDate(LocalDateTime.now());
 
         sessionRepository.save(session);
-    }
-    
-    public PageResponse<SessionResponse> findSessionByYear(String sessionYear,int offset, int pageSize, String field, boolean order) {
-        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
-
-        Page<Session> list= sessionRepository.findAllBySessionYear(sessionYear,PageRequest.of(offset, pageSize, sort));
-
-        List<SessionResponse> responses= list.getContent().stream().map(session->SessionResponse.builder()
-        .examType(session.getExamType())
-        .examDate(session.getExamDate())
-        .sessionYear(session.getSessionYear())
-        .build()).toList();
-
-        return new PageResponse<>(
-            responses,
-            list.getNumber(),
-            list.getSize(),
-            list.getTotalElements(),
-            list.getTotalPages(),
-            list.isFirst(),
-            list.isLast()
-        );
     }
 
 }

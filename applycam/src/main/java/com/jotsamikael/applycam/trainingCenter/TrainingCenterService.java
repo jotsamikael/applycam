@@ -1,5 +1,6 @@
 package com.jotsamikael.applycam.trainingCenter;
 
+import com.jotsamikael.applycam.candidate.Candidate;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.exception.OperationNotPermittedException;
@@ -178,4 +179,6 @@ public class TrainingCenterService {
        return trainingCenter.getAgreementNumber();
 	   
    }
+   
+   
 }

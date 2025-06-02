@@ -1,0 +1,18 @@
+package com.jotsamikael.applycam.session;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface SessionRepository  extends JpaRepository<Session, Long>{
+	
+	 	Optional<Session> findByDate(LocalDate examDate);
+
+	    Page<Session> getAllSession(Pageable pageable);
+
+	    Page<Session> findAllByYear(String sessionYear);
+
+}
