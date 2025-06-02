@@ -9,8 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
@@ -50,6 +53,10 @@ public class CandidateService {
     public String updateProfile(String email, CandidateRequest request, Authentication connectedUser) {
         //start by getting the candidate by email or throw an exception
         Candidate candidate = candidateRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No candidate with found email"+ email));
+        
+        if (!candidate.isActived() ) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Candidate cannot be updated.");
+        }
 
         //modify the candidate object using the request data
         candidate.setFirstname(request.firstname());
@@ -116,6 +123,10 @@ public class CandidateService {
     
     public CandidateResponse findByName(Long promoterId, String name ){
         Candidate candidate_finded = candidateRepository.findCandidateByName(promoterId,name).orElseThrow(()-> new EntityNotFoundException("the candidate is not in one of your training Center or does not exist"));
+        
+        if (!candidate_finded.isActived() ) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Candidate has been deleted.");
+        }
         
          return mapper.toCandidateResponse(candidate_finded);
     }

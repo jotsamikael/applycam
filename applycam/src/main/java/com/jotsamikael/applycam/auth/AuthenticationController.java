@@ -44,10 +44,7 @@ public class AuthenticationController {
     		@ModelAttribute @Valid CreatePromoterAndCenterRequest request,
     		Authentication connectedUser
     ) throws MessagingException {
-        promoterService.createPromoter(connectedUser,request.getPromoter(),request.getTrainingCenter(),
-        		request.getNationalIdCard(),request.getAgreementFile(),request.getPromoterPhoto(),request.getSignLetter(),
-        		request.getLocalisationFile(),request.getInternalRegulation(),request.getValidUntil(),
-        		request.getValidFrom(),request.getValidTo());
+        promoterService.createPromoter(connectedUser,request);
         return ResponseEntity.accepted().build();
     }
 

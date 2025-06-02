@@ -59,7 +59,6 @@ public class PromoterService {
 
     public void createPromoter(
             Authentication connectedUser,
-            @Valid CreatePromoterRequest promoterRequest,
             @Valid  CreatePromoterAndCenterRequest request
     ) throws MessagingException {
 
