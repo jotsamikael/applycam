@@ -111,7 +111,7 @@ public class CreatePromoterAndCenterRequest {
 	    private Boolean isCenterPresentCandidateForDqp;
 
 	    
-	    private MultipartFile cniFile;
+	   /* private MultipartFile cniFile;
 	    
 	    private MultipartFile approvalFile;
 	    
@@ -121,7 +121,7 @@ public class CreatePromoterAndCenterRequest {
 	    
 	    private MultipartFile locationPlan;
 	    
-	    private MultipartFile internalRegulation;
+	    private MultipartFile internalRegulation;*/
 	    
 	    @NotNull(message = "La date de validité de la CNI est requise")
 	    private LocalDate cniValidUntil;
@@ -133,8 +133,8 @@ public class CreatePromoterAndCenterRequest {
 	    private LocalDate approvalEnd; 
 	    
 	    
-	    @NotBlank(message = "Le numéro d'agrément est requis")
-	    private String approvalNumber;
+	   /* @NotBlank(message = "Le numéro d'agrément est requis")
+	    private String approvalNumber;*/
 	
 //DTO Global to sum up the two request to create a promoter while creating a training center
 }

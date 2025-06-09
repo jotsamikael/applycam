@@ -48,6 +48,7 @@ public class TrainingCenter extends BaseEntity {
     private String fullAddress;
     private String centerType;
     private String centerPhone;
+    @Column(unique = true)
     private String centerEmail;
     private String website;
     private String city;

@@ -90,15 +90,14 @@ public class PromoterService {
         trainingCenterRepository.save(trainingCenter);
 
         // Gestion des fichiers
-        handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
+       /* handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
         handleFileUploads(trainingCenter, promoter, request.getApprovalFile(), "AGREEMENT");
         handleFileUploads(trainingCenter, promoter, request.getPromoterPhoto(), "PHOTO");
         handleFileUploads(trainingCenter, promoter, request.getEngagementLetter(), "SIGNATURE");
         handleFileUploads(trainingCenter, promoter, request.getLocationPlan(), "LOCALISATION");
-        handleFileUploads(trainingCenter, promoter, request.getInternalRegulation(), "REGULATION");
+        handleFileUploads(trainingCenter, promoter, request.getInternalRegulation(), "REGULATION");*/
 
-        // Envoi d'email
-        sendValidationEmail(promoter);
+        
     }
         // create the Promoter
        
@@ -118,9 +117,7 @@ public class PromoterService {
         if (userRepository.existsByNationalIdNumber(request.getCniNumber())) {
             throw new DataIntegrityViolationException("National ID already taken");
         }
-        if (trainingCenterRepository.existsByAgreementNumber(request.getApprovalNumber())) {
-            throw new DataIntegrityViolationException("Agreement number already taken");
-        }
+        
     }
 
     private void validateCardValidityDate(LocalDate validUntil) {
@@ -162,7 +159,7 @@ public class PromoterService {
         return TrainingCenter.builder()
                 .fullName(req.getCenterName())
                 .acronym(req.getCenterAcronym())
-                .agreementNumber(req.getApprovalNumber())
+                //.agreementNumber(req.getApprovalNumber())
                 .centerType(req.getCenterType())
                 .centerPhone(req.getCenterPhone())
                 .centerEmail(req.getCenterEmail())
@@ -179,6 +176,34 @@ public class PromoterService {
                 .promoter(promoter)
                 .createdDate(LocalDateTime.now())
                 .build();
+    }
+    
+    public void uploadPromoterFile(MultipartFile cniFile,MultipartFile approvalFile, MultipartFile promoterPhoto,
+    		MultipartFile engagementLetter,MultipartFile locationPlan,MultipartFile internalRegulation,
+    		String approvalNumber,String email,String centerEmail) throws MessagingException {
+    	
+    	
+
+         //check connected user is promoter
+         Promoter promoter = repository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Not a promoter"));
+         
+         if (trainingCenterRepository.existsByAgreementNumber(approvalNumber)) {
+             throw new DataIntegrityViolationException("Agreement number already taken");
+         }
+         
+         TrainingCenter trainingCenter= trainingCenterRepository.findByCenterEmail(centerEmail).orElseThrow(()->new EntityNotFoundException("this is not a training center"));
+    	trainingCenter.setAgreementNumber(approvalNumber);
+    	
+    	trainingCenterRepository.save(trainingCenter);
+    	handleFileUploads(trainingCenter, promoter, cniFile, "CNI");
+        handleFileUploads(trainingCenter, promoter, approvalFile, "AGREEMENT");
+        handleFileUploads(trainingCenter, promoter, promoterPhoto, "PHOTO");
+        handleFileUploads(trainingCenter, promoter, engagementLetter, "SIGNATURE");
+        handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
+        handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
+        
+     // Envoi d'email
+        sendValidationEmail(promoter);
     }
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {
