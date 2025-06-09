@@ -46,6 +46,13 @@ public class TrainingCenter extends BaseEntity {
     private Boolean isCenterPresentCandidateForDqp;
     private String division;
     private String fullAddress;
+    private String centerType;
+    private String centerPhone;
+    private String centerEmail;
+    private String website;
+    private String city;
+    private String region;
+    private double centerAge;
    
 
     @ManyToOne

@@ -5,15 +5,21 @@ import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
 import com.jotsamikael.applycam.promoter.PromoterService;
 import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @RequestMapping("auth")
@@ -25,10 +31,10 @@ public class AuthenticationController {
     private final PromoterService promoterService;
 
 
-    @PostMapping("/candidate-register")
+    @PostMapping(value="/candidate-register", consumes = "multipart/form-data")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> register(
-    		@RequestBody  @Valid CandidateRegistrationRequest request
+    		@ModelAttribute  @Valid CandidateRegistrationRequest request
     ) throws MessagingException {
         try {
             //System.out.println(request);
@@ -40,6 +46,15 @@ public class AuthenticationController {
     }
 
     @PostMapping(value="/promoter-register",consumes = "multipart/form-data")
+    @Operation(summary = "Enregistrer un promoteur avec centre de formation",
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+            schema = @Schema(implementation = CreatePromoterAndCenterRequest.class)
+        )
+    )
+)
+    
     public ResponseEntity<?> createPromoter(
     		@ModelAttribute @Valid CreatePromoterAndCenterRequest request,
     		Authentication connectedUser

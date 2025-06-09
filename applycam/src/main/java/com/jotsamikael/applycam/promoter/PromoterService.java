@@ -35,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,10 +68,14 @@ public class PromoterService {
 
         // Vérification des doublons
         validateUniqueness(request);
-
+        
+        //verification du mot de pass
+        validatePassword(request.getPassword(),request.getConfirmPassword());
         // Validation des dates
-        validateCardValidityDate(request.getValidUntil());
-        validateAgreementDate(request.getValidTo(), request.getValidFrom());
+        validateCardValidityDate(request.getCniValidUntil());
+        validateAgreementDate(request.getApprovalEnd(), request.getApprovalStart());
+        
+        calculateYearsOfExistence(request.getCreationDate());
 
         // Construction des entités
         Promoter promoter = buildPromoter(request, userRole);
@@ -85,11 +90,11 @@ public class PromoterService {
         trainingCenterRepository.save(trainingCenter);
 
         // Gestion des fichiers
-        handleFileUploads(trainingCenter, promoter, request.getNationalIdCard(), "CNI");
-        handleFileUploads(trainingCenter, promoter, request.getAgreementFile(), "AGREEMENT");
+        handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
+        handleFileUploads(trainingCenter, promoter, request.getApprovalFile(), "AGREEMENT");
         handleFileUploads(trainingCenter, promoter, request.getPromoterPhoto(), "PHOTO");
-        handleFileUploads(trainingCenter, promoter, request.getSignLetter(), "SIGNATURE");
-        handleFileUploads(trainingCenter, promoter, request.getLocalisationFile(), "LOCALISATION");
+        handleFileUploads(trainingCenter, promoter, request.getEngagementLetter(), "SIGNATURE");
+        handleFileUploads(trainingCenter, promoter, request.getLocationPlan(), "LOCALISATION");
         handleFileUploads(trainingCenter, promoter, request.getInternalRegulation(), "REGULATION");
 
         // Envoi d'email
@@ -97,18 +102,23 @@ public class PromoterService {
     }
         // create the Promoter
        
+    private void validatePassword(String password,String confirmPassword) {
+        if (!password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
+        }
+    }
 
     private void validateUniqueness(CreatePromoterAndCenterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DataIntegrityViolationException("Email already taken");
         }
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.getPhone())) {
             throw new DataIntegrityViolationException("Phone number already taken");
         }
-        if (userRepository.existsByNationalIdNumber(request.getNationalIdNumber())) {
+        if (userRepository.existsByNationalIdNumber(request.getCniNumber())) {
             throw new DataIntegrityViolationException("National ID already taken");
         }
-        if (trainingCenterRepository.existsByAgreementNumber(request.getAgreementNumber())) {
+        if (trainingCenterRepository.existsByAgreementNumber(request.getApprovalNumber())) {
             throw new DataIntegrityViolationException("Agreement number already taken");
         }
     }
@@ -120,24 +130,25 @@ public class PromoterService {
         }
     }
     
-    private void validateAgreementDate(LocalDate validTo,LocalDate validFrom) {
+    private void validateAgreementDate(LocalDate validEnd,LocalDate validStart) {
         LocalDate currentDate = LocalDate.now();
-        if (validTo == null ||  validFrom == null || !validTo.isAfter(currentDate)) {
+        if (validEnd == null ||  validStart == null || !validEnd.isAfter(currentDate)) {
             throw new IllegalArgumentException("The agreement date is not valid");
         }
     }
 
     private Promoter buildPromoter(CreatePromoterAndCenterRequest req, Role userRole) {
         return Promoter.builder()
-                .firstname(req.getFirstname())
-                .lastname(req.getLastname())
+                .firstname(req.getFirstName())
+                .lastname(req.getLastName())
                 .email(req.getEmail())
-                .SchoolLevel(req.getSchoolLevel())
-                .dateOfBirth(LocalDate.parse(req.getDateOfBirth()))
-                .phoneNumber(req.getPhoneNumber())
-                .nationalIdNumber(req.getNationalIdNumber())
-                .address(req.getAddress())
-                .sex(req.getSex())
+                .nationality(req.getNationality())
+                .SchoolLevel(req.getProfession())
+                .dateOfBirth(LocalDate.parse(req.getBirthDate()))
+                .phoneNumber(req.getPhone())
+                .nationalIdNumber(req.getCniNumber())
+                .address(req.getResidenceCity())
+                .sex(req.getGender())
                 .createdDate(LocalDateTime.now())
                 .roles(List.of(userRole))
                 .enabled(false)
@@ -149,15 +160,22 @@ public class PromoterService {
 
     private TrainingCenter buildTrainingCenter(CreatePromoterAndCenterRequest req, Promoter promoter) {
         return TrainingCenter.builder()
-                .fullName(req.getFullName())
-                .acronym(req.getAcronym())
-                .agreementNumber(req.getAgreementNumber())
-                .division(req.getDivision())
+                .fullName(req.getCenterName())
+                .acronym(req.getCenterAcronym())
+                .agreementNumber(req.getApprovalNumber())
+                .centerType(req.getCenterType())
+                .centerPhone(req.getCenterPhone())
+                .centerEmail(req.getCenterEmail())
+                .website(req.getWebsite())
+                .division(req.getDepartement())
+                .region(req.getRegion())
+                .city(req.getCity())
                 .fullAddress(req.getFullAddress())
-                .startDateOfAgreement(req.getValidFrom())
-                .endDateOfAgreement(req.getValidTo())
+                .startDateOfAgreement(req.getApprovalStart())
+                .endDateOfAgreement(req.getApprovalEnd())
                 .isCenterPresentCandidateForCqp(req.getIsCenterPresentCandidateForCqp())
                 .isCenterPresentCandidateForDqp(req.getIsCenterPresentCandidateForDqp())
+                .centerAge(calculateYearsOfExistence(req.getCreationDate()))
                 .promoter(promoter)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -178,6 +196,15 @@ public class PromoterService {
            // repository.save(promoter); // met à jour le promoteur
         } else {
             throw new IllegalArgumentException("missing file");
+        }
+    }
+    
+    public int calculateYearsOfExistence(LocalDate createdDate) {
+        LocalDate today = LocalDate.now();
+        if (createdDate != null && !createdDate.isAfter(today)) {
+            return Period.between(createdDate, today).getYears();
+        } else {
+            throw new IllegalArgumentException("La date de création est invalide.");
         }
     }
     

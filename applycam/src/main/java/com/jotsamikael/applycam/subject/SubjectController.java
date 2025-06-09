@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,26 +38,21 @@ public class SubjectController {
     }
     
     @GetMapping("/get-all")
-    public ResponseEntity<PageResponse<SubjectResponse>> getAllCourse(
-      @RequestBody SubjectRequest subjectRequest,
+    public ResponseEntity<PageResponse<SubjectResponse>> getAllSubjectOfSpeciality(
+      @ModelAttribute SpecialitySubjectRequest specialitySubjectRequest,
       @RequestParam(defaultValue="0", required=false) int offset,
       @RequestParam(defaultValue = "10", required = false) int pageSize,
       @RequestParam(defaultValue= "name", required= false) String field,
       @RequestParam(defaultValue = "true", required= false) boolean order
     ){
-      return ResponseEntity.ok(subjectService.getAllSubjectOfSpeciality(subjectRequest, offset, pageSize, field, order));
+      return ResponseEntity.ok(subjectService.getAllSubjectOfSpeciality(specialitySubjectRequest, offset, pageSize, field, order));
     }
     
     @PostMapping("/create-subject")
     public ResponseEntity<String> createSubject(@RequestBody @Valid CreateSubjectRequest createCourseRequest, Authentication connectedUser){
       return ResponseEntity.ok(subjectService.createSubject(createCourseRequest,connectedUser));
     }
-    @PatchMapping
-    public ResponseEntity<String> updateSubject(@RequestBody @Valid UpdateSubjectRequest updatesubjectRequest,Authentication connectedUser){
-    	
-    	return ResponseEntity.ok(subjectService.updateSubject(updatesubjectRequest, connectedUser));
-    	
-    }
+   
     
     @GetMapping("/findByName/{name}")
     public ResponseEntity<SubjectResponse> findByName(
@@ -67,7 +63,7 @@ public class SubjectController {
         }
     
     @PatchMapping("/update-subject")
-    public ResponseEntity<String> updateCourse(@RequestBody UpdateSubjectRequest updateSubjectRequest,
+    public ResponseEntity<String> updateSubject(@RequestBody UpdateSubjectRequest updateSubjectRequest,
      Authentication connectedUser) {
         subjectService.updateSubject(updateSubjectRequest,  connectedUser);
         return ResponseEntity.status(HttpStatus.OK).build();

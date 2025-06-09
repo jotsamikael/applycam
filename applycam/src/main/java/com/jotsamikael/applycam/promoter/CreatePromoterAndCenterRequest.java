@@ -20,52 +20,86 @@ import lombok.Setter;
 public class CreatePromoterAndCenterRequest {
 	
 	 	@NotBlank(message = "Le prénom est requis")
-	    private String firstname;
+	    private String firstName;
 
 	    @NotBlank(message = "Le nom est requis")
-	    private String lastname;
+	    private String lastName;
 
 	    @NotBlank(message = "L'email est requis")
 	    @Email(message = "L'email n'est pas valide")
 	    private String email;
 
 	    @NotBlank(message = "Le numéro de téléphone est requis")
-	    private String phoneNumber;
+	    private String phone;
+	    
+	    @NotBlank(message = "La nationalite est requis")
+	    private String nationality;
+	    
+	    
 
 	    @NotBlank(message = "Le numéro de CNI est requis")
-	    private String nationalIdNumber;
+	    private String cniNumber;
 
-	    @NotBlank(message = "Le niveau scolaire est requis")
-	    private String schoolLevel;
+	    @NotBlank(message = "La profession est requis")
+	    private String profession;
 
 	    @NotBlank(message = "La date de naissance est requise")
-	    private String dateOfBirth;
+	    private String birthDate;
 
-	    @NotBlank(message = "L'adresse est requise")
-	    private String address;
+	    @NotBlank(message = "reidence City est requise")
+	    private String residenceCity;
 
 	    @NotBlank(message = "Le sexe est requis")
-	    private String sex;
+	    private String gender;
 
 	    @NotBlank(message = "Le mot de passe est requis")
 	    private String password;
+	    
+	    @NotBlank(message = "Le mot de passe de confirmation est requis")
+	    private String confirmPassword;
+	    
 
 	    // ==== Champs Centre de formation ====
 	    @NotBlank(message = "Le nom complet du centre est requis")
-	    private String fullName;
+	    private String centerName;
 
 	    @NotBlank(message = "L'acronyme est requis")
-	    private String acronym;
+	    private String centerAcronym;
+	    
 
-	    @NotNull(message = "La date de début de l'agrément est requise")
+	    @NotBlank(message = "Le type de centre est requis")
+	    private String centerType;
+	    
+
+	    @NotBlank(message = "Le numero du centre de formation est requis")
+	    private String centerPhone;
+	    
+
+	    @NotBlank(message = "L'email du centre est requis")
+	    @Email(message = "L'email n'est pas valide")
+	    private String centerEmail;
+	    
+	    @NotNull(message="creation Year is required")
+	    private LocalDate creationDate;
+	    
+	    @NotBlank(message = "L'url du site du centre est requise")
+	    private String website;
+
+	  /*  @NotNull(message = "La date de début de l'agrément est requise")
 	    private LocalDate startDateOfAgreement;
 
 	    @NotNull(message = "La date de fin de l'agrément est requise")
-	 
-	    private LocalDate endDateOfAgreement;
+	    private LocalDate endDateOfAgreement; */
 
-	    @NotBlank(message = "La division est requise")
-	    private String division;
+	    
+	    @NotBlank(message = "Le departement est requise")
+	    private String departement;
+	    
+	    @NotBlank(message = "La ville du centre est requise")
+	    private String city;
+
+	    @NotBlank(message = "La region est requise")
+	    private String region;
 
 	    @NotBlank(message = "L'adresse complète du centre est requise")
 	    private String fullAddress;
@@ -77,30 +111,30 @@ public class CreatePromoterAndCenterRequest {
 	    private Boolean isCenterPresentCandidateForDqp;
 
 	    
-	    private MultipartFile nationalIdCard;
+	    private MultipartFile cniFile;
 	    
-	    private MultipartFile agreementFile;
+	    private MultipartFile approvalFile;
 	    
 	    private MultipartFile promoterPhoto;
 	    
-	    private MultipartFile signLetter;
+	    private MultipartFile engagementLetter;
 	    
-	    private MultipartFile localisationFile;
+	    private MultipartFile locationPlan;
 	    
 	    private MultipartFile internalRegulation;
 	    
 	    @NotNull(message = "La date de validité de la CNI est requise")
-	    private LocalDate validUntil;
+	    private LocalDate cniValidUntil;
 	    
 	    @NotNull(message = "La date de début de validité de l'agrément est requise")
-	    private LocalDate validFrom;
+	    private LocalDate approvalStart;
 	    
 	    @NotNull(message = "La date de fin de validité de l'agrément est requise")
-	    private LocalDate validTo; 
+	    private LocalDate approvalEnd; 
 	    
 	    
 	    @NotBlank(message = "Le numéro d'agrément est requis")
-	    private String agreementNumber;
+	    private String approvalNumber;
 	
 //DTO Global to sum up the two request to create a promoter while creating a training center
 }

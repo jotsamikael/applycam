@@ -42,6 +42,24 @@ public class CampusController {
 
 
     }
+    
+    @PatchMapping("/update-campus")
+    public ResponseEntity<String> updateCampus(@RequestBody UpdateCampusRequest request, Authentication authentication) {
+        String updatedCampusName = campusService.updateCampus(request, authentication);
+        return ResponseEntity.ok("Campus '" + updatedCampusName + "' mis à jour avec succès.");
+    }
+    
+    @GetMapping("/find-campus/{name}")
+    public ResponseEntity<CampusResponse> findCampusByName(@PathVariable String name, Authentication authentication) {
+        CampusResponse campus = campusService.findByName(name, authentication);
+        return ResponseEntity.ok(campus);
+    }
+    
+    @GetMapping("/promoter-campuses")
+    public ResponseEntity<List<CampusResponse>> findAllCampusesOfPromoter(Authentication authentication) {
+        List<CampusResponse> campuses = campusService.findAllCampusOfPromoter(authentication);
+        return ResponseEntity.ok(campuses);
+    }
 
 
 }

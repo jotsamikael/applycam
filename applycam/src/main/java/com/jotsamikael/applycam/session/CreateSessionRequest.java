@@ -15,7 +15,6 @@ public class CreateSessionRequest {
     @NotNull(message = "ExamType is mandatory")
     private String examType;
 	
-    @NotEmpty(message = "ExamDate is mandatory")
     @NotNull(message = "ExamDate is mandatory")
 	private LocalDate examDate;
 	

@@ -1,0 +1,37 @@
+package com.jotsamikael.applycam.campus;
+
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+public class CreateCampusRequest {
+    @NotEmpty(message = "name is mandatory")
+    @NotNull(message = "name is mandatory")
+    private  String name;
+
+    @NotEmpty(message = "capacity is mandatory")
+    @NotNull(message = "capacity is mandatory")
+    private int capacity; //max number of students it can support
+
+    @NotEmpty(message = "Quarter is mandatory")
+    @NotNull(message = "Quarter is mandatory")
+    private  String quarter;
+
+    @NotEmpty(message = "Town is mandatory")
+    @NotNull(message = "Town is mandatory")
+    private String town;
+    
+    @NotEmpty(message = "Training center name is mandatory")
+    @NotNull(message = "Training center name is mandatory")
+    private String trainingCenterAgr;
+
+    private double xCoor;
+
+    private double yCoor;
+}

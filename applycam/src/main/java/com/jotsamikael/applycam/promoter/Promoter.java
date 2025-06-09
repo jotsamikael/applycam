@@ -25,6 +25,7 @@ import java.util.List;
 public class Promoter extends User {
 
     private String address;
+    private String nationality;
     private String SchoolLevel; //Primary, junior secondary, high school, unversity etc
     private String nationalIdCardUrl;
     private String PhotoUrl;

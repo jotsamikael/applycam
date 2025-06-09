@@ -1,6 +1,7 @@
 package com.jotsamikael.applycam.session;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -10,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface SessionRepository  extends JpaRepository<Session, Long>{
 	
-	 	Optional<Session> findByExamDate(LocalDate examDate);
+	 	Optional<List<Session>> findByExamDate(LocalDate examDate);
 	 	
 	 	
 	 	@Query(

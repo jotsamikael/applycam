@@ -56,12 +56,12 @@ public class SubjectService {
         return subject.getName();
     }
     
-    public PageResponse<SubjectResponse> getAllSubjectOfSpeciality(SubjectRequest subjectRequest,int offset, 
+    public PageResponse<SubjectResponse> getAllSubjectOfSpeciality(SpecialitySubjectRequest specialitySubjectRequest,int offset, 
     	    int pageSize, String field, boolean order){
 
     	        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
 
-    	        Page<Subject> list= subjectRepository.findAllBySpecialityId(subjectRequest.getSpecialityId(), PageRequest.of(offset,pageSize,sort));
+    	        Page<Subject> list= subjectRepository.findAllBySpecialityId(specialitySubjectRequest.getSpecialityId(), PageRequest.of(offset,pageSize,sort));
 
     	        List<SubjectResponse> responses= list.getContent().stream().map(subject-> SubjectResponse.builder()
     	        .id(subject.getId())

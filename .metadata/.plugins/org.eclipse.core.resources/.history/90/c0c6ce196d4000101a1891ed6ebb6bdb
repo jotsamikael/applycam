@@ -1,0 +1,5 @@
+package com.jotsamikael.applycam.campus;
+
+public class UpdateCampusRequest {
+
+}

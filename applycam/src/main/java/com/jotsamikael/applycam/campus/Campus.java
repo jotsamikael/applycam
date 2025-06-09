@@ -21,11 +21,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public class Campus extends BaseEntity {
 
     private String name;
-    private int capacity; //max number of students it can support
+    private Integer capacity; //max number of students it can support
     private String quarter;
     private String town;
-    private double xCoor;
-    private double yCoor;
+    private Double xCoor;
+    private Double yCoor;
 
     @ManyToOne
     @JoinColumn(name = "id_training_center")

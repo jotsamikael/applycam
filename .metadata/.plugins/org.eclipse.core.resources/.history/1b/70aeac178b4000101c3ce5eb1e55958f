@@ -1,0 +1,10 @@
+package com.jotsamikael.applycam.subject;
+
+import jakarta.validation.constraints.NotNull;
+
+public class SpecialitySubjectRequest {
+	
+	@NotNull(message = "Speciality ID is required")
+    private Long specialityId;
+
+}

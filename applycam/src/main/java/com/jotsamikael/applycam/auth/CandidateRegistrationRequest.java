@@ -1,6 +1,8 @@
 package com.jotsamikael.applycam.auth;
 
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -48,4 +50,51 @@ public class CandidateRegistrationRequest {
 
     @Size(min = 8, message = "Password should be 8 character minimum")
     private String password;
+    
+    @NotEmpty(message = "password is mandatory")
+    @NotNull(message = "password can not be blank")
+    @Size(min = 8, message = "Password should be 8 character minimum")
+    private String confirmPassword;
+    
+    @NotEmpty(message = "date of Birth  is mandatory")
+    @NotNull(message = "date of Birth  can not be blank")
+    private String dateOfBirth;
+    
+    @NotEmpty(message = "place of Birth  is mandatory")
+    @NotNull(message = "place of Birth   can not be blank")
+    private String placeOfBirth;
+    
+    @NotEmpty(message = "School Level is mandatory")
+    @NotNull(message = "School Level is mandatory")
+    private String  highestSchoolLevel;
+    
+    @NotEmpty(message = "Father fullname is mandatory")
+    @NotNull(message = "Father fullname is mandatory")
+    private String fatherFullname;
+
+    @NotEmpty(message = "Mother fullname is mandatory")
+    @NotNull(message = "Mother fullname is mandatory")
+    private String motherFullname;
+
+    @NotEmpty(message = "Mother profession is mandatory")
+    @NotNull(message = " is mandatory")
+    private String motherProfession;
+
+    @NotEmpty(message = "Firstname is mandatory")
+    @NotNull(message = "Firstname is mandatory")
+    private String fatherProfession;
+
+    @NotEmpty(message = "Firstname is mandatory")
+    @NotNull(message = "Firstname is mandatory")
+    private String townOfResidence;
+    
+    
+    
+    private MultipartFile nationalIdCard;
+    
+    private MultipartFile highestDiplomat;
+    
+    private MultipartFile profilePicture;
+    
+    private MultipartFile birthCertificate;
 }

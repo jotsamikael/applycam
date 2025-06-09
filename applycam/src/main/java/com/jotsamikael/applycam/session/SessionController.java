@@ -1,6 +1,7 @@
 package com.jotsamikael.applycam.session;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +55,7 @@ public class SessionController {
 	        @PathVariable String sessionYear ,
 	        @RequestParam(defaultValue = "0", required = false) int offset,
 	        @RequestParam(defaultValue = "10", required = false) int pageSize,
-	        @RequestParam(defaultValue = "name", required = false) String field,
+	        @RequestParam(defaultValue = "examType", required = false) String field,
 	        @RequestParam(defaultValue = "true", required = false) boolean order
 	    ){
 
@@ -62,7 +63,7 @@ public class SessionController {
 	    }
 
 	    @GetMapping("/findBy-examdate/{examDate}")
-	    public ResponseEntity<SessionResponse> findByName(
+	    public ResponseEntity<List<SessionResponse>> findByName(
 	        @PathVariable LocalDate examDate){
 
 	        
@@ -80,10 +81,10 @@ public class SessionController {
 		 }
 
 	     @PatchMapping("/update-session")
-	    public ResponseEntity<String> updateSession(@RequestBody UpdateSessionRequest updateSessionRequest,
+	    public ResponseEntity<Long> updateSession(@RequestBody UpdateSessionRequest updateSessionRequest,
 	     Authentication connectedUser) {
-	        sessionService.updateSession(updateSessionRequest,  connectedUser);
-	        return ResponseEntity.status(HttpStatus.OK).build();
+	        
+	        return ResponseEntity.ok(sessionService.updateSession(updateSessionRequest,  connectedUser));
 	 }
 
 	

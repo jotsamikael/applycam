@@ -22,6 +22,6 @@ public interface StaffRepository extends JpaRepository<Staff,Long> {
 
     Optional<Staff> findByEmail(String email);
     
-    @Query("SELECT u FROM User u WHERE CONCAT(u.firstname, ' ', u.lastname) = :fullName")
+    @Query("SELECT u FROM User u WHERE CONCAT(u.firstname,'', u.lastname) = :fullName")
     Optional<Staff> findByFullName(@Param("fullName") String fullName);
 }

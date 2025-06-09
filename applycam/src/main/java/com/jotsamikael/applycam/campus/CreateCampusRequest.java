@@ -13,23 +13,27 @@ import lombok.Setter;
 public class CreateCampusRequest {
     @NotEmpty(message = "name is mandatory")
     @NotNull(message = "name is mandatory")
-    String name;
+    private  String name;
 
     @NotEmpty(message = "capacity is mandatory")
     @NotNull(message = "capacity is mandatory")
-    int capacity; //max number of students it can support
+    private Integer capacity; //max number of students it can support
 
     @NotEmpty(message = "Quarter is mandatory")
     @NotNull(message = "Quarter is mandatory")
-    String quarter;
+    private  String quarter;
 
     @NotEmpty(message = "Town is mandatory")
     @NotNull(message = "Town is mandatory")
-    String town;
-
-    TrainingCenter trainingCenter;
-
-    double xCoor;
-
-    double yCoor;
+    private String town;
+    
+    @NotEmpty(message = "Training center name is mandatory")
+    @NotNull(message = "Training center name is mandatory")
+    private String trainingCenterAgr;
+    
+    @NotNull(message = "xCoor is mandatory")
+    private Double xCoor;
+    
+    @NotNull(message = "yCoor is mandatory")
+    private Double yCoor;
 }

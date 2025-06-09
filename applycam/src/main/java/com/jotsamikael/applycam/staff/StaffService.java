@@ -3,8 +3,12 @@ package com.jotsamikael.applycam.staff;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.role.RoleRepository;
 import com.jotsamikael.applycam.user.User;
+import com.jotsamikael.applycam.user.UserRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,6 +31,7 @@ public class StaffService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final StaffMapper mapper;
+    private final UserRepository userRepository;
 
     public StaffResponse findStaffByEmail(String email) {
     	
@@ -58,6 +63,16 @@ public class StaffService {
         var userRole = roleRepository.findByName("STAFF")
                 //todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE STAFF was not initialized"));
+        
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DataIntegrityViolationException("Email already taken");
+        }
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new DataIntegrityViolationException("Phone number already taken");
+        }
+        if (userRepository.existsByNationalIdNumber(request.getNationalIdNumber())) {
+            throw new DataIntegrityViolationException("National ID already taken");
+        }
 
         //get connected user and date time for audit purpose
         User user = ((User) connectedUser.getPrincipal());
@@ -83,12 +98,12 @@ public class StaffService {
                return repository.save(staff).getEmail();
     }
 
-    public String updateProfile(String email, CreateStaffRequest request, Authentication connectedUser) {
+    public String updateProfile( CreateStaffRequest request, Authentication connectedUser) {
         //start by getting the staff by email or throw an exception
-        Staff staff = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No staff with found email"+ email));
+        Staff staff = repository.findByEmail(request.getEmail()).orElseThrow(()-> new EntityNotFoundException("No staff with found email"+ request.getEmail()));
         
-        if (!staff.isActived() ) {
-           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be updated.");
+        if (!staff.isEnabled() ) {
+           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Staff cannot be updated.");
            }
         //modify the staff object using the request data
         staff.setFirstname(request.getFirstname());
@@ -108,7 +123,7 @@ public class StaffService {
         repository.save(staff);
 
         //return
-        return email;
+        return request.getEmail();
     }
     
     public void deleteStaff(String fullName, Authentication connectedUser){
@@ -117,10 +132,12 @@ public class StaffService {
         .orElseThrow(()->new EntityNotFoundException("Staff Not found"));
 
         if(staff.isActived()){
+        	staff.setEnabled(false);
         	staff.setActived(false);
         	staff.setArchived(true);
             
         }else{
+        	staff.setEnabled(true);
         	staff.setActived(true);
         	staff.setArchived(false);
         }

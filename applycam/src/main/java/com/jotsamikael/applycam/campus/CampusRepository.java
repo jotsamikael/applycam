@@ -22,4 +22,8 @@ public interface CampusRepository extends JpaRepository<Campus, Long> {
             """
     )
     Page<Campus> getAll(Pageable pageable);
+    
+    Optional<Campus> findByName(String name);
+    
+    boolean existsByName(String name);
 }

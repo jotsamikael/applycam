@@ -4,6 +4,7 @@ package com.jotsamikael.applycam.session;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,9 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SessionService {
 	
-	private SessionRepository sessionRepository;
+	private final SessionRepository sessionRepository;
 	
 	public String createSession(CreateSessionRequest createSessionRequest, Authentication connectedUser){
+		
+		
         User user=(User) connectedUser.getPrincipal();
 
         var session = Session.builder()
@@ -38,7 +41,8 @@ public class SessionService {
                 .build();
 
         
-        return sessionRepository.save(session).getSessionYear();
+        sessionRepository.save(session);
+        return "session creer pour l'annee" +session.getSessionYear();
     }
 
     public Long updateSession(UpdateSessionRequest updateSessionRequest, Authentication connectedUser){
@@ -84,24 +88,30 @@ public class SessionService {
         );
     }
 
-    public SessionResponse findByExamDate(LocalDate examDate){
+    public List<SessionResponse>findByExamDate(LocalDate examDate){
 
-        Session session= sessionRepository.findByExamDate(examDate).
+       List<Session> sessions= sessionRepository.findByExamDate(examDate).
         orElseThrow(()->new EntityNotFoundException("This Session does not exist"));
-
-        if (!session.isActived()){
-            return SessionResponse.builder()
-            .id(session.getId())
-            .examType("This session was deleted.")
-            .build();
-           
-        }
-        return SessionResponse.builder()
-        .id(session.getId())
-        .examType(session.getExamType())
-        .examDate(session.getExamDate())
-        .sessionYear(session.getSessionYear())
-        .build();
+       
+       List<SessionResponse> responses= sessions.stream()
+    	        .map(session -> {
+    	            if (!session.isActived()) {
+    	                return SessionResponse.builder()
+    	                        .id(session.getId())
+    	                        .examType("This session was deleted.")
+    	                        .build();
+    	            } else {
+    	                return SessionResponse.builder()
+    	                        .id(session.getId())
+    	                        .examType(session.getExamType())
+    	                        .examDate(session.getExamDate())
+    	                        .sessionYear(session.getSessionYear())
+    	                        .build();
+    	            }
+    	        })
+    	        .toList();
+       
+       return responses;
 
 
     }
