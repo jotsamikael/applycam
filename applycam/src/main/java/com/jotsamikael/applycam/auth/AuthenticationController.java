@@ -25,10 +25,10 @@ public class AuthenticationController {
     private final PromoterService promoterService;
 
 
-    @PostMapping("/candidate-register")
+    @PostMapping(value="/candidate-register", consumes = "multipart/form-data")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> register(
-    		@RequestBody  @Valid CandidateRegistrationRequest request
+    		@ModelAttribute  @Valid CandidateRegistrationRequest request
     ) throws MessagingException {
         try {
             //System.out.println(request);
@@ -44,10 +44,7 @@ public class AuthenticationController {
     		@ModelAttribute @Valid CreatePromoterAndCenterRequest request,
     		Authentication connectedUser
     ) throws MessagingException {
-        promoterService.createPromoter(connectedUser,request.getPromoter(),request.getTrainingCenter(),
-        		request.getNationalIdCard(),request.getAgreementFile(),request.getPromoterPhoto(),request.getSignLetter(),
-        		request.getLocalisationFile(),request.getInternalRegulation(),request.getValidUntil(),
-        		request.getValidFrom(),request.getValidTo());
+        promoterService.createPromoter(connectedUser,request);
         return ResponseEntity.accepted().build();
     }
 

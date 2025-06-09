@@ -2,13 +2,13 @@
     <app-page-title [title]="'My Training Centers'" [breadcrumbItems]="breadCrumbItems"></app-page-title>
 
     <div class="row justify-content-end mb-3">
-        <div class="row-md-4 text-end">
-            <button class="btn btn-soft-primary waves-effect waves-light mx-2" 
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary waves-effect waves-light mx-2" 
                     (click)="openCreateModal()"
                     [disabled]="processing">
                 <i class="bx bx-plus me-1"></i> Create Training Center
             </button>
-            <button class="btn btn-soft-primary waves-effect waves-light" 
+            <button class="btn btn-primary waves-effect waves-light" 
                     [disabled]="!dataSource.data?.length || processing">
                 <i class="bx bx-download me-1"></i> Export Data
             </button>
@@ -18,7 +18,21 @@
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div *ngFor="let stat of stats" class="col-md-4">
-            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span class="avatar-title bg-soft-primary text-primary rounded-2 fs-2">
+                                <i class="bx {{stat.icon}}"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-uppercase fw-semibold fs-12 text-muted mb-1">{{stat.title}}</p>
+                            <h4 class="mb-0">{{stat.value}}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -45,7 +59,7 @@
                             <!-- Full Name Column -->
                             <ng-container matColumnDef="fullName">
                                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Center Name</th>
-                                <td mat-cell *matCellDef="let row" class="text-nowrap">{{row.fullName}}</td>
+                                <td mat-cell *matCellDef="let row">{{row.fullName}}</td>
                             </ng-container>
 
                             <!-- Acronym Column -->
@@ -162,7 +176,7 @@
       </button>
     </div>
 
-    <form [formGroup]="centerForm" (ngSubmit)="createTrainingCenter()">
+    <form [formGroup]="createForm" (ngSubmit)="createTrainingCenter()">
       <div class="modal-body">
         <div *ngIf="errorMessages.length" class="alert alert-danger">
           <ul class="mb-0">
@@ -175,8 +189,8 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Full Name</mat-label>
-              <input matInput formControlName="fullName" required autocomplete="off" aria-label="Full Name">
-              <mat-error *ngIf="formControls.fullName?.errors?.['required']">
+              <input matInput formControlName="fullName" required>
+              <mat-error *ngIf="createFormControls.fullName.errors?.required">
                 Center name is required
               </mat-error>
             </mat-form-field>
@@ -186,8 +200,8 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Acronym</mat-label>
-              <input matInput formControlName="acronym" required autocomplete="off" aria-label="Acronym">
-              <mat-error *ngIf="formControls.acronym?.errors?.['required']">
+              <input matInput formControlName="acronym" required>
+              <mat-error *ngIf="createFormControls.acronym.errors?.required">
                 Acronym is required
               </mat-error>
             </mat-form-field>
@@ -197,8 +211,8 @@
           <div class="col-md-4">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Agreement Number</mat-label>
-              <input matInput formControlName="agreementNumber" required autocomplete="off" aria-label="Agreement Number">
-              <mat-error *ngIf="formControls.agreementNumber?.errors?.['required']">
+              <input matInput formControlName="agreementNumber" required>
+              <mat-error *ngIf="createFormControls.agreementNumber.errors?.required">
                 Agreement number is required
               </mat-error>
             </mat-form-field>
@@ -207,8 +221,8 @@
           <div class="col-md-4">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Start Date</mat-label>
-              <input matInput type="date" formControlName="startDateOfAgreement" required aria-label="Start Date">
-              <mat-error *ngIf="formControls.startDateOfAgreement?.errors?.['required']">
+              <input matInput type="date" formControlName="startDateOfAgreement" required>
+              <mat-error *ngIf="createFormControls.startDateOfAgreement.errors?.required">
                 Start date is required
               </mat-error>
             </mat-form-field>
@@ -217,8 +231,8 @@
           <div class="col-md-4">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>End Date</mat-label>
-              <input matInput type="date" formControlName="endDateOfAgreement" required aria-label="End Date">
-              <mat-error *ngIf="formControls.endDateOfAgreement?.errors?.['required']">
+              <input matInput type="date" formControlName="endDateOfAgreement" required>
+              <mat-error *ngIf="createFormControls.endDateOfAgreement.errors?.required">
                 End date is required
               </mat-error>
             </mat-form-field>
@@ -226,13 +240,13 @@
 
           <!-- Certification Options -->
           <div class="col-md-6">
-            <mat-checkbox formControlName="centerPresentCandidateForCqp">
+            <mat-checkbox formControlName="isCenterPresentCandidateForCqp">
               Center presents candidates for CQP
             </mat-checkbox>
           </div>
 
           <div class="col-md-6">
-            <mat-checkbox formControlName="centerPresentCandidateForDqp">
+            <mat-checkbox formControlName="isCenterPresentCandidateForDqp">
               Center presents candidates for DQP
             </mat-checkbox>
           </div>
@@ -241,12 +255,12 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Region</mat-label>
-              <mat-select formControlName="region" required aria-label="Region">
+              <mat-select formControlName="region" required>
                 <mat-option *ngFor="let region of regions" [value]="region">
                   {{ region }}
                 </mat-option>
               </mat-select>
-              <mat-error *ngIf="formControls.region?.errors?.['required']">
+              <mat-error *ngIf="createFormControls.region.errors?.required">
                 Region is required
               </mat-error>
             </mat-form-field>
@@ -255,12 +269,12 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Division</mat-label>
-              <mat-select formControlName="division" [disabled]="!centerForm.get('region')?.value" required aria-label="Division">
-                <mat-option *ngFor="let division of divisions" [value]="division">
-                  {{ division }}
+              <mat-select formControlName="division" [disabled]="!createForm.value.region" required>
+                <mat-option *ngFor="let division of divisions" [value]="division.department">
+                  {{division.department}}
                 </mat-option>
               </mat-select>
-              <mat-error *ngIf="formControls.division?.errors?.['required']">
+              <mat-error *ngIf="createFormControls.division.errors?.required">
                 Division is required
               </mat-error>
             </mat-form-field>
@@ -270,8 +284,8 @@
           <div class="col-12">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Full Address</mat-label>
-              <textarea matInput formControlName="fullAddress" rows="3" required aria-label="Full Address"></textarea>
-              <mat-error *ngIf="formControls.fullAddress?.errors?.['required']">
+              <textarea matInput formControlName="fullAddress" rows="3" required></textarea>
+              <mat-error *ngIf="createFormControls.fullAddress.errors?.required">
                 Address is required
               </mat-error>
             </mat-form-field>
@@ -289,20 +303,17 @@
 
         <button type="submit"
                 class="btn btn-primary"
-                [disabled]="centerForm.invalid || processing">
-          <ng-container *ngIf="!processing">Create Center</ng-container>
-          <ng-container *ngIf="processing">
-            <span class="d-flex align-items-center">
-              <mat-spinner diameter="20" class="me-2"></mat-spinner>
-              Processing...
-            </span>
-          </ng-container>
+                [disabled]="createForm.invalid || processing">
+          <span *ngIf="!processing">Create Center</span>
+          <span *ngIf="processing" class="d-flex align-items-center">
+            <mat-spinner diameter="20" class="me-2"></mat-spinner>
+            Processing...
+          </span>
         </button>
       </div>
     </form>
   </div>
 </ng-template>
-
 
 <!-- View Details Modal -->
 <ng-template #detailsModal>
@@ -349,13 +360,7 @@
                 
                 <h6 class="mb-3 mt-3">Location</h6>
                 <div class="mb-2">
-                    <strong>Region:</strong> {{selectedCenter.region}}
-                </div>
-                <div class="mb-2">
-                    <strong>Division:</strong> {{selectedCenter.division}}
-                </div>
-                <div class="mb-2">
-                    <strong>Address:</strong> {{selectedCenter.fullAddress}}
+                    <strong>Division:</strong> {{selectedCenter.division || 'N/A'}}
                 </div>
             </div>
         </div>
@@ -453,29 +458,11 @@
                     </mat-radio-group>
                 </div>
 
-                <!-- Location Information -->
-                <div class="col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-label>Region</mat-label>
-                        <mat-select formControlName="region" required>
-                            <mat-option *ngFor="let region of regions" [value]="region">
-                                {{region}}
-                            </mat-option>
-                        </mat-select>
-                        <mat-error *ngIf="editFormControls.region.errors?.required">
-                            Region is required
-                        </mat-error>
-                    </mat-form-field>
-                </div>
-                
-                <div class="col-md-6">
+                <!-- Division -->
+                <div class="col-md-12">
                     <mat-form-field appearance="outline" class="w-100">
                         <mat-label>Division</mat-label>
-                        <mat-select formControlName="division" required [disabled]="!editForm.value.region">
-                            <mat-option *ngFor="let division of divisions" [value]="division.department">
-                                {{division.department}}
-                            </mat-option>
-                        </mat-select>
+                        <input matInput formControlName="division" required>
                         <mat-error *ngIf="editFormControls.division.errors?.required">
                             Division is required
                         </mat-error>

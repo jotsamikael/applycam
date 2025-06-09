@@ -42,6 +42,7 @@ public class Candidate extends User {
     private boolean freeCandidate;
     private boolean repeatCandidate;
     
+    
 
 
     private String profilePictureUrl;

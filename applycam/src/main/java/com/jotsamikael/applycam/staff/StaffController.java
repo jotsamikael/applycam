@@ -42,11 +42,20 @@ public class StaffController {
         return ResponseEntity.ok(staffService.findStaffByEmail(email));
     }
 
-    @PatchMapping("/update-staff/{email}")
-    public ResponseEntity<String> updateStaff(@PathVariable String email,
-                                                  @RequestBody CreateStaffRequest request,
+    @PatchMapping("/update-staff/")
+    public ResponseEntity<String> updateStaff( @RequestBody CreateStaffRequest request,
                                                   Authentication connectedUser) {
-        return ResponseEntity.ok(staffService.updateProfile(email, request,connectedUser));
+        return ResponseEntity.ok(staffService.updateProfile(request,connectedUser));
     }
+    
+    @PatchMapping("/toggle-staff/{fullName}")
+	 public ResponseEntity<?> toogleStaff(
+			 @PathVariable String fullName,
+			 Authentication connectedUser){
+		 
+		 staffService.deleteStaff(fullName, connectedUser);
+		 
+		 return ResponseEntity.ok().build();
+	 }
 
 }

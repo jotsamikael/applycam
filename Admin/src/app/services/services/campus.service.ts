@@ -14,11 +14,17 @@ import { StrictHttpResponse } from '../strict-http-response';
 import { CampusResponse } from '../models/campus-response';
 import { createCampus } from '../fn/campus/create-campus';
 import { CreateCampus$Params } from '../fn/campus/create-campus';
+import { findAllCampusesOfPromoter } from '../fn/campus/find-all-campuses-of-promoter';
+import { FindAllCampusesOfPromoter$Params } from '../fn/campus/find-all-campuses-of-promoter';
+import { findCampusByName } from '../fn/campus/find-campus-by-name';
+import { FindCampusByName$Params } from '../fn/campus/find-campus-by-name';
 import { findCampusByTown } from '../fn/campus/find-campus-by-town';
 import { FindCampusByTown$Params } from '../fn/campus/find-campus-by-town';
 import { findCampusByTrainingCenter } from '../fn/campus/find-campus-by-training-center';
 import { FindCampusByTrainingCenter$Params } from '../fn/campus/find-campus-by-training-center';
 import { PageResponseCampusResponse } from '../models/page-response-campus-response';
+import { updateCampus } from '../fn/campus/update-campus';
+import { UpdateCampus$Params } from '../fn/campus/update-campus';
 
 @Injectable({ providedIn: 'root' })
 export class CampusService extends BaseService {
@@ -48,6 +54,56 @@ export class CampusService extends BaseService {
   createCampus(params: CreateCampus$Params, context?: HttpContext): Observable<string> {
     return this.createCampus$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `updateCampus()` */
+  static readonly UpdateCampusPath = '/campus/update-campus';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `updateCampus()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  updateCampus$Response(params: UpdateCampus$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return updateCampus(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `updateCampus$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  updateCampus(params: UpdateCampus$Params, context?: HttpContext): Observable<string> {
+    return this.updateCampus$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `findAllCampusesOfPromoter()` */
+  static readonly FindAllCampusesOfPromoterPath = '/campus/promoter-campuses';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `findAllCampusesOfPromoter()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  findAllCampusesOfPromoter$Response(params?: FindAllCampusesOfPromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CampusResponse>>> {
+    return findAllCampusesOfPromoter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `findAllCampusesOfPromoter$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  findAllCampusesOfPromoter(params?: FindAllCampusesOfPromoter$Params, context?: HttpContext): Observable<Array<CampusResponse>> {
+    return this.findAllCampusesOfPromoter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<CampusResponse>>): Array<CampusResponse> => r.body)
     );
   }
 
@@ -98,6 +154,31 @@ export class CampusService extends BaseService {
   findCampusByTrainingCenter(params: FindCampusByTrainingCenter$Params, context?: HttpContext): Observable<Array<CampusResponse>> {
     return this.findCampusByTrainingCenter$Response(params, context).pipe(
       map((r: StrictHttpResponse<Array<CampusResponse>>): Array<CampusResponse> => r.body)
+    );
+  }
+
+  /** Path part for operation `findCampusByName()` */
+  static readonly FindCampusByNamePath = '/campus/find-campus/{name}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `findCampusByName()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  findCampusByName$Response(params: FindCampusByName$Params, context?: HttpContext): Observable<StrictHttpResponse<CampusResponse>> {
+    return findCampusByName(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `findCampusByName$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  findCampusByName(params: FindCampusByName$Params, context?: HttpContext): Observable<CampusResponse> {
+    return this.findCampusByName$Response(params, context).pipe(
+      map((r: StrictHttpResponse<CampusResponse>): CampusResponse => r.body)
     );
   }
 

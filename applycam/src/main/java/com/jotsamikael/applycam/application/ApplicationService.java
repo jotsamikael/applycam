@@ -42,7 +42,7 @@ public class ApplicationService {
         .nationalIdNumber(user.getNationalIdNumber())
         .highestSchoolLevel(request.getAcademicLevel())
         .fatherFullName(request.getFatherFullname())
-        .fatherFullName(request.getMotherFullname())
+        .motherFullName(request.getMotherFullname())
         .motherProfession(request.getMotherProfession())
         .fatherProfession(request.getFatherProfession())
         .townOfResidence(request.getTownOfResidence())

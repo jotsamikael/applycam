@@ -4,7 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CourseService } from '../../../../services/services/course.service';
-import { SpecialityControllerService } from '../../../../services/services/speciality-controller.service';
+import { SpecialityService } from '../../../../services/services/speciality.service';
 import { TokenService } from '../../../../services/token/token.service';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
@@ -44,7 +44,7 @@ export class CourseListComponent implements OnInit {
     private modalService: BsModalService,
     private fb: FormBuilder,
     private courseService: CourseService,
-    private specialityService: SpecialityControllerService,
+    private specialityService: SpecialityService,
     private tokenService: TokenService,
     private toastr: ToastrService
   ) {
@@ -146,7 +146,7 @@ export class CourseListComponent implements OnInit {
       specialityiId: this.f.specialityiId.value
     };
 
-    this.courseService.createCourse1({ body: courseData }).subscribe({
+    this.courseService.createCourse({ body: courseData }).subscribe({
       next: (response) => {
         this.processing = false;
         this.modalRef?.hide();

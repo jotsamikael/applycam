@@ -5,6 +5,6 @@
 export interface CourseRequest {
   code: string;
   description?: string;
+  id: number;
   name: string;
-  specialityiId: number;
 }

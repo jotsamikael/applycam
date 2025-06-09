@@ -7,14 +7,15 @@ import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { TrainingcenterService } from './services/trainingcenter.service';
-import { SubjectControllerService } from './services/subject-controller.service';
+import { SubjectService } from './services/subject.service';
 import { StaffService } from './services/staff.service';
-import { SpecialityControllerService } from './services/speciality-controller.service';
-import { PromoterService } from './services/promoter.service';
+import { SpecialityService } from './services/speciality.service';
+import { SessionService } from './services/session.service';
 import { CourseService } from './services/course.service';
 import { CampusService } from './services/campus.service';
 import { AuthenticationService } from './services/authentication.service';
 import { ApplicationService } from './services/application.service';
+import { PromoterService } from './services/promoter.service';
 import { CandidateService } from './services/candidate.service';
 import { DivisionService } from './services/division.service';
 
@@ -27,14 +28,15 @@ import { DivisionService } from './services/division.service';
   declarations: [],
   providers: [
     TrainingcenterService,
-    SubjectControllerService,
+    SubjectService,
     StaffService,
-    SpecialityControllerService,
-    PromoterService,
+    SpecialityService,
+    SessionService,
     CourseService,
     CampusService,
     AuthenticationService,
     ApplicationService,
+    PromoterService,
     CandidateService,
     DivisionService,
     ApiConfiguration

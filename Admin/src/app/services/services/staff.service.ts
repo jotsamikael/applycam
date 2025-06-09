@@ -19,6 +19,8 @@ import { getAllStaffs } from '../fn/staff/get-all-staffs';
 import { GetAllStaffs$Params } from '../fn/staff/get-all-staffs';
 import { PageResponseStaffResponse } from '../models/page-response-staff-response';
 import { StaffResponse } from '../models/staff-response';
+import { toogleStaff } from '../fn/staff/toogle-staff';
+import { ToogleStaff$Params } from '../fn/staff/toogle-staff';
 import { updateStaff } from '../fn/staff/update-staff';
 import { UpdateStaff$Params } from '../fn/staff/update-staff';
 
@@ -54,7 +56,7 @@ export class StaffService extends BaseService {
   }
 
   /** Path part for operation `updateStaff()` */
-  static readonly UpdateStaffPath = '/staff/update-staff/{email}';
+  static readonly UpdateStaffPath = '/staff/update-staff/';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
@@ -75,6 +77,35 @@ export class StaffService extends BaseService {
   updateStaff(params: UpdateStaff$Params, context?: HttpContext): Observable<string> {
     return this.updateStaff$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `toogleStaff()` */
+  static readonly ToogleStaffPath = '/staff/toggle-staff/{fullName}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `toogleStaff()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  toogleStaff$Response(params: ToogleStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+}>> {
+    return toogleStaff(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `toogleStaff$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  toogleStaff(params: ToogleStaff$Params, context?: HttpContext): Observable<{
+}> {
+    return this.toogleStaff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<{
+}>): {
+} => r.body)
     );
   }
 

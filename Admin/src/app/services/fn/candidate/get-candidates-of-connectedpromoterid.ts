@@ -11,7 +11,6 @@ import { RequestBuilder } from '../../request-builder';
 import { PageResponseCandidateResponse } from '../../models/page-response-candidate-response';
 
 export interface GetCandidatesOfConnectedpromoterid$Params {
-  promoterId: number;
   year: number;
   offset?: number;
   pageSize?: number;
@@ -22,7 +21,6 @@ export interface GetCandidatesOfConnectedpromoterid$Params {
 export function getCandidatesOfConnectedpromoterid(http: HttpClient, rootUrl: string, params: GetCandidatesOfConnectedpromoterid$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseCandidateResponse>> {
   const rb = new RequestBuilder(rootUrl, getCandidatesOfConnectedpromoterid.PATH, 'get');
   if (params) {
-    rb.path('promoterId', params.promoterId, {});
     rb.path('year', params.year, {});
     rb.query('offset', params.offset, {});
     rb.query('pageSize', params.pageSize, {});
@@ -40,4 +38,4 @@ export function getCandidatesOfConnectedpromoterid(http: HttpClient, rootUrl: st
   );
 }
 
-getCandidatesOfConnectedpromoterid.PATH = '/candidate/{promoterId}/{year}';
+getCandidatesOfConnectedpromoterid.PATH = '/candidate/get-promoter-candidates/{year}';

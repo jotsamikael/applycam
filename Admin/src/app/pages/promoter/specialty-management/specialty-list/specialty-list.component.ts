@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { SpecialityControllerService } from '../../../../services/services/speciality-controller.service';
+import { SpecialityService } from '../../../../services/services/speciality.service';
 import { PageResponseSpecialityResponse, SpecialityRequest, SpecialityResponse, TrainingCenterResponse } from '../../../../services/models';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -39,7 +39,7 @@ export class SpecialtyListComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
 
   constructor(
-    private specialtyService: SpecialityControllerService,
+    private specialtyService: SpecialityService,
     private fb: FormBuilder,
    private trainingCenterService: TrainingcenterService,
     private snackBar: MatSnackBar

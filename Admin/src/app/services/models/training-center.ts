@@ -5,7 +5,6 @@
 import { Campus } from '../models/campus';
 import { OffersSpeciality } from '../models/offers-speciality';
 export interface TrainingCenter {
-  [x: string]: any;
   acronym?: string;
   actived?: boolean;
   agreementFileUrl?: string;
@@ -13,8 +12,11 @@ export interface TrainingCenter {
   agreementStatus?: string;
   archived?: boolean;
   campusList?: Array<Campus>;
-  centerPresentCandidateForCqp?: boolean;
-  centerPresentCandidateForDqp?: boolean;
+  centerAge?: number;
+  centerEmail?: string;
+  centerPhone?: string;
+  centerType?: string;
+  city?: string;
   createdBy?: number;
   createdDate?: string;
   division?: string;
@@ -22,8 +24,12 @@ export interface TrainingCenter {
   fullAddress?: string;
   fullName?: string;
   id?: number;
+  isCenterPresentCandidateForCqp?: boolean;
+  isCenterPresentCandidateForDqp?: boolean;
   lastModifiedBy?: number;
   lastModifiedDate?: string;
   offersSpecialityList?: Array<OffersSpeciality>;
+  region?: string;
   startDateOfAgreement?: string;
+  website?: string;
 }

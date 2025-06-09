@@ -21,6 +21,8 @@ import { GetAllCandidates$Params } from '../fn/candidate/get-all-candidates';
 import { getCandidatesOfConnectedpromoterid } from '../fn/candidate/get-candidates-of-connectedpromoterid';
 import { GetCandidatesOfConnectedpromoterid$Params } from '../fn/candidate/get-candidates-of-connectedpromoterid';
 import { PageResponseCandidateResponse } from '../models/page-response-candidate-response';
+import { toggleCandidate } from '../fn/candidate/toggle-candidate';
+import { ToggleCandidate$Params } from '../fn/candidate/toggle-candidate';
 import { updateCandidate } from '../fn/candidate/update-candidate';
 import { UpdateCandidate$Params } from '../fn/candidate/update-candidate';
 
@@ -55,8 +57,33 @@ export class CandidateService extends BaseService {
     );
   }
 
+  /** Path part for operation `toggleCandidate()` */
+  static readonly ToggleCandidatePath = '/candidate/toggleCandidate/{email}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `toggleCandidate()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  toggleCandidate$Response(params: ToggleCandidate$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return toggleCandidate(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `toggleCandidate$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  toggleCandidate(params: ToggleCandidate$Params, context?: HttpContext): Observable<void> {
+    return this.toggleCandidate$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
   /** Path part for operation `getCandidatesOfConnectedpromoterid()` */
-  static readonly GetCandidatesOfConnectedpromoteridPath = '/candidate/{promoterId}/{year}';
+  static readonly GetCandidatesOfConnectedpromoteridPath = '/candidate/get-promoter-candidates/{year}';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.

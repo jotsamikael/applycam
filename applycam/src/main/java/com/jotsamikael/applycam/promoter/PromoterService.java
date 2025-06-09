@@ -25,14 +25,17 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,69 +60,65 @@ public class PromoterService {
 
     public void createPromoter(
             Authentication connectedUser,
-            @Valid CreatePromoterRequest promoterRequest,
-            @Valid CreateTainingCenterRequest centerRequest,
-            MultipartFile nationalIdCard,
-            MultipartFile agreementFile,
-            MultipartFile promoterPhoto,
-            MultipartFile signLetter,
-            MultipartFile localisationFile,
-            MultipartFile internalRegulation,
-            LocalDate validUntil,
-            LocalDate validFrom,
-            LocalDate validTo
+            @Valid  CreatePromoterAndCenterRequest request
     ) throws MessagingException {
 
-    	// ✅ 1. Récupération du rôle "PROMOTER"
-        Role userRole = roleRepository.findByName("PROMOTER")
+    	Role userRole = roleRepository.findByName("PROMOTER")
                 .orElseThrow(() -> new IllegalStateException("ROLE PROMOTER was not initialized"));
 
-        // ✅ 2. Vérification des unicités (email, téléphone, CNI, numéro agrément)
-        validateUniqueness(promoterRequest, centerRequest);
-
-        // ✅ 3. Validation de la date de validité de la CNI
-        validateCardValidityDate(validUntil);
+        // Vérification des doublons
+        validateUniqueness(request);
         
-        // . Validation of the agreement date
-        validateAgreementDate(validTo,validFrom);
+        //verification du mot de pass
+        validatePassword(request.getPassword(),request.getConfirmPassword());
+        // Validation des dates
+        validateCardValidityDate(request.getCniValidUntil());
+        validateAgreementDate(request.getApprovalEnd(), request.getApprovalStart());
+        
+        calculateYearsOfExistence(request.getCreationDate());
 
-        //  4. Construction de l'objet Promoter
-        Promoter promoter = buildPromoter(promoterRequest, userRole);
+        // Construction des entités
+        Promoter promoter = buildPromoter(request, userRole);
+        TrainingCenter trainingCenter = buildTrainingCenter(request, promoter);
 
-        //  5. Construction du Training Center
-        TrainingCenter trainingCenter = buildTrainingCenter(centerRequest, promoter,validTo,validFrom);
+        // Relation bidirectionnelle
         promoter.getTrainingCenterList().add(trainingCenter);
 
-        //  6. Sauvegarde des entités
+        // Sauvegarde en base
         repository.save(promoter);
         trainingCenter.setCreatedBy(promoter.getIdUser());
         trainingCenterRepository.save(trainingCenter);
 
-        //  7. Sauvegarde des fichiers
-        handleFileUploads(trainingCenter,promoter, nationalIdCard,"CNI");
-        handleFileUploads(trainingCenter,promoter, agreementFile,"AGREEMENT");
-        handleFileUploads(trainingCenter,promoter, promoterPhoto,"PHOTO");
-        handleFileUploads(trainingCenter,promoter, signLetter,"SIGNATURE");
-        handleFileUploads(trainingCenter,promoter, localisationFile,"LOCALISATION");
-        handleFileUploads(trainingCenter,promoter, internalRegulation,"REGULATION");
+        // Gestion des fichiers
+        handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
+        handleFileUploads(trainingCenter, promoter, request.getApprovalFile(), "AGREEMENT");
+        handleFileUploads(trainingCenter, promoter, request.getPromoterPhoto(), "PHOTO");
+        handleFileUploads(trainingCenter, promoter, request.getEngagementLetter(), "SIGNATURE");
+        handleFileUploads(trainingCenter, promoter, request.getLocationPlan(), "LOCALISATION");
+        handleFileUploads(trainingCenter, promoter, request.getInternalRegulation(), "REGULATION");
 
-        // ✅ 8. Envoi d'email
+        // Envoi d'email
         sendValidationEmail(promoter);
     }
         // create the Promoter
        
+    private void validatePassword(String password,String confirmPassword) {
+        if (!password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
+        }
+    }
 
-    private void validateUniqueness(CreatePromoterRequest promoter, CreateTainingCenterRequest center) {
-        if (userRepository.existsByEmail(promoter.getEmail())) {
+    private void validateUniqueness(CreatePromoterAndCenterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new DataIntegrityViolationException("Email already taken");
         }
-        if (userRepository.existsByPhoneNumber(promoter.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.getPhone())) {
             throw new DataIntegrityViolationException("Phone number already taken");
         }
-        if (userRepository.existsByNationalIdNumber(promoter.getNationalIdNumber())) {
-            throw new DataIntegrityViolationException("National Id number already taken");
+        if (userRepository.existsByNationalIdNumber(request.getCniNumber())) {
+            throw new DataIntegrityViolationException("National ID already taken");
         }
-        if (trainingCenterRepository.existsByAgreementNumber(center.getAgreementNumber())) {
+        if (trainingCenterRepository.existsByAgreementNumber(request.getApprovalNumber())) {
             throw new DataIntegrityViolationException("Agreement number already taken");
         }
     }
@@ -131,26 +130,25 @@ public class PromoterService {
         }
     }
     
-    private void validateAgreementDate(LocalDate validTo,LocalDate validFrom) {
+    private void validateAgreementDate(LocalDate validEnd,LocalDate validStart) {
         LocalDate currentDate = LocalDate.now();
-        if (validTo == null ||  validFrom == null || !validFrom.isAfter(currentDate)) {
+        if (validEnd == null ||  validStart == null || !validEnd.isAfter(currentDate)) {
             throw new IllegalArgumentException("The agreement date is not valid");
         }
     }
 
-    private Promoter buildPromoter(CreatePromoterRequest req,Role userRole) {
-    	
-    	
+    private Promoter buildPromoter(CreatePromoterAndCenterRequest req, Role userRole) {
         return Promoter.builder()
-                .firstname(req.getFirstname())
-                .lastname(req.getLastname())
+                .firstname(req.getFirstName())
+                .lastname(req.getLastName())
                 .email(req.getEmail())
-                .SchoolLevel(req.getSchoolLevel())
-                .dateOfBirth(LocalDate.parse(req.getDateOfBirth()))
-                .phoneNumber(req.getPhoneNumber())
-                .nationalIdNumber(req.getNationalIdNumber())
-                .address(req.getAddress())
-                .sex(req.getSex())
+                .nationality(req.getNationality())
+                .SchoolLevel(req.getProfession())
+                .dateOfBirth(LocalDate.parse(req.getBirthDate()))
+                .phoneNumber(req.getPhone())
+                .nationalIdNumber(req.getCniNumber())
+                .address(req.getResidenceCity())
+                .sex(req.getGender())
                 .createdDate(LocalDateTime.now())
                 .roles(List.of(userRole))
                 .enabled(false)
@@ -160,21 +158,26 @@ public class PromoterService {
                 .build();
     }
 
-    private TrainingCenter buildTrainingCenter(CreateTainingCenterRequest req, Promoter promoter,LocalDate validTo,LocalDate validFrom) {
+    private TrainingCenter buildTrainingCenter(CreatePromoterAndCenterRequest req, Promoter promoter) {
         return TrainingCenter.builder()
-                .fullName(req.getFullName())
-                .acronym(req.getAcronym())
-                .agreementNumber(req.getAgreementNumber())
-                .division(req.getDivision())
+                .fullName(req.getCenterName())
+                .acronym(req.getCenterAcronym())
+                .agreementNumber(req.getApprovalNumber())
+                .centerType(req.getCenterType())
+                .centerPhone(req.getCenterPhone())
+                .centerEmail(req.getCenterEmail())
+                .website(req.getWebsite())
+                .division(req.getDepartement())
+                .region(req.getRegion())
+                .city(req.getCity())
                 .fullAddress(req.getFullAddress())
-                .startDateOfAgreement(req.getStartDateOfAgreement())
-                .endDateOfAgreement(req.getEndDateOfAgreement())
+                .startDateOfAgreement(req.getApprovalStart())
+                .endDateOfAgreement(req.getApprovalEnd())
                 .isCenterPresentCandidateForCqp(req.getIsCenterPresentCandidateForCqp())
                 .isCenterPresentCandidateForDqp(req.getIsCenterPresentCandidateForDqp())
+                .centerAge(calculateYearsOfExistence(req.getCreationDate()))
                 .promoter(promoter)
                 .createdDate(LocalDateTime.now())
-                .endDateOfAgreement(validTo)
-                .startDateOfAgreement(validFrom)
                 .build();
     }
 
@@ -193,6 +196,15 @@ public class PromoterService {
            // repository.save(promoter); // met à jour le promoteur
         } else {
             throw new IllegalArgumentException("missing file");
+        }
+    }
+    
+    public int calculateYearsOfExistence(LocalDate createdDate) {
+        LocalDate today = LocalDate.now();
+        if (createdDate != null && !createdDate.isAfter(today)) {
+            return Period.between(createdDate, today).getYears();
+        } else {
+            throw new IllegalArgumentException("La date de création est invalide.");
         }
     }
     
@@ -224,6 +236,10 @@ public class PromoterService {
     public String updateProfile(String email, CreatePromoterRequest request, Authentication connectedUser) {
         //start by getting the staff by email or throw an exception
         Promoter promoter = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No promoter with found email"+ email));
+        
+        if (!promoter.isActived() ) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Subject cannot be updated.");
+        }
 
         //modify the staff object using the request data
         promoter.setFirstname(request.getFirstname());

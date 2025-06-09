@@ -1,9 +1,11 @@
 package com.jotsamikael.applycam.application;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.candidate.Candidate;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
+import com.jotsamikael.applycam.session.Session;
 import com.jotsamikael.applycam.speciality.Speciality;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -41,6 +43,11 @@ public class Application extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "speciality")
     private Speciality speciality;
+    
+    @ManyToOne
+    @JoinColumn(name="session_id")
+    @JsonIgnore
+    private Session session;
     
     private String examType;
     

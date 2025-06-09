@@ -23,9 +23,10 @@ import { getTrainingCenterOfConnectedPromoter } from '../fn/trainingcenter/get-t
 import { GetTrainingCenterOfConnectedPromoter$Params } from '../fn/trainingcenter/get-training-center-of-connected-promoter';
 import { PageResponseTrainingCenterResponse } from '../models/page-response-training-center-response';
 import { TrainingCenterResponse } from '../models/training-center-response';
+import { updatePromoter } from '../fn/trainingcenter/update-promoter';
+import { UpdatePromoter$Params } from '../fn/trainingcenter/update-promoter';
 import { uploadAgreementFile } from '../fn/trainingcenter/upload-agreement-file';
 import { UploadAgreementFile$Params } from '../fn/trainingcenter/upload-agreement-file';
-import { TrainingCenter } from '../models/training-center';
 
 @Injectable({ providedIn: 'root' })
 export class TrainingcenterService extends BaseService {
@@ -45,13 +46,7 @@ export class TrainingcenterService extends BaseService {
   createTrainingCenter$Response(params: CreateTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
     return createTrainingCenter(this.http, this.rootUrl, params, context);
   }
-updateTrainingCenter(center: TrainingCenter): Observable<any> {
-  return this.http.put(`${this.rootUrl}/trainingcenter/${center.id}`, center);
-}
 
-deleteTrainingCenter(id: number): Observable<any> {
-  return this.http.delete(`${this.rootUrl}/trainingcenter/${id}`);
-}
   /**
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createTrainingCenter$Response()` instead.
@@ -90,6 +85,31 @@ deleteTrainingCenter(id: number): Observable<any> {
       map((r: StrictHttpResponse<{
 }>): {
 } => r.body)
+    );
+  }
+
+  /** Path part for operation `updatePromoter()` */
+  static readonly UpdatePromoterPath = '/trainingcenter/update-trainingCenter/{fullname}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `updatePromoter()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  updatePromoter$Response(params: UpdatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return updatePromoter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `updatePromoter$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  updatePromoter(params: UpdatePromoter$Params, context?: HttpContext): Observable<string> {
+    return this.updatePromoter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
 

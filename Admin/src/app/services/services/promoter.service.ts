@@ -15,16 +15,14 @@ import { findStaffByEmail1 } from '../fn/promoter/find-staff-by-email-1';
 import { FindStaffByEmail1$Params } from '../fn/promoter/find-staff-by-email-1';
 import { getAllStaffs1 } from '../fn/promoter/get-all-staffs-1';
 import { GetAllStaffs1$Params } from '../fn/promoter/get-all-staffs-1';
-import { nationalIdCardFileUpload } from '../fn/promoter/national-id-card-file-upload';
-import { NationalIdCardFileUpload$Params } from '../fn/promoter/national-id-card-file-upload';
 import { PageResponsePromoterResponse } from '../models/page-response-promoter-response';
 import { PromoterResponse } from '../models/promoter-response';
 import { resetPassword } from '../fn/promoter/reset-password';
 import { ResetPassword$Params } from '../fn/promoter/reset-password';
 import { togglePromoter } from '../fn/promoter/toggle-promoter';
 import { TogglePromoter$Params } from '../fn/promoter/toggle-promoter';
-import { updatePromoter } from '../fn/promoter/update-promoter';
-import { UpdatePromoter$Params } from '../fn/promoter/update-promoter';
+import { updatePromoter1 } from '../fn/promoter/update-promoter-1';
+import { UpdatePromoter1$Params } from '../fn/promoter/update-promoter-1';
 
 @Injectable({ providedIn: 'root' })
 export class PromoterService extends BaseService {
@@ -32,56 +30,27 @@ export class PromoterService extends BaseService {
     super(config, http);
   }
 
-  /** Path part for operation `nationalIdCardFileUpload()` */
-  static readonly NationalIdCardFileUploadPath = '/promoter/nationalId/{validUntil}';
+  /** Path part for operation `updatePromoter1()` */
+  static readonly UpdatePromoter1Path = '/promoter/update-promoter/{email}';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `nationalIdCardFileUpload()` instead.
+   * To access only the response body, use `updatePromoter1()` instead.
    *
-   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   * This method sends `application/json` and handles request body of type `application/json`.
    */
-  nationalIdCardFileUpload$Response(params: NationalIdCardFileUpload$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
-    return nationalIdCardFileUpload(this.http, this.rootUrl, params, context);
+  updatePromoter1$Response(params: UpdatePromoter1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return updatePromoter1(this.http, this.rootUrl, params, context);
   }
 
   /**
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `nationalIdCardFileUpload$Response()` instead.
-   *
-   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
-   */
-  nationalIdCardFileUpload(params: NationalIdCardFileUpload$Params, context?: HttpContext): Observable<{
-}> {
-    return this.nationalIdCardFileUpload$Response(params, context).pipe(
-      map((r: StrictHttpResponse<{
-}>): {
-} => r.body)
-    );
-  }
-
-  /** Path part for operation `updatePromoter()` */
-  static readonly UpdatePromoterPath = '/promoter/update-promoter/{email}';
-
-  /**
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `updatePromoter()` instead.
+   * To access the full response (for headers, for example), `updatePromoter1$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updatePromoter$Response(params: UpdatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-    return updatePromoter(this.http, this.rootUrl, params, context);
-  }
-
-  /**
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `updatePromoter$Response()` instead.
-   *
-   * This method sends `application/json` and handles request body of type `application/json`.
-   */
-  updatePromoter(params: UpdatePromoter$Params, context?: HttpContext): Observable<string> {
-    return this.updatePromoter$Response(params, context).pipe(
+  updatePromoter1(params: UpdatePromoter1$Params, context?: HttpContext): Observable<string> {
+    return this.updatePromoter1$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }

@@ -11,14 +11,12 @@ import { RequestBuilder } from '../../request-builder';
 import { CreateStaffRequest } from '../../models/create-staff-request';
 
 export interface UpdateStaff$Params {
-  email: string;
       body: CreateStaffRequest
 }
 
 export function updateStaff(http: HttpClient, rootUrl: string, params: UpdateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
   const rb = new RequestBuilder(rootUrl, updateStaff.PATH, 'patch');
   if (params) {
-    rb.path('email', params.email, {});
     rb.body(params.body, 'application/json');
   }
 
@@ -32,4 +30,4 @@ export function updateStaff(http: HttpClient, rootUrl: string, params: UpdateSta
   );
 }
 
-updateStaff.PATH = '/staff/update-staff/{email}';
+updateStaff.PATH = '/staff/update-staff/';

@@ -36,7 +36,7 @@
 </div>
 
               <!-- Form -->
-              <form [formGroup]="candidateForm">
+              <form [formGroup]="candidateForm" (ngSubmit)="registerCandidate()">
                 <!-- Step 1: Personal Info -->
                 <div *ngIf="currentStepCandidate === 0" class="space-y-4 mt-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -218,117 +218,75 @@
   </div>
 </div>
               <!-- Form -->
-              <form [formGroup]="promoterForm">
-                <!-- Step 1: Personal Info -->
-                <div *ngIf="currentStepPromoter === 0" class="space-y-4 mt-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Nom </label>
-                      <input formControlName="lastName" class="form-control">
-                    </div>
-                    <div>
-                      <label class="form-label">Prénom </label>
-                      <input formControlName="firstName" class="form-control">
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Sexe </label>
-                      <select formControlName="gender" class="form-select">
-                        <option value="">Sélectionner</option>
-                        <option value="M">Masculin</option>
-                        <option value="F">Féminin</option>
-                        <option value="O">Autre</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Date de naissance </label>
-                      <input formControlName="birthDate" type="date" class="form-control">
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Nationalité </label>
-                      <select formControlName="nationality" class="form-select">
-                        <option value="">Sélectionner</option>
-                        <option value="Camerounaise">Camerounaise</option>
-                        <option value="Française">Française</option>
-                        <option value="Nigériane">Nigériane</option>
-                        <option value="Congolaise">Congolaise</option>
-                        <option value="Ivoirienne">Ivoirienne</option>
-                        <option value="Sénégalaise">Sénégalaise</option>
-                        <option value="Malienne">Malienne</option>
-                        <option value="Burkinabè">Burkinabè</option>
-                        <option value="Ghanéenne">Ghanéenne</option>
-                        <option value="Togolaise">Togolaise</option>
-                        <option value="Gabonaise">Gabonaise</option>
-                        <option value="Centrafricaine">Centrafricaine</option>
-                        <option value="Béninoise">Béninoise</option>
-                        <option value="Algérienne">Algérienne</option>
-                        <option value="Marocaine">Marocaine</option>
-                        <option value="Tunisienne">Tunisienne</option>
-                        <option value="Rwandaise">Rwandaise</option>
-                        <option value="Sud-Africaine">Sud-Africaine</option>
-                        <option value="Égyptienne">Égyptienne</option>
-                        <option value="Canadienne">Canadienne</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Numéro CNI </label>
-                      <input formControlName="cniNumber" class="form-control">
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Téléphone </label>
-                      <input formControlName="phone" class="form-control" placeholder="+237XXXXXXXXX">
-                    </div>
-                    <div>
-                      <label class="form-label">Email </label>
-                      <input formControlName="email" type="email" class="form-control">
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Ville de résidence </label>
-                      <input formControlName="residenceCity" class="form-control">
-                    </div>
-                    <div>
-                      <label class="form-label">Lieu de résidence</label>
-                      <input formControlName="lieu de résidence" class="form-control">
-                    </div>
-                    <div>
-                      <label class="form-label">Profession</label>
-                      <input formControlName="profession" class="form-control">
-                    </div>
-                  </div>
-                  <!-- Dans la section Step 1: Personal Info -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Mot de passe</label>
-                    <input formControlName="password" type="password" class="form-control" 
-                          placeholder="Minimum 8 caractères">
-                    <small *ngIf="promoterForm.get('password')?.touched && promoterForm.get('password')?.invalid" class="text-danger">
-                      <div *ngIf="promoterForm.get('password')?.errors?.required">Mot de passe requis</div>
-                      <div *ngIf="promoterForm.get('password')?.errors?.minlength">Minimum 8 caractères</div>
-                    </small>
-                  </div>
-                  <div>
-                    <label class="form-label">Confirmer le mot de passe</label>
-                    <input formControlName="confirmPassword" type="password" class="form-control" 
-                          placeholder="Retapez votre mot de passe">
-                    <small *ngIf="promoterForm.get('confirmPassword')?.touched && promoterForm.get('confirmPassword')?.invalid" class="text-danger">
-                      <div *ngIf="promoterForm.get('confirmPassword')?.errors?.required">Confirmation requise</div>
-                      <div *ngIf="promoterForm.get('confirmPassword')?.errors?.passwordMismatch">Les mots de passe ne correspondent pas</div>
-                    </small>
-                  </div>
+              <form [formGroup]="promoterForm" (ngSubmit)="registerPromoter()">
+                <!-- Step 1: Informations personnelles du promoteur -->
+<div *ngIf="currentStepPromoter === 0" class="space-y-4 mt-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Nom</label>
+      <input formControlName="lastName" class="form-control" placeholder="Nom">
+    </div>
+    <div>
+      <label class="form-label">Prénom</label>
+      <input formControlName="firstName" class="form-control" placeholder="Prénom">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Sexe</label>
+      <select formControlName="gender" class="form-select">
+        <option value="">Sélectionner</option>
+        <option value="M">Masculin</option>
+        <option value="F">Féminin</option>
+        <option value="O">Autre</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label">Date de naissance</label>
+      <input formControlName="birthDate" type="date" class="form-control">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Nationalité</label>
+      <input formControlName="nationality" class="form-control">
+    </div>
+    <div>
+      <label class="form-label">Numéro CNI</label>
+      <input formControlName="cniNumber" class="form-control">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Téléphone</label>
+      <input formControlName="phone" class="form-control">
+    </div>
+    <div>
+      <label class="form-label">Email</label>
+      <input formControlName="email" type="email" class="form-control">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Ville de résidence</label>
+      <input formControlName="residenceCity" class="form-control">
+    </div>
+    <div>
+      <label class="form-label">Profession (niveau scolaire)</label>
+      <input formControlName="profession" class="form-control">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Mot de passe</label>
+      <input formControlName="password" type="password" class="form-control" placeholder="Minimum 8 caractères">
+    </div>
+    <div>
+      <label class="form-label">Confirmer le mot de passe</label>
+      <input formControlName="confirmPassword" type="password" class="form-control" placeholder="Retapez votre mot de passe">
+    </div>
+  </div>
 </div>
-                </div>
-
                 <!-- Step 2: Center Info (avec nouveaux champs) -->
               <div *ngIf="currentStepPromoter === 1" class="space-y-4 mt-4">
                 <div>
@@ -381,7 +339,7 @@
                   </div>
                   <div>
                     <label class="form-label">Département</label>
-                    <select formControlName="department" class="form-select" [disabled]="!promoterForm.value.region">
+                    <select formControlName="departement" class="form-select" [disabled]="!promoterForm.value.region">
                       <option value="">Sélectionnez d'abord une région</option>
                       <option *ngFor="let dept of departmentsByRegion[promoterForm.value.region]" [value]="dept">
                         {{dept}}
@@ -419,76 +377,103 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="form-label">Année de création</label>
-                    <input formControlName="creationYear" type="number" class="form-control" 
-                          (change)="calculateCenterAge()" min="1900" [max]="currentYear">
+                    <input formControlName="creationDate" type="number" class="form-control" 
+                          (change)="calculateCenterAge()" min="1900" [max]="currentDate">
                   </div>
                   <div>
-                    <label class="form-label">Nombre d'années d'existence</label>
-                    <input formControlName="centerAge" class="form-control" readonly>
-                  </div>
+  <label>Âge du centre :</label>
+  <span>
+    {{
+      promoterForm.get('creationDate')?.value
+        ? (currentYear - +promoterForm.get('creationDate')?.value)
+        : 'Non renseigné'
+    }}
+  </span>
+</div>
                 </div>
-
+<!-- À placer dans Step 2 du promoteur, juste avant le champ "Site web" -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <mat-checkbox formControlName="isCenterPresentCandidateForCqp">
+      Centre présente des candidats au CQP
+    </mat-checkbox>
+  </div>
+  <div>
+    <mat-checkbox formControlName="isCenterPresentCandidateForDqp">
+      Centre présente des candidats au DQP
+    </mat-checkbox>
+  </div>
+</div>
                 <div>
                   <label class="form-label">Site web</label>
                   <input formControlName="website" type="url" class="form-control" placeholder="https://example.com">
                 </div>
               </div>
 
-<!-- Step 3: Documents (nouveaux champs) -->
-              <div *ngIf="currentStepPromoter === 2" class="space-y-4 mt-4">
-                <!-- Carte Nationale d'Identité -->
-                <div class="border rounded p-4">
-                  <label class="form-label">Carte Nationale d'Identité (valide jusqu'au) </label>
-                  <input formControlName="cniValidUntil" type="date" class="form-control mb-2">
-                  <label class="form-label">Fichier CNI (PDF, PNG, JPEG) </label>
-                  <input type="file" formControlName="cniFile" class="form-control" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileChange($event, 'cniFile')">
-                </div>
-                
-                <!-- Agrément ministériel -->
-                <div class="border rounded p-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                    <div>
-                      <label class="form-label">Numéro d'agrément </label>
-                      <input formControlName="approvalNumber" class="form-control">
-                    </div>
-                    <div>
-                      <label class="form-label">Valide du </label>
-                      <input formControlName="approvalValidFrom" type="date" class="form-control">
-                    </div>
-                    <div>
-                      <label class="form-label">Valide jusqu'au </label>
-                      <input formControlName="approvalValidTo" type="date" class="form-control">
-                    </div>
-                  </div>
-                  <label class="form-label">Fichier d'agrément (PDF uniquement) </label>
-                  <input type="file" formControlName="approvalFile" class="form-control" accept=".pdf" (change)="onFileChange($event, 'approvalFile')">
-                </div>
-                
-                <!-- Lettre d'engagement -->
-                <div class="border rounded p-4">
-                  <label class="form-label">Lettre d'engagement signée (PDF) </label>
-                  <input type="file" formControlName="engagementLetter" class="form-control" accept=".pdf" (change)="onFileChange($event, 'engagementLetter')">
-                </div>
-                
-                <!-- Photo du promoteur -->
-                <div class="border rounded p-4">
-                  <label class="form-label">Photo du promoteur (JPG/PNG, taille < 2Mo) </label>
-                  <input type="file" formControlName="promoterPhoto" class="form-control" accept=".jpg,.jpeg,.png" (change)="onFileChange($event, 'promoterPhoto')">
-                </div>
-                
-                <!-- Plan de localisation -->
-                <div class="border rounded p-4">
-                  <label class="form-label">Plan de localisation du centre (Facultatif) </label>
-                  <input type="file" formControlName="locationPlan" class="form-control" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileChange($event, 'locationPlan')">
-                </div>
-                
-                <!-- Statuts ou règlement intérieur -->
-                <div class="border rounded p-4">
-                  <label class="form-label">Statuts ou Règlement intérieur </label>
-                  <input type="file" formControlName="statutesFile" class="form-control" accept=".pdf" (change)="onFileChange($event, 'statutesFile')">
-                </div>
-              </div>
-
+<!-- Step 3: Documents -->
+<div *ngIf="currentStepPromoter === 2" class="space-y-4 mt-4">
+  <!-- Carte Nationale d'Identité -->
+  <div class="border rounded p-4">
+    <label class="form-label">Carte Nationale d'Identité (valide jusqu'au)</label>
+    <input formControlName="cniValidUntil" type="date" class="form-control mb-2">
+    <label class="form-label">Fichier CNI (PDF, PNG, JPEG)</label>
+    <input type="file" class="form-control" 
+           (change)="onFileChange($event, 'cniFile')"
+           accept=".pdf,.png,.jpg,.jpeg"
+           #cniFileInput>
+    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('cniFile')?.value?.name || 'Aucun' }}</small>
+  </div>
+  
+  <!-- Agrément ministériel -->
+  <div class="border rounded p-4">
+    <label class="form-label">Fichier d'agrément (PDF uniquement)</label>
+    <input type="file" class="form-control" 
+           (change)="onFileChange($event, 'approvalFile')"
+           accept=".pdf"
+           #approvalFileInput>
+    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('approvalFile')?.value?.name || 'Aucun' }}</small>
+  </div>
+  
+  <!-- Lettre d'engagement -->
+  <div class="border rounded p-4">
+    <label class="form-label">Lettre d'engagement signée (PDF)</label>
+    <input type="file" class="form-control" 
+           (change)="onFileChange($event, 'engagementLetter')"
+           accept=".pdf"
+           #engagementLetterInput>
+    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('engagementLetter')?.value?.name || 'Aucun' }}</small>
+  </div>
+  
+  <!-- Photo du promoteur -->
+  <div class="border rounded p-4">
+    <label class="form-label">Photo du promoteur (JPG/PNG, taille < 2Mo)</label>
+    <input type="file" class="form-control" 
+           (change)="onFileChange($event, 'promoterPhoto')"
+           accept=".jpg,.jpeg,.png"
+           #promoterPhotoInput>
+    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('promoterPhoto')?.value?.name || 'Aucun' }}</small>
+  </div>
+  
+  <!-- Plan de localisation -->
+  <div class="border rounded p-4">
+    <label class="form-label">Plan de localisation du centre (Facultatif)</label>
+    <input type="file" class="form-control" 
+           (change)="onFileChange($event, 'locationPlan')"
+           accept=".pdf,.jpg,.jpeg,.png"
+           #locationPlanInput>
+    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('locationPlan')?.value?.name || 'Aucun' }}</small>
+  </div>
+  
+  <!-- Statuts ou règlement intérieur -->
+  <div class="border rounded p-4">
+    <label class="form-label">Statuts ou Règlement intérieur</label>
+    <input type="file" class="form-control" 
+       (change)="onFileChange($event, 'internalRegulation')"
+       accept=".pdf"
+       #internalRegulationInput>
+<small class="text-muted">Fichier sélectionné: {{ promoterForm.get('internalRegulation')?.value?.name || 'Aucun' }}</small>
+  </div>
+</div>
              
   <!-- Step 4: Confirmation (mise à jour) -->
               <div *ngIf="currentStepPromoter === 3" class="space-y-4 mt-4">
@@ -579,7 +564,9 @@
                         <div>{{promoterForm.value.approvalEnd | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
                         
                         <div class="font-medium">Années d'existence:</div>
-                        <div>{{promoterForm.value.centerAge || 'Non renseigné'}}</div>
+                        <div>{{promoterForm.value.creationDate
+        ? (currentYear - +promoterForm.value.creationDate)
+        : 'Non renseigné'}}</div>
                         
                         <div class="font-medium">Site web:</div>
                         <div>{{promoterForm.value.website || 'Non renseigné'}}</div>
@@ -606,7 +593,7 @@
                         <div>{{promoterForm.value.locationPlan ? 'Uploadé' : 'Non fourni'}}</div>
                         
                         <div class="font-medium">Statuts/Règlement:</div>
-                        <div>{{promoterForm.value.statutesFile ? 'Uploadé' : 'Manquant'}}</div>
+<div>{{promoterForm.value.internalRegulation ? 'Uploadé' : 'Manquant'}}</div>
                       </div>
                     </div>
                   </div>
@@ -631,11 +618,14 @@
                     Suivant
                   </button>
 
-                  <button *ngIf="currentStepPromoter === promoterSteps.length - 1" type="button"
-                    class="btn btn-success" (click)="registerPromoter()" [disabled]="processing">
-                    <span *ngIf="!processing">S'inscrire</span>
-                    <span *ngIf="processing">En cours...</span>
-                  </button>
+                  <button *ngIf="currentStepPromoter === promoterSteps.length - 1"
+      type="submit"
+      class="btn btn-success"
+      [disabled]="processing || promoterForm.invalid"
+      aria-label="S'inscrire">
+      <span *ngIf="!processing">S'inscrire</span>
+      <span *ngIf="processing">En cours...</span>
+    </button>
                 </div>
               </form>
             </div>

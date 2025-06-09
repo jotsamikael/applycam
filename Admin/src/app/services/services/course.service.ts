@@ -11,8 +11,18 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
-import { createCourse1 } from '../fn/course/create-course-1';
-import { CreateCourse1$Params } from '../fn/course/create-course-1';
+import { CourseResponse } from '../models/course-response';
+import { createCourse } from '../fn/course/create-course';
+import { CreateCourse$Params } from '../fn/course/create-course';
+import { findByName3 } from '../fn/course/find-by-name-3';
+import { FindByName3$Params } from '../fn/course/find-by-name-3';
+import { getCourses } from '../fn/course/get-courses';
+import { GetCourses$Params } from '../fn/course/get-courses';
+import { PageResponseCourseResponse } from '../models/page-response-course-response';
+import { toogleCourse2 } from '../fn/course/toogle-course-2';
+import { ToogleCourse2$Params } from '../fn/course/toogle-course-2';
+import { updateCourse1 } from '../fn/course/update-course-1';
+import { UpdateCourse1$Params } from '../fn/course/update-course-1';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService extends BaseService {
@@ -20,28 +30,132 @@ export class CourseService extends BaseService {
     super(config, http);
   }
 
-  /** Path part for operation `createCourse1()` */
-  static readonly CreateCourse1Path = '/course-management/add-course';
+  /** Path part for operation `createCourse()` */
+  static readonly CreateCoursePath = '/course-management/create-course';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `createCourse1()` instead.
+   * To access only the response body, use `createCourse()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  createCourse1$Response(params: CreateCourse1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-    return createCourse1(this.http, this.rootUrl, params, context);
+  createCourse$Response(params: CreateCourse$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return createCourse(this.http, this.rootUrl, params, context);
   }
 
   /**
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `createCourse1$Response()` instead.
+   * To access the full response (for headers, for example), `createCourse$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  createCourse1(params: CreateCourse1$Params, context?: HttpContext): Observable<string> {
-    return this.createCourse1$Response(params, context).pipe(
+  createCourse(params: CreateCourse$Params, context?: HttpContext): Observable<string> {
+    return this.createCourse$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `updateCourse1()` */
+  static readonly UpdateCourse1Path = '/course-management/update-course';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `updateCourse1()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  updateCourse1$Response(params: UpdateCourse1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return updateCourse1(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `updateCourse1$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  updateCourse1(params: UpdateCourse1$Params, context?: HttpContext): Observable<string> {
+    return this.updateCourse1$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `toogleCourse2()` */
+  static readonly ToogleCourse2Path = '/course-management/toggle-course/{name}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `toogleCourse2()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  toogleCourse2$Response(params: ToogleCourse2$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+}>> {
+    return toogleCourse2(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `toogleCourse2$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  toogleCourse2(params: ToogleCourse2$Params, context?: HttpContext): Observable<{
+}> {
+    return this.toogleCourse2$Response(params, context).pipe(
+      map((r: StrictHttpResponse<{
+}>): {
+} => r.body)
+    );
+  }
+
+  /** Path part for operation `getCourses()` */
+  static readonly GetCoursesPath = '/course-management/get-all';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getCourses()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCourses$Response(params?: GetCourses$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseCourseResponse>> {
+    return getCourses(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getCourses$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCourses(params?: GetCourses$Params, context?: HttpContext): Observable<PageResponseCourseResponse> {
+    return this.getCourses$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseCourseResponse>): PageResponseCourseResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `findByName3()` */
+  static readonly FindByName3Path = '/course-management/findByName/{name}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `findByName3()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  findByName3$Response(params: FindByName3$Params, context?: HttpContext): Observable<StrictHttpResponse<CourseResponse>> {
+    return findByName3(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `findByName3$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  findByName3(params: FindByName3$Params, context?: HttpContext): Observable<CourseResponse> {
+    return this.findByName3$Response(params, context).pipe(
+      map((r: StrictHttpResponse<CourseResponse>): CourseResponse => r.body)
     );
   }
 

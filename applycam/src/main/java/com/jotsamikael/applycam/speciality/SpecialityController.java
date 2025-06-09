@@ -16,12 +16,14 @@ import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.course.CourseRequest;
 import com.jotsamikael.applycam.course.CourseResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/specialities")
 @RequiredArgsConstructor
+@Tag(name = "speciality")
 public class SpecialityController {
 
     private final SpecialityService specialityService;

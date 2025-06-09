@@ -23,11 +23,8 @@ import { Register$Params } from '../fn/authentication/register';
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService extends BaseService {
-  apiUrl: string;
-
   constructor(config: ApiConfiguration, http: HttpClient) {
     super(config, http);
-    this.apiUrl = config.rootUrl; // or set to the correct base URL for your API
   }
 
   /** Path part for operation `createPromoter()` */
@@ -37,27 +34,20 @@ export class AuthenticationService extends BaseService {
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createPromoter()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  createPromoter$Response(params: CreatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+  createPromoter$Response(params?: CreatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<{
 }>> {
     return createPromoter(this.http, this.rootUrl, params, context);
   }
-// Dans AuthenticationService
 
-registerCandidateWithFiles(formData: FormData): Observable<any> {
-  return this.http.post(`${this.apiUrl}/candidates/register`, formData, {
-    reportProgress: true,
-    observe: 'response'
-  });
-}
   /**
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createPromoter$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  createPromoter(params: CreatePromoter$Params, context?: HttpContext): Observable<{
+  createPromoter(params?: CreatePromoter$Params, context?: HttpContext): Observable<{
 }> {
     return this.createPromoter$Response(params, context).pipe(
       map((r: StrictHttpResponse<{
@@ -73,9 +63,9 @@ registerCandidateWithFiles(formData: FormData): Observable<any> {
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `register()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  register$Response(params: Register$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+  register$Response(params?: Register$Params, context?: HttpContext): Observable<StrictHttpResponse<{
 }>> {
     return register(this.http, this.rootUrl, params, context);
   }
@@ -84,9 +74,9 @@ registerCandidateWithFiles(formData: FormData): Observable<any> {
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `register$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  register(params: Register$Params, context?: HttpContext): Observable<{
+  register(params?: Register$Params, context?: HttpContext): Observable<{
 }> {
     return this.register$Response(params, context).pipe(
       map((r: StrictHttpResponse<{

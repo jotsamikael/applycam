@@ -5,11 +5,11 @@
 export interface CreateTainingCenterRequest {
   acronym?: string;
   agreementNumber: string;
-  centerPresentCandidateForCqp?: boolean;
-  centerPresentCandidateForDqp?: boolean;
   division: string;
   endDateOfAgreement: string;
   fullAddress: string;
   fullName: string;
+  isCenterPresentCandidateForCqp?: boolean;
+  isCenterPresentCandidateForDqp?: boolean;
   startDateOfAgreement: string;
 }
