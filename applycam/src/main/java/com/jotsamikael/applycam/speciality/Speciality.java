@@ -35,6 +35,8 @@ public class Speciality extends BaseEntity {
 	
     private String code;
     private String description;
+    
+    private String examType;
 
     @ManyToOne
     @JoinColumn(name = "course_id")

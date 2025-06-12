@@ -1,0 +1,94 @@
+package com.jotsamikael.applycam.application;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.candidate.CandidateRepository;
+import com.jotsamikael.applycam.common.ContentStatus;
+import com.jotsamikael.applycam.session.Session;
+import com.jotsamikael.applycam.session.SessionRepository;
+import com.jotsamikael.applycam.speciality.Speciality;
+import com.jotsamikael.applycam.speciality.SpecialityRepository;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
+import com.jotsamikael.applycam.user.User;
+import com.jotsamikael.applycam.user.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ApplicationService {
+
+    private final CandidateRepository candidateRepository;
+    private final UserRepository userRepository;
+    private final SpecialityRepository specialityRepository;
+    private final ApplicationRepository applicationRepository;
+    private final SessionRepository sessionRepository;
+    private final TrainingCenterRepository trainingCenterRepository;
+
+    public void applyPersonalInfo(ApplicationRequest request, Authentication connectedUser) {
+        User user = ((User) connectedUser.getPrincipal());
+
+        Candidate candidate = candidateRepository.findByEmail(user.getEmail())
+        .orElseThrow(() -> new EntityNotFoundException(" Not a Candidate "));
+
+        if (candidate == null) {
+            throw new RuntimeException("Candidate not found");
+        }
+        
+        if (!candidate.getHighestSchoolLevel().equalsIgnoreCase(request.getAcademicLevel()) ||
+                !candidate.getFatherFullName().equalsIgnoreCase(request.getFatherFullname()) ||
+                !candidate.getMotherFullName().equalsIgnoreCase(request.getMotherFullname()) ||
+                !candidate.getMotherProfession().equalsIgnoreCase(request.getMotherProfession()) ||
+                !candidate.getFatherProfession().equalsIgnoreCase(request.getFatherProfession()) ||
+                !candidate.getFirstname().equalsIgnoreCase(request.getFirstName()) ||
+                !candidate.getLastname().equalsIgnoreCase(request.getLastName())||
+                !candidate.getPhoneNumber().equalsIgnoreCase(request.getPhoneNumber()) ||
+                !candidate.getSex().equalsIgnoreCase(request.getSex()) ||
+                !candidate.getEmail().equalsIgnoreCase(request.getEmail()) ||
+                !candidate.getNationalIdNumber().equalsIgnoreCase(request.getNationIdNumber())) {
+                
+                throw new IllegalArgumentException("Les informations fournies ne correspondent pas à celles de votre enregistrement.");
+            }
+        candidate.setNationality(request.getNationality());
+        candidate.setFreeCandidate(request.getFreeCandidate());
+        candidate.setRepeatCandidate(request.getRepeatCandidate());
+        
+        
+        
+       
+
+        candidateRepository.save(candidate);
+        Session session= sessionRepository.findBySessionYearAndExamType(request.getSessionYear(),request.getExamType())
+        		.orElseThrow(() -> new EntityNotFoundException(" Not Session Found for this Year "));
+        
+
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAcronym(request.getTrainingCenterAcronym())
+        		.orElseThrow(() -> new EntityNotFoundException(" Not a training Center "));
+        
+        TrainingCenter trainingCenterIf= trainingCenterRepository.findByCandidateId(candidate.getIdUser())
+        		.orElseThrow(() -> new EntityNotFoundException(" Not a training Center "));
+        
+        if (!trainingCenter.getFullName().equals(trainingCenterIf.getFullName())) {
+            throw new RuntimeException("You are note candidate ok this center");
+        }
+
+        //get exam information from the request
+        Speciality speciality = specialityRepository.findByName(request.getSpeciality())
+            .orElseThrow(() -> new EntityNotFoundException("Speciality not found"));
+
+        var application = Application.builder()
+        		.speciality(speciality)
+        		.candidate(candidate)
+        		.session(session)
+        		.applicationRegion(request.getApplicationRegion())
+        		.status(ContentStatus.SUBMITTED)
+        		.applicationYear(session.getSessionYear())
+        		.build();
+        applicationRepository.save(application);
+
+    }
+}

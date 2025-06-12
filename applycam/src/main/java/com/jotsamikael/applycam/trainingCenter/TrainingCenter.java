@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.campus.Campus;
 import com.jotsamikael.applycam.common.BaseEntity;
+import com.jotsamikael.applycam.hasSchooled.HasSchooled;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.trainingCenter.division.Division;
@@ -33,6 +34,8 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class TrainingCenter extends BaseEntity {
     private String fullName;
+    
+    @Column(unique = true)
     private String acronym;
 
     @Column(unique = true)
@@ -66,5 +69,8 @@ public class TrainingCenter extends BaseEntity {
 
     @OneToMany(mappedBy = "trainingCenter")
     private List<Campus> campusList;
+    
+    @OneToMany(mappedBy = "trainingCenter")
+    private List<HasSchooled> hasSchooledList;
 
 }

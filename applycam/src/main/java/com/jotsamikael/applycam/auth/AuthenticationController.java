@@ -32,7 +32,7 @@ public class AuthenticationController {
     private final PromoterService promoterService;
 
 
-    @PostMapping(value="/candidate-register", consumes = "multipart/form-data")
+    @PostMapping(value="/candidate-register")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> register(
     		@RequestBody  @Valid CandidateRegistrationRequest request
@@ -71,13 +71,24 @@ public class AuthenticationController {
         promoterService.uploadPromoterFile(cniFile,approvalFile,promoterPhoto,engagementLetter,locationPlan,internalRegulation,approvalNumber,email,centerMail);
         return  ResponseEntity.accepted().build();
     }
-
+ 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody @Valid AuthenticationRequest request
     ){
         return  ResponseEntity.ok(service.authenticate(request));
     }
+    
+    @PatchMapping(value="/candidate-register/documents/{email}", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadCandidateRegisterFile(
+        @RequestParam MultipartFile birthtCertificate,
+        @RequestParam MultipartFile highestDiplomat,
+        @RequestParam MultipartFile profilePicture,
+        @PathVariable String email) throws MessagingException {
+            service.uploadCandidateRegistrationFile(birthtCertificate,highestDiplomat,profilePicture,email);
+            return  ResponseEntity.accepted().build();
+
+        }
 
     @GetMapping("/activate-account")
     public void confirm(

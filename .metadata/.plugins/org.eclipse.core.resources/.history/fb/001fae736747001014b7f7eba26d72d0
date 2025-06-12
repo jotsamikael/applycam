@@ -1,0 +1,5 @@
+package com.jotsamikael.applycam.hasSchooled;
+
+public interface HasSchooledRepository {
+
+}

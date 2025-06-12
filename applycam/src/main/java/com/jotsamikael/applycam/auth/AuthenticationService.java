@@ -2,18 +2,23 @@ package com.jotsamikael.applycam.auth;
 
 
 import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.candidate.CandidateRepository;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.email.EmailService;
 import com.jotsamikael.applycam.email.EmailTemplateName;
+import com.jotsamikael.applycam.hasSchooled.HasSchooled;
+import com.jotsamikael.applycam.hasSchooled.HasSchooledRepository;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.role.RoleRepository;
 import com.jotsamikael.applycam.security.JwtService;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
 import com.jotsamikael.applycam.user.Token;
 import com.jotsamikael.applycam.user.TokenRepository;
 import com.jotsamikael.applycam.user.User;
 import com.jotsamikael.applycam.user.UserRepository;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,6 +47,9 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final FileStorageService fileStorageService;
+    private final CandidateRepository candidateRepository;
+    private final TrainingCenterRepository trainingCenterRepository;
+    private final HasSchooledRepository hasSchooledRepository;
 
     @Value("${application.mailing.frontend.activation-url}")
     String activationUrl;
@@ -49,6 +58,8 @@ public class AuthenticationService {
         var userRole = roleRepository.findByName("CANDIDATE")
                 //todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE CANDIDATE was not initialized"));
+        
+        
         
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DataIntegrityViolationException("Email already taken");
@@ -64,7 +75,12 @@ public class AuthenticationService {
             throw new IllegalArgumentException("password doesn't match.");
         }
         
-        
+      //verification du mot de pass
+        validatePassword(request.getPassword(),request.getConfirmPassword());
+      
+        TrainingCenter trainingCenter= trainingCenterRepository.findByFullName(request.getTrainingCenterName())
+        		.orElseThrow(()-> new EntityNotFoundException("Training Center does not exist"));
+       
         var candidate = Candidate.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -81,19 +97,50 @@ public class AuthenticationService {
                 .motherFullName(request.getMotherFullname())
                 .motherProfession(request.getMotherProfession())
                 .fatherProfession(request.getFatherProfession())
+                .townOfResidence(request.getTownOfResidence())
                 .accountLocked(false)
                 .enabled(false)
                 .roles(List.of(userRole))
                 .createdDate(LocalDateTime.now())
                 .build();
         
+        HasSchooled hasSchooled = new HasSchooled();
+        hasSchooled.setCandidate(candidate);
+        hasSchooled.setTrainingCenter(trainingCenter);
+        hasSchooled.setActived(true);
+        
+        userRepository.save(candidate);
+        hasSchooledRepository.save(hasSchooled);
+        
+        	
+       /* 
         handleFileUploads(candidate, request.getBirthCertificate(), "BIRTHCERTIFICATE");
         handleFileUploads(candidate, request.getHighestDiplomat(), "DIPLOM");
         handleFileUploads(candidate, request.getProfilePicture(), "PHOTO");
+        */
         
         
-        userRepository.save(candidate);
+        
         sendValidationEmail(candidate);
+        
+    }
+    
+    public void uploadCandidateRegistrationFile(MultipartFile birthCertificate, MultipartFile highestDiplomat,
+    		MultipartFile profilePicture,String email) throws MessagingException{
+    	
+    	Candidate candidate= candidateRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("Candidate does not exist"));
+        
+        handleFileUploads(candidate, birthCertificate, "BIRTHCERTIFICATE");
+        handleFileUploads(candidate, highestDiplomat, "DIPLOM");
+        handleFileUploads(candidate, profilePicture, "PHOTO");
+        
+        sendValidationEmail(candidate);
+    }
+    
+    private void validatePassword(String password,String confirmPassword) {
+        if (!password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
+        }
     }
 
     private void sendValidationEmail(User user) throws MessagingException {

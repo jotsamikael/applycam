@@ -11,4 +11,5 @@ public class SpecialityResponse {
     private String name;
     private String code;
     private String description;
+    private String examType;
 }

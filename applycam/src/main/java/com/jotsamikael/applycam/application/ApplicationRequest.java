@@ -12,6 +12,30 @@ import lombok.Builder;
 @Setter
 @Builder
 public class ApplicationRequest {
+	
+	 @NotEmpty(message = "firstName is mandatory")
+	    @NotNull(message = "firstName is mandatory")
+	private String firstName;
+	 
+	 @NotEmpty(message = "lastName is mandatory")
+	    @NotNull(message = "lastName is mandatory")
+	private  String lastName;
+	 
+	 @NotEmpty(message = "phoneNumber is mandatory")
+	    @NotNull(message = "phoneNumber is mandatory")
+	private String phoneNumber;
+	 
+	 @NotEmpty(message = "sex is mandatory")
+	    @NotNull(message = "sex is mandatory")
+	private String sex;
+	 
+	 @NotEmpty(message = "email is mandatory")
+	    @NotNull(message = "email is mandatory")
+	private String email;
+	 
+	 @NotEmpty(message = "nationIdNumberis mandatory")
+	    @NotNull(message = "nationIdNumber is mandatory")
+	private String nationIdNumber;
 
     @NotEmpty(message = "Academic level is mandatory")
     @NotNull(message = "Academic level is mandatory")
@@ -26,20 +50,46 @@ public class ApplicationRequest {
     private String motherFullname;
 
     @NotEmpty(message = "Mother profession is mandatory")
-    @NotNull(message = " is mandatory")
+    @NotNull(message = " Mother profession is mandatory")
     private String motherProfession;
 
-    @NotEmpty(message = "Firstname is mandatory")
-    @NotNull(message = "Firstname is mandatory")
+    @NotEmpty(message = "Father profesion is mandatory")
+    @NotNull(message = "Father Profession mandatory")
     private String fatherProfession;
 
-    @NotEmpty(message = "Firstname is mandatory")
-    @NotNull(message = "Firstname is mandatory")
-    private String townOfResidence;
-   
+    @NotEmpty(message = "Speciliaty is mandatory")
+    @NotNull(message = "Speciliaty is mandatory")
     private String Speciality;
     
+    @NotEmpty(message = "Exam Type is mandatory")
+    @NotNull(message = "Exam Type is mandatory")
     private String examType;
     
+    @NotEmpty(message = "Application Region is mandatory")
+    @NotNull(message = "Apploication Region is mandatory")
     private String applicationRegion;
+    
+    @NotEmpty(message = " Region is mandatory")
+    @NotNull(message = " Region is mandatory")
+    private String regionOrigins;
+    
+    @NotEmpty(message = " Session Year is mandatory")
+    @NotNull(message = " Session Year is mandatory")
+    private String SessionYear;
+    
+    @NotEmpty(message = " Aronym is mandatory")
+    @NotNull(message = " Acronym is mandatory")
+    private String trainingCenterAcronym;
+    
+    @NotEmpty(message = " Nationality is mandatory")
+    @NotNull(message = " Nationalityis mandatory")
+    private String nationality;
+    
+   
+    @NotNull(message = " Are you a New Candidate is mandatory")
+    private Boolean freeCandidate;
+    
+    
+    @NotNull(message = " Are you repeat Candidate is mandatory")
+    private Boolean repeatCandidate;
 } 

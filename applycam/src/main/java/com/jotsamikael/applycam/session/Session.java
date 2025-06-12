@@ -37,5 +37,7 @@ public class Session extends BaseEntity{
 	@OneToMany(mappedBy="session")
 	@JsonManagedReference
 	private List<Application> applicationList; 
+	
+	
 
 }

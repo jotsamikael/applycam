@@ -30,7 +30,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "_candidate")
 public class Candidate extends User {
-    private String sex;
+    
     private String placeOfBirth;
     private String motherFullName;
     private String fatherFullName;
@@ -38,9 +38,12 @@ public class Candidate extends User {
     private String fatherProfession;
     private String highestSchoolLevel;
     private String nationality;
-    private String townOfResidence;
+    private String regionOrigins;
     private boolean freeCandidate;
     private boolean repeatCandidate;
+    private String townOfResidence;
+    
+    
     
     
 

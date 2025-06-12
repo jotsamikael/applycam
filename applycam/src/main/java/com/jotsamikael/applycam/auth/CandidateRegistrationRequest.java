@@ -3,6 +3,8 @@ package com.jotsamikael.applycam.auth;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jotsamikael.applycam.common.ContentStatus;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -77,24 +79,22 @@ public class CandidateRegistrationRequest {
     private String motherFullname;
 
     @NotEmpty(message = "Mother profession is mandatory")
-    @NotNull(message = " is mandatory")
+    @NotNull(message = " Mother professionis mandatory")
     private String motherProfession;
 
-    @NotEmpty(message = "Firstname is mandatory")
-    @NotNull(message = "Firstname is mandatory")
+    @NotEmpty(message = "fatherProfession is mandatory")
+    @NotNull(message = "fatherProfession is mandatory")
     private String fatherProfession;
 
-    @NotEmpty(message = "Firstname is mandatory")
-    @NotNull(message = "Firstname is mandatory")
+    @NotEmpty(message = "town of Residence is mandatory")
+    @NotNull(message = "town Of Residence is mandatory")
     private String townOfResidence;
     
+    private String trainingCenterName;
     
     
-    private MultipartFile nationalIdCard;
     
-    private MultipartFile highestDiplomat;
     
-    private MultipartFile profilePicture;
     
-    private MultipartFile birthCertificate;
+    
 }

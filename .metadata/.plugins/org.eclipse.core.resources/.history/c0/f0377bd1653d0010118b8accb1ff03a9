@@ -1,5 +1,0 @@
-package com.jotsamikael.applycam.session;
-
-public class UpdateSessionRequest {
-
-}
