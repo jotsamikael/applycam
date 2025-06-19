@@ -79,16 +79,7 @@ public class AuthenticationController {
         return  ResponseEntity.ok(service.authenticate(request));
     }
     
-    @PatchMapping(value="/candidate-register/documents/{email}", consumes = "multipart/form-data")
-    public ResponseEntity<?> uploadCandidateRegisterFile(
-        @RequestParam MultipartFile birthtCertificate,
-        @RequestParam MultipartFile highestDiplomat,
-        @RequestParam MultipartFile profilePicture,
-        @PathVariable String email) throws MessagingException {
-            service.uploadCandidateRegistrationFile(birthtCertificate,highestDiplomat,profilePicture,email);
-            return  ResponseEntity.accepted().build();
-
-        }
+   
 
     @GetMapping("/activate-account")
     public void confirm(

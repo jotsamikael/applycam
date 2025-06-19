@@ -64,9 +64,10 @@ public class TrainingCenterController {
             @PathVariable("agreement-number") String agreementNumber,
             @Parameter(description = "Agreement file to upload")
             @RequestParam MultipartFile file,
+            @RequestParam String fileType,
             Authentication connectedUser
     ){
-        service.uploadAgreementFile(file,connectedUser, agreementNumber);
+        service.uploadAgreementFile(file,connectedUser, agreementNumber,fileType);
         return  ResponseEntity.accepted().build();
     }
 

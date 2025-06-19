@@ -1,0 +1,85 @@
+package com.jotsamikael.applycam.examCenter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.candidate.CandidateRepository;
+import com.jotsamikael.applycam.hasSchooled.HasSchooled;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ExamService {
+
+    private final CandidateRepository candidateRepository;
+    private final ExamCenterRepository examCenterRepository;
+
+    public void assignRandomExamCenterToCandidate(Long candidateId) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new EntityNotFoundException("Candidat introuvable"));
+
+        List<HasSchooled> hasSchooledList = candidate.getHasSchooledList();
+        if (hasSchooledList == null || hasSchooledList.isEmpty()) {
+            throw new IllegalStateException("Le candidat n'a aucun historique de formation.");
+        }
+
+        // Trier les HasSchooled par endYear décroissant (le plus récent en premier)
+        hasSchooledList.sort(Comparator.comparing(HasSchooled::getEndYear, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        TrainingCenter trainingCenter = hasSchooledList.get(0).getTrainingCenter();
+        if (trainingCenter == null) {
+            throw new IllegalStateException("Le dernier centre de formation est introuvable.");
+        }
+
+
+        String region = trainingCenter.getRegion();
+        String division = trainingCenter.getDivision();
+
+        // Liste des centres d'examen actifs pour cette région et division
+        List<ExamCenter> matchingCenters = examCenterRepository.findByRegionAndDivisionAndIsActiveTrue(region, division);
+
+        if (matchingCenters.isEmpty()) {
+            throw new EntityNotFoundException("Aucun centre d'examen actif trouvé pour cette région/division.");
+        }
+
+        // Map des affectations existantes (centreId -> nombre de candidats)
+        Map<Long, Long> centerIdToCandidateCount = new HashMap<>();
+        for (Object[] row : examCenterRepository.countCandidatesPerExamCenter()) {
+            centerIdToCandidateCount.put((Long) row[0], (Long) row[1]);
+        }
+
+        // On trie les centres selon le nombre de candidats déjà affectés
+        long minCount = Long.MAX_VALUE;
+        List<ExamCenter> leastLoadedCenters = new ArrayList<>();
+
+        for (ExamCenter center : matchingCenters) {
+            long count = centerIdToCandidateCount.getOrDefault(center.getId(), 0L);
+
+            if (count < minCount) {
+                minCount = count;
+                leastLoadedCenters.clear();
+                leastLoadedCenters.add(center);
+            } else if (count == minCount) {
+                leastLoadedCenters.add(center);
+            }
+        }
+
+        // Sélection aléatoire parmi les moins chargés
+        Collections.shuffle(leastLoadedCenters);
+        ExamCenter selected = leastLoadedCenters.get(0);
+
+        candidate.setExamCenter(selected);
+        candidateRepository.save(candidate);
+    }
+}
+

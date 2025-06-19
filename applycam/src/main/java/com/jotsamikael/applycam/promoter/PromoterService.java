@@ -208,7 +208,7 @@ public class PromoterService {
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {
         if (file != null && !file.isEmpty()) {
-            String url = fileStorageService.saveFile(file, promoter.getIdUser());
+            String url = fileStorageService.saveFile(file, promoter.getIdUser(),fileType);
             switch (fileType) {
             case "CNI" -> promoter.setNationalIdCardUrl(url);
             case "AGREEMENT" -> trainingCenter.setAgreementFileUrl(url);

@@ -59,4 +59,32 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
+    
+    @Async
+    public void sendExamAssignmentEmail(String to, String username, String examCenterName, String examDate) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                mimeMessage,
+                MimeMessageHelper.MULTIPART_MODE_MIXED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("username", username);
+        properties.put("examCenterName", examCenterName);
+        properties.put("examDate", examDate);
+
+        Context context = new Context();
+        context.setVariables(properties);
+
+        helper.setFrom("jotsamikael@gmail.com");
+        helper.setTo(to);
+        helper.setSubject("Votre candidature a été acceptée !");
+        String content = templateEngine.process("exam-assigned", context);
+        helper.setText(content, true);
+        mailSender.send(mimeMessage);
+    }
+
+    
+    
 }

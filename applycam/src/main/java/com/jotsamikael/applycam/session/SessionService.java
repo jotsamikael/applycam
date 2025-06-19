@@ -52,7 +52,7 @@ public class SessionService {
         orElseThrow(()-> new EntityNotFoundException("Cette session n'existe pas"));
         
         if (!session.isActived() ) {
-           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be updated.");
+           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Session cannot be updated.");
            }
 
         session.setExamType(updateSessionRequest.getExamType());

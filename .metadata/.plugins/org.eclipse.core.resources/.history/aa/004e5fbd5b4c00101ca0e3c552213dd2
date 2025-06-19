@@ -1,0 +1,14 @@
+package com.jotsamikael.applycam.examCenter;
+
+import com.jotsamikael.applycam.common.BaseEntity;
+
+public class ExamCenter extends BaseEntity{
+	
+	private String name;
+	private String region;
+	private String division;
+	
+
+	
+
+}

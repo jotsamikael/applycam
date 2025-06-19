@@ -1,0 +1,5 @@
+package com.jotsamikael.applycam.payment;
+
+public class PaymentService {
+
+}

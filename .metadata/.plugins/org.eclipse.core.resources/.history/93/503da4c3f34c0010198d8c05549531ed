@@ -1,0 +1,5 @@
+package com.jotsamikael.applycam.examCenter;
+
+public class UpdateCenterRequest {
+
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Examination Assignment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .highlight {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Candidature Acceptée </h2>
+    <p th:text="'Bonjour ' + ${username} + ','"></p>
+    <p>Nous sommes heureux de vous informer que votre candidature a été acceptée.</p>
+    <p>Vous avez été affecté au centre d'examen suivant :</p>
+    <p class="highlight" th:text="${examCenterName}">Nom du centre</p>
+    <p>Date prévue pour votre examen :</p>
+    <p class="highlight" th:text="${examDate}">Date d'examen</p>
+    <p>Merci et bonne chance pour votre examen !</p>
+</div>
+</body>
+</html>

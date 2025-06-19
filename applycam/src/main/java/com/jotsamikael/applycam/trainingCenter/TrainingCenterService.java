@@ -94,7 +94,7 @@ public class TrainingCenterService {
         //check connected user is promoter
         Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
 
-       List<TrainingCenter> trainingCenterList = trainingCenterRepository.findByPromoter(promoter).orElseThrow(() -> new EntityNotFoundException("No training center found for" + user.getEmail()));;
+       List<TrainingCenter> trainingCenterList = trainingCenterRepository.findByPromoter(promoter).orElseThrow(() -> new EntityNotFoundException("No training center found for" + user.getEmail()));
 
         List<TrainingCenterResponse> responses = trainingCenterList.stream().map(mapper::toTrainingResponse).toList();
 
@@ -120,7 +120,7 @@ public class TrainingCenterService {
         );
     }
 
-    public void uploadAgreementFile(MultipartFile file, Authentication connectedUser, String agreementNumber) {
+    public void uploadAgreementFile(MultipartFile file, Authentication connectedUser, String agreementNumber,String fileType) {
         //get user object from connected user
         User user = ((User) connectedUser.getPrincipal());
 
@@ -128,7 +128,7 @@ public class TrainingCenterService {
         Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
 
         TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber).orElseThrow(() -> new EntityNotFoundException("Not a training center found for agreement number: " + agreementNumber));
-        var agreementFileUrl = fileStorageService.saveFile(file, promoter.getIdUser());
+        var agreementFileUrl = fileStorageService.saveFile(file, promoter.getIdUser(),fileType);
          trainingCenter.setAgreementFileUrl(agreementFileUrl);
          trainingCenterRepository.save(trainingCenter);
     }

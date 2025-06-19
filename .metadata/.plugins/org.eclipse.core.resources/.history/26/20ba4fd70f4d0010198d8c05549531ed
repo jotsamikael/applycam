@@ -1,0 +1,21 @@
+package com.jotsamikael.applycam.application;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.jotsamikael.applycam.promoter.Promoter;
+
+
+
+public interface ApplicationRepository  extends JpaRepository<Application, Long> {
+
+	 @Query(
+	            """ 
+	              SELECT a
+	              FROM Application a
+	            """
+	    )
+	    Page<Application> getAllApplications(Pageable pageable);
+}

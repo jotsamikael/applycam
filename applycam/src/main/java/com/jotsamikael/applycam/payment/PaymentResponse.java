@@ -1,0 +1,24 @@
+package com.jotsamikael.applycam.payment;
+
+import java.time.LocalDate;
+
+import com.jotsamikael.applycam.promoter.PromoterResponse;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class PaymentResponse {
+	
+	private Long id;
+	private Double amount;
+	private String paymentMethod;
+	
+}

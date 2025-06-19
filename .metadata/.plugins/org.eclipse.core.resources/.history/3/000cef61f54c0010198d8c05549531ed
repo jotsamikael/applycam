@@ -1,0 +1,21 @@
+package com.jotsamikael.applycam.examCenter;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface ExamCenterRepository extends JpaRepository<ExamCenter, Long> {
+	
+	@Query("""
+		    SELECT c.examCenter.id, COUNT(c)
+		    FROM Candidate c
+		    WHERE c.examCenter IS NOT NULL
+		    GROUP BY c.examCenter.id
+		""")
+		List<Object[]> countCandidatesPerExamCenter();
+		
+		 List<ExamCenter> findByRegionAndDivisionAndIsActivedTrue(String region, String division);
+
+
+}

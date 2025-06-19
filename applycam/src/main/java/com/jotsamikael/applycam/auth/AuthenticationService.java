@@ -67,10 +67,6 @@ public class AuthenticationService {
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new DataIntegrityViolationException("Phone number already taken");
         }
-        if (userRepository.existsByNationalIdNumber(request.getNationalIdNumber())) {
-            throw new DataIntegrityViolationException("National ID already taken");
-        }
-        
         if (passwordEncoder.matches(request.getPassword(), request.getConfirmPassword())) {
             throw new IllegalArgumentException("password doesn't match.");
         }
@@ -84,20 +80,10 @@ public class AuthenticationService {
         var candidate = Candidate.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
-                .phoneNumber(request.getPhoneNumber())
-                .email(request.getEmail())
-                .sex(request.getSex())
-                .nationalIdNumber(request.getNationalIdNumber())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .sex(request.getSex())
-                .dateOfBirth(LocalDate.parse(request.getDateOfBirth()))
-                .placeOfBirth(request.getPlaceOfBirth())
-                .highestSchoolLevel(request.getHighestSchoolLevel())
-                .fatherFullName(request.getFatherFullname())
-                .motherFullName(request.getMotherFullname())
-                .motherProfession(request.getMotherProfession())
-                .fatherProfession(request.getFatherProfession())
-                .townOfResidence(request.getTownOfResidence())
+                .phoneNumber(request.getPhoneNumber())
+                .language(request.getLanguage())
+                .email(request.getEmail())
                 .accountLocked(false)
                 .enabled(false)
                 .roles(List.of(userRole))
@@ -107,6 +93,8 @@ public class AuthenticationService {
         HasSchooled hasSchooled = new HasSchooled();
         hasSchooled.setCandidate(candidate);
         hasSchooled.setTrainingCenter(trainingCenter);
+        hasSchooled.setStartYear(LocalDate.parse(request.getStartYear()));  
+        hasSchooled.setEndYear(LocalDate.parse(request.getEndYear()));     
         hasSchooled.setActived(true);
         
         userRepository.save(candidate);
@@ -125,17 +113,7 @@ public class AuthenticationService {
         
     }
     
-    public void uploadCandidateRegistrationFile(MultipartFile birthCertificate, MultipartFile highestDiplomat,
-    		MultipartFile profilePicture,String email) throws MessagingException{
-    	
-    	Candidate candidate= candidateRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("Candidate does not exist"));
-        
-        handleFileUploads(candidate, birthCertificate, "BIRTHCERTIFICATE");
-        handleFileUploads(candidate, highestDiplomat, "DIPLOM");
-        handleFileUploads(candidate, profilePicture, "PHOTO");
-        
-        sendValidationEmail(candidate);
-    }
+    
     
     private void validatePassword(String password,String confirmPassword) {
         if (!password.equals(confirmPassword)) {
@@ -216,21 +194,6 @@ public class AuthenticationService {
         tokenRepository.save(savedToken);
     }
     
-    private void handleFileUploads(Candidate candidate, MultipartFile file,String fileType) {
-        if (file != null && !file.isEmpty()) {
-            String url = fileStorageService.saveFile(file, candidate.getIdUser());
-            switch (fileType) {
-            case "CNI" ->candidate.setNationalIdCardUrl(url);
-            case "PHOTO" -> candidate.setProfilePictureUrl(url);
-            case "BIRTHCERTIFICATE" -> candidate.setBirthCertificateUrl(url);
-            case "DIPLOM" -> candidate.setHighestDiplomatUrl(url);
-            
-            default -> throw new IllegalArgumentException("we do not handel this folder.");
-        }
-          
-        } else {
-            throw new IllegalArgumentException("missing file");
-        }
-    }
+    
 
 }

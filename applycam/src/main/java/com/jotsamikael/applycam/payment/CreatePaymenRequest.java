@@ -1,0 +1,22 @@
+package com.jotsamikael.applycam.payment;
+
+import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+public class CreatePaymenRequest {
+	
+	 @NotNull(message = "The amount  is mandatory")
+	private Double amount;
+	 @NotNull(message = "Payment Method is mandatory")
+	private String paymentMethod;
+	 @NotNull(message = "Secret code is mandatory")
+	private Long secretCode;
+
+}

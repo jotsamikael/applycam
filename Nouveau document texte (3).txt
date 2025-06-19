@@ -1,104 +1,716 @@
-# 📚 ApplyCam - Plateforme de Gestion des Inscriptions aux Examens
+Voici un exemple de fichier README.md pour votre application :
 
-Cette application Spring Boot permet aux **candidats** de s'enregistrer, de compléter leur profil, d'envoyer leurs documents justificatifs et de postuler à un **examen (DQP/CQP)** en fonction de la session active. L'application intègre également la gestion des spécialités, filières et sessions.
+```markdown
+# Application de Gestion de Candidatures
 
-## 🚀 Fonctionnalités principales
+Cette application permet aux candidats de postuler à des formations en fournissant leurs informations personnelles, en téléchargeant les documents requis et en suivant l'état de leur candidature. Les administrateurs peuvent gérer les campus et les centres de formation.
 
-### 🔐 1. Enregistrement du candidat (`api/v1/auth/candidateRegister`)
+## Fonctionnalités
 
-Le candidat s'enregistre en fournissant les informations de base :
-- Nom, prénom
-- Email (unique)
-- Téléphone
-- Mot de passe (crypté)
-- Type de compte : `CANDIDATE`
--
+### Candidats
+- **Inscription et Authentification** : Les candidats peuvent créer un compte et se connecter.
+- **Soumettre une candidature** : Les candidats peuvent fournir leurs informations personnelles et télécharger les documents requis.
+- **Gérer leurs candidatures** : Les candidats peuvent voir, valider ou supprimer leurs candidatures.
 
-**Exemple de requête JSON :**
-```json
-"firstname": "string",
-  "lastname": "string",
-  "sex": "string",
-  "email": "string",
-  "phoneNumber": "stringstr",
-  "nationalIdNumber": "stringstr",
-  "password": "stringst",
-  "confirmPassword": "stringst",
-  "dateOfBirth": "string",
-  "placeOfBirth": "string",
-  "highestSchoolLevel": "string",
-  "fatherFullname": "string",
-  "motherFullname": "string",
-  "motherProfession": "string",
-  "fatherProfession": "string",
-  "townOfResidence": "string",
-  "trainingCenterName": "string"
+### Administrateurs
+- **Gérer les campus** : Créer, mettre à jour et lister les campus.
+- **Rechercher des candidatures** : Rechercher des candidatures par nom de candidat ou obtenir toutes les candidatures.
 
-le training Center ivci doit exister sinon cela renvoie une erreur
+## API Endpoints
 
-maintenant pour televerser son acte son diplom et sa photo de profile pour cela son email va en requestPAram
-et il televerse su cette url /auth/candidate-register/documents/{email}
+### Authentification
+- **POST /api/v1/auth/register** : Enregistrement d'un nouveau candidat.
+  - Body: `CandidateRegistrationRequest`
+  
+### Candidatures
+- **POST application/PersonalInformation** : Soumettre les informations personnelles.
+  - Body: DTO avec les champs requis (firstName, lastName, phoneNumber, etc.)
+  
+- **PATCH application/PersonalInformation/documents** : Téléverser les documents.
+  - Paramètres: `cniFile`, `birthCertificate`, `diplomFile`, `photo`, etc. (certains sont optionnels).
+  
+- **PATCH application/validate/{id}** : Valider une candidature. Lors de la validation un email est envoye et le candidate es affecter automatiquement a un centre d'examen
+  
+- **GET application/get-all** : Obtenir toutes les candidatures.
+  
+- **GET application/get-application-By-candidate** : Rechercher des candidatures par nom de candidat.
+  - Paramètre: `name`
+  
+- **GET application/my-applications** : Obtenir les candidatures du candidat connecté.
+  
+- **PATCH application/delete/{applicationId}** : Supprimer une candidature.
 
-👤 2. Informations personnelles du candidat (api/v1/application/personalInformation)
-Après l'inscription, le candidat remplit ses informations complémentaires :
+### Campus
+- **POST campus/create-campus** : Créer un nouveau campus.
+  - Body: DTO avec `name`, `capacity`, `quarter`, `town`, etc.
+  
+- **GET campus/get-campus-by-training-center/{agreementNumber}** : Obtenir les campus par centre de formation.
+  
+- **PATCH campus/update-campus** : Mettre à jour un campus.
+  - Body: DTO avec `oldName`, `name`, `capacity`, etc.
+  
+- **GET campus/find-campus/{name}** : Trouver un campus par son nom.
+  
+- **GET campus/promoter-campuses** : Obtenir les campus du promoteur.
 
-Sexe
+## Modèles
 
-Date de naissance
+### DTO Candidature
+```java
+public class PersonalInformationDTO {
+    @NotEmpty private String firstName;
+    @NotEmpty private String lastName;
+    @NotEmpty private String phoneNumber;
+    @NotEmpty private String sex;
+    @NotEmpty private String email;
+    @NotEmpty private String nationIdNumber;
+    @NotEmpty private String academicLevel;
+    @NotEmpty private String dateOfBirth;
+    @NotEmpty private String Speciality;
+    @NotEmpty private String examType;
+    @NotNull private String departmentOfOrigin;
+    @NotEmpty private String applicationRegion;
+    @NotEmpty private String regionOrigins;
+    @NotEmpty private String SessionYear;
+    @NotEmpty private String trainingCenterAcronym;
+    @NotEmpty private String nationality;
+    @NotNull private Boolean freeCandidate;
+    @NotNull private Boolean repeatCandidate;
+    @NotNull private Double amount;
+    @NotNull private String paymentMethod;
+    @NotNull private Long secretCode;
+    @NotNull private String matrimonialSituation;
+    @NotNull private String learningLanguage;
+    @NotNull private String formationMode;
+    @NotNull private String financialRessource;
+    @NotNull private String placeOfBirth;
+    @NotNull private Integer numberOfKid;
+}
+```
 
-Lieu de naissance
+### DTO Inscription
+```java
+public class CandidateRegistrationRequest {
+    @NotEmpty private String firstname;
+    @NotEmpty private String lastname;
+    @NotEmpty @Email private String email;
+    @NotEmpty @Size(min = 9) private String phoneNumber;
+    @Size(min = 8) private String password;
+    @NotEmpty @Size(min = 8) private String confirmPassword;
+    @NotNull private String language;
+    @NotNull private String startYear;
+    @NotNull private String endYear;
+    @NotNull private String trainingCenterName;
+}
+```
 
-Nationalité
+### DTO Campus
+```java
+public class CampusDTO {
+    @NotEmpty private String name;
+    @NotEmpty private Integer capacity;
+    @NotEmpty private String quarter;
+    @NotEmpty private String town;
+    @NotEmpty private String trainingCenterAgr;
+    @NotNull private Double xCoor;
+    @NotNull private Double yCoor;
+}
+```
 
-Type d'examen (DQP ou CQP)
+## Technologies Utilisées
+- **Backend** : Spring Boot
+- **Base de données** : (Précisez si applicable)
+- **Sécurité** : Spring Security
 
-Spécialité souhaitée
+## Installation
+1. Clonez le dépôt.
+2. Configurez la base de données dans `application.properties`.
+3. Lancez l'application avec `mvn spring-boot:run`.
 
-Filière
-Exemple de dto
+## Auteur
+[Votre nom]
 
-"firstName": "string",
-  "lastName": "string",
-  "phoneNumber": "string",
-  "sex": "string",
-  "email": "string",
-  "nationIdNumber": "string",
-  "academicLevel": "string",
-  "fatherFullname": "string",
-  "motherFullname": "string",
-  "motherProfession": "string",
-  "fatherProfession": "string",
-  "examType": "string",
-  "applicationRegion": "string",
-  "regionOrigins": "string",
-  "trainingCenterAcronym": "string",
-  "nationality": "string",
-  "freeCandidate": true,
-  "repeatCandidate": true,
-  "sessionYear": "string",
-  "speciality": "string"
+## Licence
+[Précisez la licence si applicable]
+```
+
+N'hésitez pas à personnaliser ce README en fonction de vos besoins spécifiques !
+
+
+
+Voici le README.md complet et structuré pour votre application :
+
+```markdown
+# Application de Gestion des Candidatures et Formations
+
+## Description
+Cette application permet :
+- Aux candidats de soumettre leurs dossiers de candidature
+- Aux administrateurs de gérer les centres de formation, filières et sessions d'examen
+- La gestion complète du cycle de candidature jusqu'au paiement
+
+## Fonctionnalités principales
+
+### 1. Gestion des Candidats
+- Inscription et authentification
+- Soumission des informations personnelles
+- Téléversement des documents
+- Validation et suivi des candidatures
+- Gestion des paiements
+
+### 2. Gestion des Centres de Formation
+- Création et gestion des campus
+- Association aux centres de formation
+- Gestion géolocalisée
+
+### 3. Gestion Académique
+- Création des filières (courses) et spécialités
+- Planification des sessions d'examen
+- Association des spécialités aux centres
+
+## API Endpoints
+
+### Authentification
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/v1/auth/register` | Enregistrement nouveau candidat |
+
+### Candidatures
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/PersonalInformation` | Soumettre infos personnelles |
+| PATCH | `/PersonalInformation/documents` | Upload documents |
+| PATCH | `/validate/{id}` | Valider candidature |
+| GET | `/get-all` | Lister toutes candidatures |
+| GET | `/get-application-By-candidate` | Recherche par nom |
+| GET | `/my-applications` | Mes candidatures |
+| PATCH | `/delete/{applicationId}` | Supprimer candidature |
+
+### Gestion des Candidats tout commence par 'candidate/'
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `get-promoter-candidates/{year}` | Candidats par promoteur/année |
+| PATCH | `toggleCandidate/{email}` | Activer/désactiver candidat |
+| GET | `/find` | Rechercher candidat |
+
+### Filières (Courses) tout commence par 'course'
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/create-course` | Créer une filière |
+| PATCH | `/update-course` | Mettre à jour filière |
+| GET | `/get-all` | Lister toutes filières |
+| GET | `/findByName/{name}` | Rechercher par nom |
+| PATCH | `/toggle-course/{name}` | Activer/désactiver filière |
+
+### Sessions d'Examen tout commence 'session'
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/get-by-year/{sessionYear}` | Par année (ex: 2025-2026) |
+| GET | `/findBy-examdate/{examDate}` | Par date d'examen |
+| PATCH | `/delete-session/{sessionId}` | Supprimer session |
+| PATCH | `/update-session` | Mettre à jour session |
+
+### Spécialités tout commence par 'speciality'
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/create` | Créer une spécialité |
+| GET | `/get-all` | Lister toutes spécialités |
+| PATCH | `/update-speciality` | Mettre à jour |
+| GET | `/get-by-Exam/{examType}` | Par type d'examen (CQP/DQP) |
+| GET | `/findByName/{name}` | Recherche par nom |
+| PATCH | `/add-speciality-to-course` | Associer à une filière |
+| GET | `/get-by-course` | Spécialités par filière |
+| GET | `/get-by-trainingcenter` | Par centre de formation |
+| PATCH | `/add-speciality-totrainingCenter` | Associer à un centre |
+
+## Modèles Principaux
+
+### Candidature (Application)
+```java
+public class Payment {
+    private double amount;
+    private String paymentMethod;
+    private Long secretCode;
+    
+    @OneToOne(mappedBy="payment")
+    private Application application;
+}
+```
+
+### Filière (Course)
+```java
+public class CourseDTO {
+    @NotBlank private String name;
+    @NotBlank private String code;
+    @Size(max = 500) private String description;
+}
+```
+
+### Spécialité
+```java
+public class SpecialityRequest {
+    @NotBlank private String name;
+    @NotBlank private String description;
+    @NotBlank private String code;
+    @NotBlank private String examType;
+}
+```
+
+## Installation
+1. Cloner le dépôt
+2. Configurer la base de données dans `application.properties`
+3. Lancer l'application :
+```bash
+mvn spring-boot:run
+```
+
+## Technologies
+- **Backend** : Spring Boot 3.x
+- **Sécurité** : Spring Security + JWT
+- **Base de données** : PostgreSQL/MySQL
+- **Documentation API** : Swagger/OpenAPI
+
+## Auteur
+[Votre nom/équipe]
+
+## Licence
+[MIT License]
+```
+
+Ce README fournit une documentation complète de votre système avec :
+1. Une vue d'ensemble claire
+2. La liste organisée de tous les endpoints
+3. Les modèles de données principaux
+4. Les instructions d'installation
+5. Les technologies utilisées
+
+Vous pouvez adapter les sections "Auteur" et "Licence" selon vos besoins. Pour une documentation plus avancée, vous pourriez ajouter :
+- Un lien vers la documentation Swagger
+- Des exemples de requêtes/responses
+- Un guide de déploiement plus détaillé
+
+
+Voici le README.md mis à jour avec les nouvelles fonctionnalités de gestion du staff et des matières (subjects) :
+
+```markdown
+# Application de Gestion des Candidatures et Formations
+
+## Description
+Système complet de gestion des :
+- Candidatures étudiantes
+- Centres de formation et campus
+- Filières et programmes académiques
+- Staff administratif
+- Matières enseignées
+
+## Fonctionnalités principales
+
+### 1. Gestion du Staff Administratif
+- Création et gestion des membres du personnel
+- Attribution des postes et rôles
+- Gestion des informations professionnelles
+
+### 2. Gestion des Matières (Subjects)
+- Création et association aux spécialités
+- Organisation du curriculum
+- Gestion des codes et descriptifs
+
+### 3. Gestion des Candidatures
+- [Détails existants...]
+
+### 4. Gestion Académique
+- [Détails existants...]
+
+## API Endpoints - Nouvelles Fonctionnalités
+
+### Gestion du Staff tout commence par 'staff'
+| Méthode | Endpoint | Description | DTO |
+|---------|----------|-------------|-----|
+| POST | `/create-staff` | Créer un membre du staff | `firstname`, `lastname`, `email`, `phoneNumber`, `nationalIdNumber`, `positionName`, `dateOfBirth` |
+| GET | `/getAll` | Lister tout le staff | - |
+| GET | `/find-by-email` | Trouver staff par email | Param: `email` |
+| PATCH | `/update-staff` | Mettre à jour un membre | Mêmes champs que la création |
+
+### Gestion des Matières (Subjects) tout commence par 'subjects'
+| Méthode | Endpoint | Description | DTO |
+|---------|----------|-------------|-----|
+| POST | `/create-subject` | Créer une matière | `name`, `description`, `code` |
+| POST | `/add-Subject` | Associer à une spécialité | `name`, `specialityId` |
+| GET | `/findByName/{name}` | Rechercher matière | - |
+| PATCH | `/update-subject` | Mettre à jour | `id`, `name`, `code`, `description` |
+| PATCH | `/toggle-subject/{name}` | Activer/désactiver | - |
+
+## Modèles Complémentaires
+
+### Staff
+```java
+public class StaffDTO {
+    @NotBlank private String firstname;
+    @NotBlank private String lastname;
+    @Email private String email;
+    @Size(min = 9) private String phoneNumber;
+    @Size(min = 9) private String nationalIdNumber;
+    @NotBlank private String positionName;
+    @NotBlank private String dateOfBirth;
+}
+```
+
+### Matière (Subject)
+```java
+public class SubjectRequest {
+    @NotBlank private String name;
+    @NotNull private Long specialityId;
 }
 
-ensuite televersemtn de la cni /application/PersonalInformation/documents
+public class UpdateSubjectRequest {
+    @NotNull private Long id;
+    @NotBlank private String name;
+    @NotBlank private String code;
+    @Size(max = 500) private String description;
+}
+```
 
-5. Gestion des sessions d'examen (/api/v1/session/...)
-CRUD complet sur les sessions d'examen :
+## Workflow Typique
 
-Chaque session a :
+1. **Administrateur** :
+   - Crée les spécialités et matières
+   - Configure le staff administratif
+   - Met en place les sessions d'examen
 
-Un code (ex: SESSION2025A)
+2. **Staff** :
+   - Gère les candidatures
+   - Valide les dossiers
+   - Assure le suivi des paiements
 
-Une description
+3. **Candidats** :
+   - Soumettent leurs informations
+   - Uploadent les documents
+   - Suivent l'état de leur candidature
 
-Un examType (DQP ou CQP)
+## Sécurité
+- Authentification JWT obligatoire pour tous les endpoints
+- Rôles implémentés :
+  - ROLE_ADMIN
+  - ROLE_STAFF
+  - ROLE_CANDIDATE
 
-Une période (dates de début et fin)
+## Exemple de Requête
+Création d'un membre du staff :
+```bash
+curl -X POST 'http://localhost:8080/create-staff' \
+-H 'Authorization: Bearer YOUR_TOKEN' \
+-H 'Content-Type: application/json' \
+-d '{
+    "firstname": "Jean",
+    "lastname": "Dupont",
+    "email": "j.dupont@ecole.fr",
+    "phoneNumber": "778899001",
+    "nationalIdNumber": "12345678901",
+    "positionName": "Responsable Admissions",
+    "dateOfBirth": "1980-01-15"
+}'
+```
 
-🧑‍🔧 6. Gestion des spécialités (/api/v1/specialities/...) et filières (/api/v1/fields/...)
-CRUD complet :
+## Documentation Complémentaire
+- Documentation Swagger disponible sur `/swagger-ui.html`
+- Collection Postman disponible sur demande
 
-Créer, mettre à jour, supprimer, récupérer
+## Évolution Prévisionnelle
+- Intégration avec les systèmes de paiement en ligne
+- Portail candidat avec tableau de bord
+- Module de reporting avancé
+```
 
-Chaque spécialité et filière est liée à un centre de formation (trainingCenterI
+Ce README fournit maintenant :
+1. Une couverture complète de toutes les fonctionnalités
+2. La documentation technique des nouveaux endpoints
+3. Des exemples de modèles et requêtes
+4. Le workflow global du système
+5. Les informations de sécurité
 
-crud sur les staff et les campus
+Pour une documentation encore plus complète, vous pourriez ajouter :
+- Des captures d'écran de l'interface
+- Un diagramme d'architecture
+- Un guide de déploiement détaillé
+- La politique de versioning de l'API
+
+
+
+Voici le README.md complet avec la section pour les centres de formation (Training Centers) :
+
+```markdown
+# Application de Gestion des Centres de Formation et Candidatures
+
+## Table des Matières
+- [Fonctionnalités](#fonctionnalités)
+- [API Endpoints](#api-endpoints)
+  - [Centres de Formation](#centres-de-formation-training-centers)
+  - [Staff](#gestion-du-staff)
+  - [Matières](#gestion-des-matieres-subjects)
+  - [Candidatures](#gestion-des-candidatures)
+- [Modèles](#modèles)
+- [Installation](#installation)
+- [Technologies](#technologies)
+
+## Fonctionnalités
+
+### Gestion des Centres de Formation
+- Création et mise à jour des centres
+- Gestion des conventions et agréments
+- Suivi des capacités CQP/DQP
+- Association aux campus et spécialités
+
+## API Endpoints
+
+### Centres de Formation (Training Centers) tout commence par 'trainingcenter'
+
+| Méthode | Endpoint | Description | Paramètres |
+|---------|----------|-------------|------------|
+| POST | `/create-training-center` | Créer un nouveau centre | Voir DTO ci-dessous |
+| GET | `/get-training-by-agreement-number` | Trouver par numéro d'agrément | `agreementNumber` |
+| GET | `/get-training-centers-of-connected-promoter` | Centres du promoteur connecté | - |
+| GET | `/get-all` | Lister tous les centres | - |
+| PATCH | `/update-trainingCenter/{fullname}` | Mettre à jour un centre | `fullname` dans le path |
+
+### Gestion du Staff
+[...]
+
+### Gestion des Matières (Subjects)
+[...]
+
+### Gestion des Candidatures
+[...]
+
+## Modèles
+
+### Centre de Formation (Training Center)
+```java
+public class TrainingCenterDTO {
+    @NotBlank private String fullName;
+    private String acronym;
+    @NotBlank private String agreementNumber;
+    @NotNull private LocalDate startDateOfAgreement;
+    @NotNull private LocalDate endDateOfAgreement;
+    @NotBlank private String division;
+    @NotBlank private String fullAddress;
+    private Boolean isCenterPresentCandidateForCqp;
+    private Boolean isCenterPresentCandidateForDqp;
+}
+```
+
+### Mise à jour de Centre
+```java
+public class UpdateTrainingCenterRequest {
+    @NotBlank private String fullName;
+    private String acronym;
+    @NotBlank private String agreementNumber;
+    @NotNull private LocalDate startDateOfAgreement;
+    @NotNull private LocalDate endDateOfAgreement;
+    @NotBlank private String division;
+    @NotBlank private String fullAddress;
+    private boolean isCenterPresentCandidateForCqp;
+    private boolean isCenterPresentCandidateForDqp;
+}
+```
+
+## Workflow des Centres de Formation
+
+1. **Création** :
+   - Un administrateur crée le centre avec ses informations de convention
+   - Définit les capacités (CQP/DQP)
+
+2. **Association** :
+   - Le centre est associé à un ou plusieurs campus
+   - Les spécialités sont ajoutées au centre
+
+3. **Gestion** :
+   - Mise à jour des informations de convention
+   - Suivi des dates d'agrément
+
+## Exemple de Requête
+
+Création d'un centre :
+```bash
+curl -X POST 'http://localhost:8080/create-training-center' \
+-H 'Authorization: Bearer YOUR_TOKEN' \
+-H 'Content-Type: application/json' \
+-d '{
+    "fullName": "Centre d Excellence Informatique",
+    "acronym": "CEI",
+    "agreementNumber": "AGRE-2024-001",
+    "startDateOfAgreement": "2024-01-01",
+    "endDateOfAgreement": "2026-12-31",
+    "division": "Informatique",
+    "fullAddress": "123 Avenue des Technologies, Dakar",
+    "isCenterPresentCandidateForCqp": true,
+    "isCenterPresentCandidateForDqp": false
+}'
+```
+
+## Technologies
+- **Backend** : Spring Boot 3.x
+- **Base de données** : PostgreSQL avec Hibernate
+- **Sécurité** : JWT avec Spring Security
+- **Validation** : Bean Validation 3.0
+
+## Diagramme des Relations
+```
+TrainingCenter
+├── has many Campus
+├── has many Specialities
+└── has many Staff
+```
+
+## Notes de Version
+- **v1.0** : Implémentation de base
+- **v1.1** : Ajout des capacités CQP/DQP
+- **v1.2** : Gestion des dates d'agrément
+```
+
+Ce README fournit maintenant une documentation complète pour :
+1. La gestion des centres de formation
+2. Leurs relations avec les autres entités
+3. Les validations et contraintes
+4. Des exemples pratiques d'utilisation
+
+Les sections existantes (staff, matières, candidatures) peuvent être conservées telles quelles avec simplement l'ajout des relations avec les centres de formation.
+
+
+Voici la section à ajouter au README.md pour documenter le endpoint de récupération des fichiers candidats :
+
+---
+
+### Gestion des Documents Candidats tout commence par 'files'
+
+| Méthode | Endpoint | Description | Paramètres |
+|---------|----------|-------------|------------|
+| GET | `/{userId}/{fileType}` | Récupérer un fichier spécifique d'un candidat | `userId`: ID du candidat<br>`fileType`: Type de document |
+
+**Types de fichiers supportés** :
+- `CNI` : Copie de la carte d'identité
+- `BIRTH_CERTIFICATE` : Acte de naissance
+- `DIPLOMA` : Diplôme
+- `PHOTO` : Photo d'identité
+- `OLD_APPLICATION` : Ancienne candidature (optionnel)
+- `STAGE_CERTIFICATE` : Certificat de stage (optionnel)
+- `CV` : Curriculum Vitae (optionnel)
+- `FINANCIAL_JUSTIFICATION` : Justificatif financier (optionnel)
+- `MOTIVATION_LETTER` : Lettre de motivation (optionnel)
+
+**Exemple de requête** :
+```bash
+curl -X GET 'http://localhost:8080/123/CNI' \
+-H 'Authorization: Bearer YOUR_TOKEN' \
+--output cni.pdf
+```
+
+**Réponse** :
+- Status 200 OK avec le fichier en stream
+- Status 404 si fichier non trouvé
+- Status 400 si mauvais type de fichier
+
+**Sécurité** :
+- Seul le candidat concerné ou un admin peut accéder aux fichiers
+- Validation JWT obligatoire
+
+**Stockage** :
+- Les fichiers sont stockés dans un dossier sécurisé sur le serveur
+- Nomenclature : `{userId}_{fileType}_{timestamp}.{ext}`
+
+---
+
+Cette section peut être ajoutée dans la partie **API Endpoints** du README existant, sous une nouvelle sous-section **Gestion des Documents**.
+
+Vous pourriez également ajouter un exemple de code côté client pour gérer le téléchargement, et éventuellement un schéma montrant l'architecture de stockage des fichiers.
+
+
+Voici la section complète à ajouter au README pour la gestion des centres d'examen (Exam Centers) :
+
+---
+
+### Gestion des Centres d'Examen tout conmence par 'assignment'
+
+| Méthode | Endpoint | Description | Paramètres/Requête |
+|---------|----------|-------------|---------------------|
+| POST | `/create` | Créer un nouveau centre d'examen | `CreateCenterRequest` |
+| GET | `/findBy-division/{division}` | Trouver les centres par division | `division` dans le path |
+| PATCH | `/delete-Center/{examCenterId}` | Désactiver un centre (soft delete) | `examCenterId` dans le path |
+| PATCH | `/update-Center` | Mettre à jour un centre | `UpdateCenterRequest` |
+| POST | `/assign-exam-center/{id}` | Assigner un candidat à un centre | `id` du candidat dans le path |
+
+#### Modèles
+
+**Création de Centre** (`CreateCenterRequest`) :
+```java
+public class CreateCenterRequest {
+    @NotBlank private String name;
+    @NotBlank private String region;
+    @NotBlank private String division;
+    @NotNull private Integer capacity;
+}
+```
+
+**Mise à jour de Centre** :
+```java
+public class UpdateCenterRequest {
+    @NotNull private Long id;
+    @NotBlank private String name;
+    @NotBlank private String region;
+    @NotBlank private String division;
+    @NotNull private Integer capacity;
+    // Autres champs modifiables...
+}
+```
+
+#### Workflow Typique
+
+1. **Administrateur** :
+   - Crée les centres d'examen par région/division
+   - Définit les capacités d'accueil
+   - Met à jour les informations si besoin
+
+2. **Système** :
+   - Assignation automatique des candidats aux centres
+   - Gestion des capacités (vérification du nombre de places)
+
+3. **Candidat** :
+   - Consulte son centre d'examen assigné
+
+#### Exemple de Requêtes
+
+**Création** :
+```bash
+curl -X POST 'http://localhost:8080/examcenter/create' \
+-H 'Authorization: Bearer YOUR_TOKEN' \
+-H 'Content-Type: application/json' \
+-d '{
+    "name": "Centre d Examen Dakar Plateau",
+    "region": "Dakar",
+    "division": "Plateau",
+    "capacity": 500
+}'
+```
+
+**Assignation** :
+```bash
+curl -X POST 'http://localhost:8080/examcenter/assign-exam-center/123' \
+-H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**Récupération par division** :
+```bash
+curl -X GET 'http://localhost:8080/examcenter/findBy-division/Plateau' \
+-H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+---
+
+Cette section complète la documentation en couvrant :
+
+1. Tous les endpoints relatifs aux centres d'examen
+2. Les DTOs avec leurs contraintes de validation
+3. Le workflow d'utilisation
+4. Des exemples de requêtes pratiques
+5. La logique métier sous-jacente
+
+Vous pouvez l'ajouter dans la partie **API Endpoints** de votre README, idéalement dans une sous-section **Gestion des Examens** ou **Centres d'Examen**.
