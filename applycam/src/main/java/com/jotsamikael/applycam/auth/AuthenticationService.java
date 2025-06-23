@@ -172,6 +172,10 @@ public class AuthenticationService {
         var user = ((User) auth.getPrincipal());
         claims.put("full name", user.fullName());
         var jwtToken = jwtService.generateToken(claims, user);
+        
+        String status = "N/A";
+        String rejectionReason = null;
+        
         return AuthenticationResponse.builder()
                 .token(jwtToken).build();
     }

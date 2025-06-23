@@ -1,16 +1,26 @@
 package com.jotsamikael.applycam.trainingCenter;
 
 import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterHistoryRepository;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
+import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.email.EmailService;
+import com.jotsamikael.applycam.email.EmailTemplateName;
 import com.jotsamikael.applycam.exception.OperationNotPermittedException;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.promoter.PromoterRepository;
+import com.jotsamikael.applycam.user.Token;
+import com.jotsamikael.applycam.user.TokenRepository;
 import com.jotsamikael.applycam.user.User;
+
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +41,13 @@ public class TrainingCenterService {
     private final PromoterRepository promoterRepository;
     private final TrainingCenterMapper mapper;
     private final FileStorageService fileStorageService;
+    private final TrainingCenterHistoryRepository trainingCenterStatusHistoryRepository;
+    private final EmailService emailService;
+    private final TokenRepository tokenRepository;
+    
+    
+    @Value("${application.mailing.frontend.activation-url}")
+    String activationUrl;
 
 
 
@@ -179,6 +197,125 @@ public class TrainingCenterService {
        return trainingCenter.getAgreementNumber();
 	   
    }
+   
+   public String validateTrainingCenter(String fullName, Authentication connectedUser) {
+	   
+	   User user= (User) connectedUser.getPrincipal();
+	   
+	    TrainingCenter trainingCenter = trainingCenterRepository
+	        .findByFullName(fullName)
+	        .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+
+	    TrainingCenterStatusHistory statusHistory = trainingCenterStatusHistoryRepository
+	        .findByTrainingCenter(trainingCenter)
+	        .orElseThrow(() -> new EntityNotFoundException("Status history not found for: " + trainingCenter.getAgreementNumber()));
+
+	    statusHistory.setStatus(ContentStatus.VALIDATED);
+	    statusHistory.setActived(true);
+	    statusHistory.setLastModifiedBy(user.getIdUser());
+	    statusHistory.setLastModifiedDate(LocalDateTime.now());
+	    trainingCenterStatusHistoryRepository.save(statusHistory);
+
+	    try {
+	        User promoter = trainingCenter.getPromoter(); // ou trainingCenter.getUser()
+	        
+	        // 1. Envoyer email de validation simple
+	        emailService.sendTemplateEmail(
+	                promoter.getEmail(),
+	                promoter.fullName(),
+	                trainingCenter.getFullName(),
+	                "trainingcenter-validation", // nom du template
+	                "Votre centre a été validé avec succès"
+	        );
+
+	        // 2. Envoyer email d’activation avec token
+	        sendValidationEmail(promoter);
+
+	    } catch (MessagingException e) {
+	        throw new RuntimeException("Échec d’envoi d’email", e);
+	    }
+
+	    return "VALIDATED";
+	}
+   
+   public String changeTrainingCenterStatus(String fullName, ContentStatus status, String comment, Authentication connectedUser) {
+	   
+	   User user= (User) connectedUser.getPrincipal();
+	   
+	    TrainingCenter trainingCenter = trainingCenterRepository
+	            .findByFullName(fullName)
+	            .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+
+	    TrainingCenterStatusHistory statusHistory = trainingCenterStatusHistoryRepository
+	            .findByTrainingCenter(trainingCenter)
+	            .orElseThrow(() -> new EntityNotFoundException("Status history not found"));
+
+	    statusHistory.setStatus(status);
+	    statusHistory.setComment(comment);
+	    statusHistory.setLastModifiedBy(user.getIdUser());
+	    statusHistory.setLastModifiedDate(LocalDateTime.now());
+	    trainingCenterStatusHistoryRepository.save(statusHistory);
+
+	    User promoter = trainingCenter.getPromoter(); // ou getUser()
+
+	    if (status == ContentStatus.REJECTED) {
+	        try {
+	            emailService.sendRejectionEmail(promoter, trainingCenter, comment);
+	        } catch (MessagingException e) {
+	            throw new RuntimeException("Échec d’envoi d’email de rejet", e);
+	        }
+	    }
+
+	    return status.toString();
+	}
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   private void sendValidationEmail(User user) throws MessagingException {
+       var newToken = generateAndSaveActivationToken(user);
+       //send email
+       emailService.sendEmail( //use the service to send the email
+               user.getEmail(),
+               user.getFirstname(),
+               EmailTemplateName.ACTIVATE_ACCOUNT,
+               activationUrl,
+               newToken,
+               "Account activation"
+       );
+
+   }
+   private String generateAndSaveActivationToken(User user) {
+       //generate a token
+       String generatedToken = generateActivationCode(6);//generate a 6 digit code
+       var token = Token.builder()
+               .token(generatedToken)
+               .createdAt(LocalDateTime.now())
+               .expiresAt(LocalDateTime.now().plusMinutes(15))
+               .user(user)
+               .build();
+       tokenRepository.save(token);
+       return generatedToken;
+   }
+   
+   private String generateActivationCode(int length) {
+       String characters = "0123456789";
+       StringBuilder codeBuilder = new StringBuilder();//to transform to string
+       SecureRandom secureRandom = new SecureRandom(); //cryptographically secured
+       for (int i = 0; i < length; i++) {
+           int randomIndex = secureRandom.nextInt(characters.length()); //0..9
+           codeBuilder.append(characters.charAt(randomIndex));//append the caracter sercurily and ramdomly created
+       }
+       return codeBuilder.toString();
+   }
+   
+
    
    
 }

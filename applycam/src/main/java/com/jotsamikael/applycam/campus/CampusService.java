@@ -195,6 +195,19 @@ public class CampusService {
           return responses;
         }
         
+    public void deleteCampus(String name, Authentication connectedUser){
+        User user = ((User) connectedUser.getPrincipal());
+
+        Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+
+        Campus campus = campusRepository.findByName(name).orElseThrow(() -> new EntityNotFoundException("Campus not found"));
+        if(campus.isActived()){
+        campus.setActived(false);
+        }else{
+            campus.setActived(true);
+        campusRepository.save(campus);
+        }
+    }
     
     
 }

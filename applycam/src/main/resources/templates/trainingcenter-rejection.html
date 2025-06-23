@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f9f9f9; color: #333; padding: 20px; }
+    .container { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    h2 { color: #d9534f; }
+    blockquote { background: #f8d7da; border-left: 4px solid #dc3545; padding: 10px; color: #721c24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p>Bonjour <strong th:text="${fullName}"></strong>,</p>
+    <p>Votre demande de validation du centre <strong th:text="${centerName}"></strong> a été <strong>rejetée</strong> pour la raison suivante :</p>
+    <blockquote th:text="${comment}"></blockquote>
+    <p>Veuillez corriger les informations indiquées puis soumettre à nouveau votre dossier depuis votre espace personnel.</p>
+    <p>Merci de votre compréhension.</p>
+  </div>
+</body>
+</html>

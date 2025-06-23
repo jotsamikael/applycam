@@ -3,6 +3,7 @@ package com.jotsamikael.applycam.trainingCenter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.campus.Campus;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.hasSchooled.HasSchooled;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
@@ -63,6 +64,9 @@ public class TrainingCenter extends BaseEntity {
     @JoinColumn(name = "promoter_id")
     @JsonIgnore // <-- Avoid circular ref
     private Promoter promoter;
+    
+    @OneToOne(mappedBy="trainingCenter")
+    private TrainingCenterStatusHistory status;
 
     @OneToMany(mappedBy = "trainingCenter")
     private List<OffersSpeciality> offersSpecialityList;

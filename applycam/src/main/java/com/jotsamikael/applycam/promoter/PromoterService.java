@@ -1,6 +1,9 @@
 package com.jotsamikael.applycam.promoter;
 
 import com.jotsamikael.applycam.auth.RegistrationResponse;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterHistoryRepository;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
+import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.email.EmailService;
@@ -54,6 +57,7 @@ public class PromoterService {
     private final PromoterMapper mapper;
     private final TokenRepository tokenRepository;
     private final FileStorageService fileStorageService;
+    private final TrainingCenterHistoryRepository trainingCenterStatusHistoryRepository;
 
     @Value("${application.mailing.frontend.activation-url}")
     String activationUrl;
@@ -80,6 +84,8 @@ public class PromoterService {
         // Construction des entités
         Promoter promoter = buildPromoter(request, userRole);
         TrainingCenter trainingCenter = buildTrainingCenter(request, promoter);
+        
+        TrainingCenterStatusHistory trainingCenterStatusHistory = buildTrainingCenterStatusHistory(trainingCenter, "Promoter created");
 
         // Relation bidirectionnelle
         promoter.getTrainingCenterList().add(trainingCenter);
@@ -88,6 +94,7 @@ public class PromoterService {
         repository.save(promoter);
         trainingCenter.setCreatedBy(promoter.getIdUser());
         trainingCenterRepository.save(trainingCenter);
+        trainingCenterStatusHistoryRepository.save(trainingCenterStatusHistory);
 
         // Gestion des fichiers
        /* handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
@@ -178,6 +185,16 @@ public class PromoterService {
                 .build();
     }
     
+    private  TrainingCenterStatusHistory buildTrainingCenterStatusHistory(TrainingCenter trainingCenter,String comment){
+        return TrainingCenterStatusHistory.builder()
+                .trainingCenter(trainingCenter)
+                .comment(comment)
+                .status(ContentStatus.DRAFT)
+                .createdDate(LocalDateTime.now())
+                .createdBy(0)
+                .build();
+    }
+    
     public void uploadPromoterFile(MultipartFile cniFile,MultipartFile approvalFile, MultipartFile promoterPhoto,
     		MultipartFile engagementLetter,MultipartFile locationPlan,MultipartFile internalRegulation,
     		String approvalNumber,String email,String centerEmail) throws MessagingException {
@@ -203,7 +220,7 @@ public class PromoterService {
         handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
         
      // Envoi d'email
-        sendValidationEmail(promoter);
+        emailService.sendWaitingForValidationEmail(promoter, trainingCenter);
     }
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {

@@ -1,0 +1,9 @@
+package com.jotsamikael.applycam.centerStatus;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.jotsamikael.applycam.candidate.Candidate;
+
+public interface TrainingCenterHistoryRepository extends JpaRepository<TrainingCenterStatusHistory, Long>{
+
+}
