@@ -89,6 +89,7 @@ public class EmailService {
         mailSender.send(mimeMessage);
     }
     
+    @Async
     public void sendTemplateEmail(String to, String fullName, String centerName, String templateName, String subject) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
@@ -140,6 +141,7 @@ public class EmailService {
         mailSender.send(mimeMessage);
     }
     
+    @Async
     public void sendWaitingForValidationEmail(User user, TrainingCenter trainingCenter) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
@@ -164,6 +166,35 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
+    
+    @Async
+    public void sendApplicationRejectionEmail(String to, String fullName, String comment) throws MessagingException {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("fullName", fullName);
+        properties.put("comment", comment);
+
+        Context context = new Context();
+        context.setVariables(properties);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                mimeMessage,
+                MimeMessageHelper.MULTIPART_MODE_MIXED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setFrom("jotsamikael@gmail.com");
+        helper.setTo(to);
+        helper.setSubject("Rejet de votre candidature");
+
+        String html = templateEngine.process("candidate-rejection", context); // Ton template HTML doit s’appeler candidate-rejection.html
+        helper.setText(html, true);
+
+        mailSender.send(mimeMessage);
+    }
+
+    
+    
 
 
 

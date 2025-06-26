@@ -12,7 +12,9 @@ public enum EmailTemplateName {
 	
 	TRAINING_CENTER_REJECTION("trainingcenter-rejection"),
 	
-	TRAINING_CENTER_PENDING("trainingcenter-pending");
+	TRAINING_CENTER_PENDING("trainingcenter-pending"),
+	
+	REFUSED_APPLICATION("candidate-rejection");
 
 
     private final String name;

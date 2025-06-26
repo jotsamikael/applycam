@@ -62,7 +62,7 @@ public class AuthenticationController {
     	    @RequestParam MultipartFile promoterPhoto,
     	    @RequestParam MultipartFile engagementLetter,
     	    @RequestParam MultipartFile locationPlan,
-    	    @RequestParam MultipartFile internalRegulation,
+    	    @RequestParam(required=false) MultipartFile internalRegulation,
     	    @PathVariable("approval-Number") String approvalNumber,
             @Parameter(description = "Agreement file to upload")
             @PathVariable String email,

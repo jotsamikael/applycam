@@ -1,5 +1,0 @@
-package com.jotsamikael.applycam.examCenter;
-
-public class CreateCenterRequest {
-
-}

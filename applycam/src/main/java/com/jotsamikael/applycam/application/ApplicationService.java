@@ -67,14 +67,14 @@ public class ApplicationService {
             throw new RuntimeException("Candidate not found");
         }
         
-        if (!candidate.getFirstname().equalsIgnoreCase(request.getFirstName()) ||
+       /* if (!candidate.getFirstname().equalsIgnoreCase(request.getFirstName()) ||
                 !candidate.getLastname().equalsIgnoreCase(request.getLastName())||
                 !candidate.getPhoneNumber().equalsIgnoreCase(request.getPhoneNumber()) ||
                 !candidate.getEmail().equalsIgnoreCase(request.getEmail()) 
                 ) {
                 
                 throw new IllegalArgumentException("Les informations fournies ne correspondent pas à celles de votre enregistrement.");
-            }
+            } */
         
         		candidate.setSex(request.getSex());
         		candidate.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
@@ -211,6 +211,29 @@ public class ApplicationService {
     	return "validated";
     }
     
+    public String rejectApplication(Authentication connectedUser, Long id, String comment) throws MessagingException {
+
+        User user = ((User) connectedUser.getPrincipal());
+
+        Staff staff = staffRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("No staff with email found: " + user.getEmail()));
+
+        Application application = applicationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("No Application found with ID: " + id));
+
+        application.setActived(false);
+        applicationRepository.save(application);
+
+        Candidate candidate = application.getCandidate();
+
+        sendApplicationRejectionEmail(candidate, comment);
+
+        return "Candidature rejetée et email envoyé avec succès.";
+    }
+
+    
+    
+    
     private void sendApplicationValidationEmail(Candidate candidate, ExamCenter examCenter,Session session) throws MessagingException {
         
         //send email
@@ -221,6 +244,18 @@ public class ApplicationService {
     		    session.getExamDate().toString()         // Formatée proprement si besoin
     		);
     }
+    
+    private void sendApplicationRejectionEmail(Candidate candidate, String comment) throws MessagingException {
+        
+        // Envoi de l'email de rejet
+        emailService.sendApplicationRejectionEmail(
+            candidate.getEmail(),
+            candidate.getFirstname(),
+            comment
+        );
+    }
+    
+    
     
     public PageResponse<ApplicationResponse> getAllApplications(int offset, int pageSize, String field, boolean order) {
         Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
@@ -299,6 +334,7 @@ public class ApplicationService {
         // Puis supprimer la candidature
         applicationRepository.save(application);
     }
+    
     
     
     

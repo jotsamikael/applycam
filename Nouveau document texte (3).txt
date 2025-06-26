@@ -58,9 +58,6 @@ Cette application permet aux candidats de postuler à des formations en fourniss
 ### DTO Candidature
 ```java
 public class PersonalInformationDTO {
-    @NotEmpty private String firstName;
-    @NotEmpty private String lastName;
-    @NotEmpty private String phoneNumber;
     @NotEmpty private String sex;
     @NotEmpty private String email;
     @NotEmpty private String nationIdNumber;
@@ -91,10 +88,16 @@ public class PersonalInformationDTO {
 ### DTO Inscription
 ```java
 public class CandidateRegistrationRequest {
-    @NotEmpty private String firstname;
-    @NotEmpty private String lastname;
+ @NotEmpty(message = "Firstname is mandatory")
+    @NotNull(message = "Firstname is mandatory")
+    private String firstname;
+
+    @NotEmpty(message = "Lastname is mandatory")
+    @NotNull(message = "Lastname can not be blank")
+    private String lastname;
+ @Size(min = 9, message = "Phone number must be 9 character minimum")
+    private String phoneNumber;
     @NotEmpty @Email private String email;
-    @NotEmpty @Size(min = 9) private String phoneNumber;
     @Size(min = 8) private String password;
     @NotEmpty @Size(min = 8) private String confirmPassword;
     @NotNull private String language;
@@ -712,5 +715,7 @@ Cette section complète la documentation en couvrant :
 3. Le workflow d'utilisation
 4. Des exemples de requêtes pratiques
 5. La logique métier sous-jacente
+
+L'on a jouter le check out du prmoter pour vvalider ca doit etre dans le package trainingcenter cherche le contoller status 
 
 Vous pouvez l'ajouter dans la partie **API Endpoints** de votre README, idéalement dans une sous-section **Gestion des Examens** ou **Centres d'Examen**.

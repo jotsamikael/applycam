@@ -13,17 +13,7 @@ import lombok.Builder;
 @Builder
 public class ApplicationRequest {
 	
-	 @NotEmpty(message = "firstName is mandatory")
-	    @NotNull(message = "firstName is mandatory")
-	private String firstName;
 	 
-	 @NotEmpty(message = "lastName is mandatory")
-	    @NotNull(message = "lastName is mandatory")
-	private  String lastName;
-	 
-	 @NotEmpty(message = "phoneNumber is mandatory")
-	    @NotNull(message = "phoneNumber is mandatory")
-	private String phoneNumber;
 	 
 	 @NotEmpty(message = "sex is mandatory")
 	    @NotNull(message = "sex is mandatory")

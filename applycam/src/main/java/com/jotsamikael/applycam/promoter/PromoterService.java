@@ -222,6 +222,32 @@ public class PromoterService {
      // Envoi d'email
         emailService.sendWaitingForValidationEmail(promoter, trainingCenter);
     }
+    
+    public void reUploadPromoterFile(MultipartFile cniFile,MultipartFile approvalFile, MultipartFile promoterPhoto,
+    		MultipartFile engagementLetter,MultipartFile locationPlan,MultipartFile internalRegulation,
+    		String approvalNumber,String email,String centerEmail) throws MessagingException {
+    	
+    	
+
+         //check connected user is promoter
+         Promoter promoter = repository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Not a promoter"));
+         
+         if (trainingCenterRepository.existsByAgreementNumber(approvalNumber)) {
+             throw new DataIntegrityViolationException("Agreement number already taken");
+         }
+         
+         TrainingCenter trainingCenter= trainingCenterRepository.findByCenterEmail(centerEmail).orElseThrow(()->new EntityNotFoundException("this is not a training center"));
+    	trainingCenter.setAgreementNumber(approvalNumber);
+    	
+    	trainingCenterRepository.save(trainingCenter);
+    	handleFileUploads(trainingCenter, promoter, cniFile, "CNI");
+        handleFileUploads(trainingCenter, promoter, approvalFile, "AGREEMENT");
+        handleFileUploads(trainingCenter, promoter, promoterPhoto, "PHOTO");
+        handleFileUploads(trainingCenter, promoter, engagementLetter, "SIGNATURE");
+        handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
+        handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
+        
+    }
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {
         if (file != null && !file.isEmpty()) {

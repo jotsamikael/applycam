@@ -57,6 +57,9 @@ public class ApplicationController {
     	return  ResponseEntity.accepted().build();	
     }
     
+    
+    
+    
     @PatchMapping("/validate/{id}")
     public ResponseEntity<String> validateApplication(
             @PathVariable Long id,
@@ -74,6 +77,22 @@ public class ApplicationController {
                     .body("Erreur inattendue : " + e.getMessage());
         }
     }
+    
+    @PostMapping("/reject/{id}")
+    public ResponseEntity<String> rejectApplication(
+            @PathVariable Long id,
+            @RequestParam String comment,
+            Authentication authentication) {
+        try {
+            String result = service.rejectApplication(authentication, id, comment);
+            return ResponseEntity.ok(result);
+        } catch (MessagingException e) {
+            return ResponseEntity.status(500).body("Erreur lors de l'envoi de l'email : " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur : " + e.getMessage());
+        }
+    }
+    
     
     @GetMapping("/get-all")
     public ResponseEntity<PageResponse<ApplicationResponse>> getAllApplications(
