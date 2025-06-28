@@ -18,6 +18,9 @@ public class CreateSpecialityRequest {
     @NotBlank(message = "Code is required")
     private String code;
     
+    @NotBlank(message = "the type d'exam is required")
+    private String examType;
+    
    
 
 }

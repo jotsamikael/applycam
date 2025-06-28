@@ -1,6 +1,9 @@
 package com.jotsamikael.applycam.promoter;
 
 import com.jotsamikael.applycam.auth.RegistrationResponse;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterHistoryRepository;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
+import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.email.EmailService;
@@ -54,6 +57,7 @@ public class PromoterService {
     private final PromoterMapper mapper;
     private final TokenRepository tokenRepository;
     private final FileStorageService fileStorageService;
+    private final TrainingCenterHistoryRepository trainingCenterStatusHistoryRepository;
 
     @Value("${application.mailing.frontend.activation-url}")
     String activationUrl;
@@ -80,6 +84,8 @@ public class PromoterService {
         // Construction des entités
         Promoter promoter = buildPromoter(request, userRole);
         TrainingCenter trainingCenter = buildTrainingCenter(request, promoter);
+        
+        TrainingCenterStatusHistory trainingCenterStatusHistory = buildTrainingCenterStatusHistory(trainingCenter, "Promoter created");
 
         // Relation bidirectionnelle
         promoter.getTrainingCenterList().add(trainingCenter);
@@ -88,17 +94,17 @@ public class PromoterService {
         repository.save(promoter);
         trainingCenter.setCreatedBy(promoter.getIdUser());
         trainingCenterRepository.save(trainingCenter);
+        trainingCenterStatusHistoryRepository.save(trainingCenterStatusHistory);
 
         // Gestion des fichiers
-        handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
+       /* handleFileUploads(trainingCenter, promoter, request.getCniFile(), "CNI");
         handleFileUploads(trainingCenter, promoter, request.getApprovalFile(), "AGREEMENT");
         handleFileUploads(trainingCenter, promoter, request.getPromoterPhoto(), "PHOTO");
         handleFileUploads(trainingCenter, promoter, request.getEngagementLetter(), "SIGNATURE");
         handleFileUploads(trainingCenter, promoter, request.getLocationPlan(), "LOCALISATION");
-        handleFileUploads(trainingCenter, promoter, request.getInternalRegulation(), "REGULATION");
+        handleFileUploads(trainingCenter, promoter, request.getInternalRegulation(), "REGULATION");*/
 
-        // Envoi d'email
-        sendValidationEmail(promoter);
+        
     }
         // create the Promoter
        
@@ -118,9 +124,7 @@ public class PromoterService {
         if (userRepository.existsByNationalIdNumber(request.getCniNumber())) {
             throw new DataIntegrityViolationException("National ID already taken");
         }
-        if (trainingCenterRepository.existsByAgreementNumber(request.getApprovalNumber())) {
-            throw new DataIntegrityViolationException("Agreement number already taken");
-        }
+        
     }
 
     private void validateCardValidityDate(LocalDate validUntil) {
@@ -162,7 +166,7 @@ public class PromoterService {
         return TrainingCenter.builder()
                 .fullName(req.getCenterName())
                 .acronym(req.getCenterAcronym())
-                .agreementNumber(req.getApprovalNumber())
+                //.agreementNumber(req.getApprovalNumber())
                 .centerType(req.getCenterType())
                 .centerPhone(req.getCenterPhone())
                 .centerEmail(req.getCenterEmail())
@@ -180,10 +184,78 @@ public class PromoterService {
                 .createdDate(LocalDateTime.now())
                 .build();
     }
+    
+    private  TrainingCenterStatusHistory buildTrainingCenterStatusHistory(TrainingCenter trainingCenter,String comment){
+        return TrainingCenterStatusHistory.builder()
+                .trainingCenter(trainingCenter)
+                .comment(comment)
+                .status(ContentStatus.DRAFT)
+                .createdDate(LocalDateTime.now())
+                .createdBy(0)
+                .build();
+    }
+    
+    public void uploadPromoterFile(MultipartFile cniFile,MultipartFile approvalFile, MultipartFile promoterPhoto,
+    		MultipartFile engagementLetter,MultipartFile locationPlan,MultipartFile internalRegulation,
+    		String approvalNumber,String email,String centerEmail) throws MessagingException {
+    	
+    	
+
+         //check connected user is promoter
+         Promoter promoter = repository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Not a promoter"));
+         
+         if (trainingCenterRepository.existsByAgreementNumber(approvalNumber)) {
+             throw new DataIntegrityViolationException("Agreement number already taken");
+         }
+         
+         TrainingCenter trainingCenter= trainingCenterRepository.findByCenterEmail(centerEmail).orElseThrow(()->new EntityNotFoundException("this is not a training center"));
+    	trainingCenter.setAgreementNumber(approvalNumber);
+    	
+    	trainingCenterRepository.save(trainingCenter);
+    	handleFileUploads(trainingCenter, promoter, cniFile, "CNI");
+        handleFileUploads(trainingCenter, promoter, approvalFile, "AGREEMENT");
+        handleFileUploads(trainingCenter, promoter, promoterPhoto, "PHOTO");
+        handleFileUploads(trainingCenter, promoter, engagementLetter, "SIGNATURE");
+        handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
+        handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
+        
+        repository.save(promoter);
+        trainingCenterRepository.save(trainingCenter);
+     // Env
+        emailService.sendWaitingForValidationEmail(promoter, trainingCenter);
+    }
+    
+    public void reUploadPromoterFile(MultipartFile cniFile,MultipartFile approvalFile, MultipartFile promoterPhoto,
+    		MultipartFile engagementLetter,MultipartFile locationPlan,MultipartFile internalRegulation,
+    		String approvalNumber,String email,String centerEmail) throws MessagingException {
+    	
+    	
+
+         //check connected user is promoter
+         Promoter promoter = repository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Not a promoter"));
+         
+         if (trainingCenterRepository.existsByAgreementNumber(approvalNumber)) {
+             throw new DataIntegrityViolationException("Agreement number already taken");
+         }
+         
+         TrainingCenter trainingCenter= trainingCenterRepository.findByCenterEmail(centerEmail).orElseThrow(()->new EntityNotFoundException("this is not a training center"));
+    	trainingCenter.setAgreementNumber(approvalNumber);
+    	
+    	trainingCenterRepository.save(trainingCenter);
+    	handleFileUploads(trainingCenter, promoter, cniFile, "CNI");
+        handleFileUploads(trainingCenter, promoter, approvalFile, "AGREEMENT");
+        handleFileUploads(trainingCenter, promoter, promoterPhoto, "PHOTO");
+        handleFileUploads(trainingCenter, promoter, engagementLetter, "SIGNATURE");
+        handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
+        handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
+        
+        repository.save(promoter);
+        trainingCenterRepository.save(trainingCenter);
+    }
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {
         if (file != null && !file.isEmpty()) {
-            String url = fileStorageService.saveFile(file, promoter.getIdUser());
+            String url = fileStorageService.saveFile(file, promoter.getIdUser(),fileType);
             switch (fileType) {
             case "CNI" -> promoter.setNationalIdCardUrl(url);
             case "AGREEMENT" -> trainingCenter.setAgreementFileUrl(url);

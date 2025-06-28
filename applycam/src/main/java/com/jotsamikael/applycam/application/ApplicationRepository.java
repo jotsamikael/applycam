@@ -1,9 +1,34 @@
 package com.jotsamikael.applycam.application;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.promoter.Promoter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 
 
 
 public interface ApplicationRepository  extends JpaRepository<Application, Long> {
 
+	 @Query(
+	            """ 
+	              SELECT a
+	              FROM Application a
+	            """
+	    )
+	    Page<Application> getAllApplications(Pageable pageable);
+	 
+	 @Query("SELECT a FROM Application a WHERE " +
+	           "LOWER(CONCAT(a.candidate.firstname, ' ', a.candidate.lastname)) LIKE LOWER(CONCAT('%', :name, '%'))")
+	    List<Application> findByCandidateNameContainingIgnoreCase(@Param("name") String name);
+	 
+	 Optional<List<Application>> findByCandidate(Candidate candidate);
 }
+

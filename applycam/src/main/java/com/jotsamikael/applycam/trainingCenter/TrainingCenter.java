@@ -3,7 +3,9 @@ package com.jotsamikael.applycam.trainingCenter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.campus.Campus;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
 import com.jotsamikael.applycam.common.BaseEntity;
+import com.jotsamikael.applycam.hasSchooled.HasSchooled;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.trainingCenter.division.Division;
@@ -33,6 +35,8 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class TrainingCenter extends BaseEntity {
     private String fullName;
+    
+    @Column(unique = true)
     private String acronym;
 
     @Column(unique = true)
@@ -48,6 +52,7 @@ public class TrainingCenter extends BaseEntity {
     private String fullAddress;
     private String centerType;
     private String centerPhone;
+    @Column(unique = true)
     private String centerEmail;
     private String website;
     private String city;
@@ -59,11 +64,17 @@ public class TrainingCenter extends BaseEntity {
     @JoinColumn(name = "promoter_id")
     @JsonIgnore // <-- Avoid circular ref
     private Promoter promoter;
+    
+    @OneToOne(mappedBy="trainingCenter")
+    private TrainingCenterStatusHistory status;
 
     @OneToMany(mappedBy = "trainingCenter")
     private List<OffersSpeciality> offersSpecialityList;
 
     @OneToMany(mappedBy = "trainingCenter")
     private List<Campus> campusList;
+    
+    @OneToMany(mappedBy = "trainingCenter")
+    private List<HasSchooled> hasSchooledList;
 
 }

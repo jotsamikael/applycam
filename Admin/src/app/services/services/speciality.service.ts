@@ -25,6 +25,8 @@ import { getAllSpecialityByTrainingCenter } from '../fn/speciality/get-all-speci
 import { GetAllSpecialityByTrainingCenter$Params } from '../fn/speciality/get-all-speciality-by-training-center';
 import { getAllSpecialityOfCourse } from '../fn/speciality/get-all-speciality-of-course';
 import { GetAllSpecialityOfCourse$Params } from '../fn/speciality/get-all-speciality-of-course';
+import { getAllSpecialityOfCourse1 } from '../fn/speciality/get-all-speciality-of-course-1';
+import { GetAllSpecialityOfCourse1$Params } from '../fn/speciality/get-all-speciality-of-course-1';
 import { PageResponseSpecialityResponse } from '../models/page-response-speciality-response';
 import { SpecialityResponse } from '../models/speciality-response';
 import { toogleCourse1 } from '../fn/speciality/toogle-course-1';
@@ -213,6 +215,31 @@ export class SpecialityService extends BaseService {
    */
   getAllSpecialityOfCourse(params: GetAllSpecialityOfCourse$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
     return this.getAllSpecialityOfCourse$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseSpecialityResponse>): PageResponseSpecialityResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getAllSpecialityOfCourse1()` */
+  static readonly GetAllSpecialityOfCourse1Path = '/specialities/get-by-Exam/{examType}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAllSpecialityOfCourse1()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllSpecialityOfCourse1$Response(params: GetAllSpecialityOfCourse1$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
+    return getAllSpecialityOfCourse1(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAllSpecialityOfCourse1$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllSpecialityOfCourse1(params: GetAllSpecialityOfCourse1$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
+    return this.getAllSpecialityOfCourse1$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseSpecialityResponse>): PageResponseSpecialityResponse => r.body)
     );
   }

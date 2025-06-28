@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f2f4f7; padding: 20px; color: #333; }
+    .container { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { color: #0d6efd; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Confirmation de réception de votre demande</h2>
+    <p>Bonjour <strong th:text="${fullName}"></strong>,</p>
+    <p>Nous avons bien reçu les documents pour le centre <strong th:text="${centerName}"></strong>.</p>
+    <p>Votre demande est actuellement en <strong>cours de traitement</strong> par notre équipe.</p>
+    <p>Vous recevrez un email dès qu'une décision aura été prise.</p>
+    <p>Merci de votre confiance.</p>
+  </div>
+</body>
+</html>

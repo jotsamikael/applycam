@@ -20,5 +20,8 @@ public class UpdateSpecialityRequest {
     
     @NotBlank(message = "Code is required")
     private String description;
+    
+    @NotBlank(message = "the Exam type is required")
+    private String examType;
 
 }

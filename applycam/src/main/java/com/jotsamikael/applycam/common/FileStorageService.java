@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -22,15 +23,25 @@ public class FileStorageService {
 
     @Value("${application.file.upload.files-output-path}")
     private String fileUploadPath;
+    
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "pdf", "docx");
 
-public String saveFile(@NonNull MultipartFile sourceFile, @NonNull Long idUser){
-   final String fileUploadSubPath = "users"+ File.separator+ idUser;
+public String saveFile(@NonNull MultipartFile sourceFile, @NonNull Long idUser, @NonNull String fileType){
+	
+	 String originalFilename = sourceFile.getOriginalFilename();
+	    
+	    if (!isAllowedExtension(originalFilename)) {
+	        throw new IllegalArgumentException("Extension non autorisée pour le fichier : " + originalFilename);
+	    }
+	    
+   final String fileUploadSubPath = "users"+ File.separator+ idUser+ File.separator + fileType.toLowerCase();
 
-    return uploadFile(sourceFile, fileUploadSubPath);
+    return uploadFile(sourceFile, fileUploadSubPath,fileType);
 }
 
     private String uploadFile(@NonNull MultipartFile sourceFile,
-                              @NonNull String fileUploadSubPath) {
+                              @NonNull String fileUploadSubPath,
+                              @NonNull String fileType) {
     final String finalUploadPath = fileUploadPath+File.separator+ fileUploadSubPath;
 
     File targetFolder = new File(finalUploadPath);
@@ -46,7 +57,7 @@ public String saveFile(@NonNull MultipartFile sourceFile, @NonNull Long idUser){
     final String fileExtension = getFileExtension(sourceFile.getOriginalFilename());
 
     //rename the file to something like ./uploads/users/120/232347851452.pdf
-    String targetFilePath = finalUploadPath+File.separator+ currentTimeMillis()+"."+fileExtension;
+    String targetFilePath = finalUploadPath+File.separator+ fileType.toUpperCase() + "_"+ currentTimeMillis()+"."+fileExtension;
     Path targetPath = Path.of(targetFilePath);
     try{
         Files.write(targetPath, sourceFile.getBytes());
@@ -70,5 +81,11 @@ public String saveFile(@NonNull MultipartFile sourceFile, @NonNull Long idUser){
     }
         return originalFilename.substring(lastDotIndex+1).toLowerCase();
     }
+    
+    private boolean isAllowedExtension(String filename) {
+        String extension = getFileExtension(filename);
+        return ALLOWED_EXTENSIONS.contains(extension.toLowerCase());
+    }
+
 }
 

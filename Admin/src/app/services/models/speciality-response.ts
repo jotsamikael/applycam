@@ -5,6 +5,7 @@
 export interface SpecialityResponse {
   code?: string;
   description?: string;
+  examType?: string;
   id?: number;
   name?: string;
 }

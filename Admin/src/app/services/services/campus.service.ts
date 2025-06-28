@@ -14,6 +14,8 @@ import { StrictHttpResponse } from '../strict-http-response';
 import { CampusResponse } from '../models/campus-response';
 import { createCampus } from '../fn/campus/create-campus';
 import { CreateCampus$Params } from '../fn/campus/create-campus';
+import { deleteCampus } from '../fn/campus/delete-campus';
+import { DeleteCampus$Params } from '../fn/campus/delete-campus';
 import { findAllCampusesOfPromoter } from '../fn/campus/find-all-campuses-of-promoter';
 import { FindAllCampusesOfPromoter$Params } from '../fn/campus/find-all-campuses-of-promoter';
 import { findCampusByName } from '../fn/campus/find-campus-by-name';
@@ -78,6 +80,31 @@ export class CampusService extends BaseService {
    */
   updateCampus(params: UpdateCampus$Params, context?: HttpContext): Observable<string> {
     return this.updateCampus$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteCampus()` */
+  static readonly DeleteCampusPath = '/campus/delete-campus/{name}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteCampus()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteCampus$Response(params: DeleteCampus$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return deleteCampus(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteCampus$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteCampus(params: DeleteCampus$Params, context?: HttpContext): Observable<string> {
+    return this.deleteCampus$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }

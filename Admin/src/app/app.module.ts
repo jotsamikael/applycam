@@ -46,6 +46,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSortModule } from '@angular/material/sort';
+import { DatePipe } from '@angular/common';
 
 if (environment.defaultauth === 'firebase') {
   initFirebaseBackend(environment.firebaseConfig);
@@ -115,6 +116,7 @@ export function createTranslateLoader(http: HttpClient): any {
   ],
   providers: [
     BsModalService,
+     DatePipe,
     { 
       provide: HTTP_INTERCEPTORS, 
       useClass: HttpTokenInterceptor, 

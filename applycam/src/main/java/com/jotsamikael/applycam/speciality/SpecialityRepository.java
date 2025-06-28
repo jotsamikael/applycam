@@ -21,5 +21,7 @@ public interface SpecialityRepository extends JpaRepository<Speciality, Long> {
 	
 	
 	Page<Speciality> findAllByCourseId( Long courseId,Pageable pageable);
+	
+	Page<Speciality> findAllByExamType(String examType,Pageable  pageable);
 
 }

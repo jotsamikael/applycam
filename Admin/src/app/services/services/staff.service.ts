@@ -110,7 +110,7 @@ export class StaffService extends BaseService {
   }
 
   /** Path part for operation `getAllStaffs()` */
-  static readonly GetAllStaffsPath = '/staff';
+  static readonly GetAllStaffsPath = '/staff/getAll';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.

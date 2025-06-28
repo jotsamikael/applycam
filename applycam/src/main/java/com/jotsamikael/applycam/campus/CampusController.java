@@ -60,6 +60,12 @@ public class CampusController {
         List<CampusResponse> campuses = campusService.findAllCampusOfPromoter(authentication);
         return ResponseEntity.ok(campuses);
     }
+    
+    @PatchMapping("/delete-campus/{name}")
+    public ResponseEntity<String> deleteCampus(@PathVariable String name, Authentication authentication) {
+        campusService.deleteCampus(name, authentication);
+        return ResponseEntity.ok("Campus '" + name + "' supprimé avec succès.");
+    }
 
 
 }

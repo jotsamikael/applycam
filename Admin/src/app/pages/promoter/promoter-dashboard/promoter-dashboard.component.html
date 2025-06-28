@@ -3,110 +3,75 @@
   <div class="row">
     <div class="col-12">
       <div class="page-title-box d-flex align-items-center justify-content-between">
-        <h4 class="mb-0">Promoter Dashboard</h4>
-        <div class="page-title-right">
-          <button class="btn btn-primary">
-            <i class="bx bx-plus"></i> Add New
-          </button>
+        <div class="page-title-left">
+          <h4 class="mb-0">Tableau de bord du promoteur</h4>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="row">
-    <div *ngFor="let stat of stats" class="col-xl-3 col-md-6">
-      <div class="card">
+  <!-- Statistiques -->
+  <div class="row mx-2 mt-3">
+    <div class="col-md-3" *ngFor="let stat of stats">
+      <div class="card text-center">
         <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="avatar-md me-3">
-              <span class="avatar-title rounded-circle bg-soft-{{stat.color}} text-{{stat.color}} font-size-18">
-                <i class="{{stat.icon}}"></i>
-              </span>
-            </div>
-            <div class="flex-grow-1">
-              <p class="text-muted mb-1">{{stat.title}}</p>
-              <h4 class="mb-0">{{stat.value}}</h4>
-            </div>
-          </div>
+          <i [class]="stat.icon + ' bx-lg text-' + stat.color"></i>
+          <h3 class="mt-2">{{ stat.value }}</h3>
+          <p class="mb-0">{{ stat.title }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="row">
-    <!-- Left Column -->
-    <div class="col-xl-8">
-      <!-- Candidates Chart -->
+  <!-- Infos promoteur -->
+  <div class="row mx-2 mt-3" *ngIf="promoter">
+    <div class="col-md-6">
       <div class="card">
         <div class="card-body">
-          <h4 class="card-title mb-4">Candidate Distribution</h4>
-          <div style="height: 300px;">
-            <!-- <canvas baseChart 
-              [data]="pieChartData" 
-              [type]="pieChartType" 
-              [options]="pieChartOptions">
-            </canvas> -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Registrations Chart -->
-      <div class="card">
-        <div class="card-body">
-          <h4 class="card-title mb-4">Monthly Registrations</h4>
-          <div style="height: 300px;">
-            <!-- <canvas baseChart 
-              [data]="barChartData" 
-              [type]="barChartType" 
-              [options]="barChartOptions">
-            </canvas> -->
-          </div>
+          <h5>Mes informations</h5>
+          <table class="table table-bordered">
+            <tr><th>Nom</th><td>{{ promoter.lastname }}</td></tr>
+            <tr><th>Prénom</th><td>{{ promoter.firstname }}</td></tr>
+            <tr><th>Email</th><td>{{ promoter.email }}</td></tr>
+            <tr><th>Téléphone</th><td>{{ promoter.phoneNumber }}</td></tr>
+            <tr><th>Date de naissance</th><td>{{ promoter.dateOfBirth }}</td></tr>
+            <tr><th>Numéro CNI</th><td>{{ promoter.nationalIdNumber }}</td></tr>
+            <tr><th>Compte actif</th><td><span [ngClass]="{'text-success': promoter.enabled, 'text-danger': !promoter.enabled}">{{ promoter.enabled ? 'Oui' : 'Non' }}</span></td></tr>
+          </table>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Right Column -->
-    <div class="col-xl-4">
-      <!-- Recent Activities -->
+  <!-- Activités récentes -->
+  <div class="row mx-2 mt-3">
+    <div class="col-md-6">
       <div class="card">
         <div class="card-body">
-          <h4 class="card-title mb-4">Recent Activities</h4>
-          <div class="simplebar-content">
-            <div *ngFor="let activity of recentActivities" class="d-flex mb-4">
-              <div class="avatar-xs me-3">
-                <span class="avatar-title rounded-circle bg-soft-{{activity.color}} text-{{activity.color}} font-size-16">
-                  <i class="{{activity.icon}}"></i>
-                </span>
-              </div>
-              <div class="flex-grow-1">
-                <h6 class="mb-1">{{activity.title}}</h6>
-                <p class="text-muted mb-0">{{activity.description}}</p>
-                <small class="text-muted">{{activity.time}}</small>
-              </div>
-            </div>
-          </div>
+          <h5>Activités récentes</h5>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let act of recentActivities">
+              <i [class]="act.icon + ' text-' + act.color"></i>
+              <strong>{{ act.title }}</strong> - {{ act.description }} <span class="float-end text-muted">{{ act.time }}</span>
+            </li>
+          </ul>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Upcoming Events -->
+  <!-- Événements à venir -->
+  <div class="row mx-2 mt-3">
+    <div class="col-md-6">
       <div class="card">
         <div class="card-body">
-          <h4 class="card-title mb-4">Upcoming Events</h4>
-          <div class="table-responsive">
-            <table class="table table-borderless mb-0">
-              <tbody>
-                <tr *ngFor="let event of upcomingEvents">
-                  <td>
-                    <i class="{{getEventIcon(event.type)}} me-2 text-primary"></i>
-                    {{event.title}}
-                  </td>
-                  <td class="text-end">{{formatDate(event.date)}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <h5>Événements à venir</h5>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let event of upcomingEvents">
+              <i [class]="getEventIcon(event.type)"></i>
+              {{ event.title }} - <span class="text-muted">{{ formatDate(event.date) }}</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

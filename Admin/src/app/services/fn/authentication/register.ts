@@ -11,14 +11,14 @@ import { RequestBuilder } from '../../request-builder';
 import { CandidateRegistrationRequest } from '../../models/candidate-registration-request';
 
 export interface Register$Params {
-      body?: CandidateRegistrationRequest
+      body: CandidateRegistrationRequest
 }
 
-export function register(http: HttpClient, rootUrl: string, params?: Register$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+export function register(http: HttpClient, rootUrl: string, params: Register$Params, context?: HttpContext): Observable<StrictHttpResponse<{
 }>> {
   const rb = new RequestBuilder(rootUrl, register.PATH, 'post');
   if (params) {
-    rb.body(params.body, 'multipart/form-data');
+    rb.body(params.body, 'application/json');
   }
 
   return http.request(

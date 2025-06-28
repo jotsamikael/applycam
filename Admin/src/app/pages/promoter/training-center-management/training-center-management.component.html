@@ -6,7 +6,7 @@
             <button class="btn btn-primary waves-effect waves-light mx-2" 
                     (click)="openCreateModal()"
                     [disabled]="processing">
-                <i class="bx bx-plus me-1"></i> Create Training Center
+                <i class="bx bx-plus me-1"></i> Create Center
             </button>
             <button class="btn btn-primary waves-effect waves-light" 
                     [disabled]="!dataSource.data?.length || processing">
@@ -289,6 +289,19 @@
                 Address is required
               </mat-error>
             </mat-form-field>
+          </div>
+
+          <!-- Fichier d’agrément -->
+          <div class="col-md-12">
+            <label class="form-label mb-2">Agreement File (PDF/JPG)</label>
+            <input type="file"
+                   class="form-control"
+                   (change)="onAgreementFileChange($event)"
+                   accept=".pdf,.jpg,.jpeg,.png">
+            <div *ngIf="agreementFile" class="mt-1 text-success">
+              <mat-icon>check_circle</mat-icon>
+              {{ agreementFile.name }}
+            </div>
           </div>
         </div>
       </div>

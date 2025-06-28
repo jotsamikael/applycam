@@ -4,12 +4,27 @@
 
 export interface ApplicationRequest {
   academicLevel: string;
-  applicationRegion?: string;
-  examType?: string;
-  fatherFullname: string;
-  fatherProfession: string;
-  motherFullname: string;
-  motherProfession: string;
+  amount: number;
+  applicationRegion: string;
+  dateOfBirth: string;
+  departmentOfOrigin: string;
+  email: string;
+  examType: string;
+  financialRessource: string;
+  formationMode: string;
+  freeCandidate: boolean;
+  learningLanguage: string;
+  matrimonialSituation: string;
+  nationIdNumber: string;
+  nationality: string;
+  numberOfKid: number;
+  paymentMethod: string;
+  placeOfBirth: string;
+  regionOrigins: string;
+  repeatCandidate: boolean;
+  secretCode: number;
+  sessionYear?: string;
+  sex: string;
   speciality?: string;
-  townOfResidence: string;
+  trainingCenterAcronym: string;
 }

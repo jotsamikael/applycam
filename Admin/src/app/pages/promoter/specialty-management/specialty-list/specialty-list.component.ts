@@ -152,7 +152,8 @@ export class SpecialtyListComponent implements OnInit {
     // Ensure description is always present for CreateSpecialityRequest
     const createSpecialtyRequest = {
       ...specialtyRequest,
-      description: (specialtyRequest as any).description ?? ''
+      description: (specialtyRequest as any).description ?? '',
+      examType: (specialtyRequest as any).examType ?? '' // Provide a default or get from form
     };
 
     if (this.isEditMode && this.currentSpecialtyId) {

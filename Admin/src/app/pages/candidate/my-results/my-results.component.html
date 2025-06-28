@@ -1,1 +1,59 @@
-<p>my-results works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Mes résultats</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>Intitulé</th>
+                <th>Session</th>
+                <th>Centre d'examen</th>
+                <th>Statut</th>
+                <th>Note</th>
+                <th>Résultat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let res of results">
+                <td>{{ res.title }}</td>
+                <td>{{ res.session }}</td>
+                <td>{{ res.examCenter }}</td>
+                <td>
+                  <span [ngClass]="{
+                    'text-success': res.status === 'Terminé',
+                    'text-warning': res.status !== 'Terminé'
+                  }">
+                    {{ res.status }}
+                  </span>
+                </td>
+                <td>{{ res.score || '-' }}</td>
+                <td>
+                  <span [ngClass]="{
+                    'text-success': res.result === 'Admis',
+                    'text-danger': res.result === 'Ajourné'
+                  }">
+                    {{ res.result || '-' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="results.length === 0">
+                <td colspan="6" class="text-center">Aucun résultat trouvé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

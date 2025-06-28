@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f6f9fc;
+      padding: 20px;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      color: #2e7d32;
+    }
+    p {
+      color: #333;
+      line-height: 1.6;
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Confirmation de validation</h2>
+    <p>Bonjour <strong th:text="${fullName}">Nom</strong>,</p>
+    <p>Votre centre de formation <strong th:text="${centerName}">Nom du centre</strong> a été <strong style="color: green;">validé</strong>.</p>
+    <p>Vous avez désormais accès à toutes les fonctionnalités de la plateforme.</p>
+    <p>Merci de votre confiance.</p>
+    
+  </div>
+</body>
+</html>

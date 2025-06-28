@@ -5,5 +5,6 @@
 export interface CreateSpecialityRequest {
   code: string;
   description: string;
+  examType: string;
   name: string;
 }

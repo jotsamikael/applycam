@@ -11,12 +11,16 @@ import { SubjectService } from './services/subject.service';
 import { StaffService } from './services/staff.service';
 import { SpecialityService } from './services/speciality.service';
 import { SessionService } from './services/session.service';
+import { PaymentService } from './services/payment.service';
 import { CourseService } from './services/course.service';
 import { CampusService } from './services/campus.service';
 import { AuthenticationService } from './services/authentication.service';
+import { ExamCenterControllerService } from './services/exam-center-controller.service';
 import { ApplicationService } from './services/application.service';
 import { PromoterService } from './services/promoter.service';
 import { CandidateService } from './services/candidate.service';
+import { UserControllerService } from './services/user-controller.service';
+import { FileControllerService } from './services/file-controller.service';
 import { DivisionService } from './services/division.service';
 
 /**
@@ -32,12 +36,16 @@ import { DivisionService } from './services/division.service';
     StaffService,
     SpecialityService,
     SessionService,
+    PaymentService,
     CourseService,
     CampusService,
     AuthenticationService,
+    ExamCenterControllerService,
     ApplicationService,
     PromoterService,
     CandidateService,
+    UserControllerService,
+    FileControllerService,
     DivisionService,
     ApiConfiguration
   ],

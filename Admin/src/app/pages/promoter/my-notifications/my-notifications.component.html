@@ -1,1 +1,45 @@
-<p>my-notifications works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Mes notifications</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let notif of notifications">
+                <td>{{ notif.title }}</td>
+                <td>{{ notif.message }}</td>
+                <td>{{ notif.date }}</td>
+                <td>
+                  <span [ngClass]="{'text-success': notif.read, 'text-warning': !notif.read}">
+                    {{ notif.read ? 'Lue' : 'Non lue' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="notifications.length === 0">
+                <td colspan="4" class="text-center">Aucune notification.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

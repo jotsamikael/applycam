@@ -49,7 +49,8 @@ import { SystemLogsComponent } from './staff/system-logs/system-logs.component';
 import { SystemBackupsComponent } from './staff/system-backups/system-backups.component';
 import { MyCertificatesComponent } from './candidate/my-certificates/my-certificates.component';
 import { MyPaymentsComponent } from './candidate/my-payments/my-payments.component';
-
+import { PaymentGatewaysComponent } from './staff/payment-gateways/payment-gateways.component';
+import { PromoterComponent } from './staff/promoter/promoter.component';
 
 const routes: Routes = [
   // { path: '', redirectTo: 'dashboard' },
@@ -68,6 +69,8 @@ const routes: Routes = [
   { path: 'session-management', component: SessionManagementComponent },
   { path: 'results-management', component: ResultsManagementComponent },
   { path: 'specialities-management', component: SpecialitiesManagementComponent },
+  { path: 'payment-gateway-management', component: PaymentGatewaysComponent }, 
+  { path: 'promoter', component: PromoterComponent },// <-- Ajouté ici
  // { path: 'staff-statistics', component: StaffStatisticsComponent },
 
   //promoter

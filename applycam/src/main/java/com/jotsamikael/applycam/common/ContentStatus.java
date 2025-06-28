@@ -1,8 +1,11 @@
 package com.jotsamikael.applycam.common;
 
 public enum ContentStatus {
-    SUBMITTED,
+    READYTOPAY,
     DRAFT,
-    PENDING_REVIEW,
-    APPROVED
+    PAID,
+    VALIDATED,
+    INCOMPLETED,
+    REJECTED,
+    PENDING
 }

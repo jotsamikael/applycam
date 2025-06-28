@@ -37,26 +37,26 @@ public class SpecialityController {
     
     @GetMapping("/get-by-trainingcenter")
     public ResponseEntity<PageResponse<SpecialityResponse>> getAllSpecialityByTrainingCenter(
-        @RequestBody SpecialityRequest specialityRequest,
+        @RequestParam Long trainingCenterId,
         @RequestParam(defaultValue = "0", required = false) int offset,
         @RequestParam(defaultValue = "10", required = false) int pageSize,
         @RequestParam(defaultValue = "name", required = false) String field,
         @RequestParam(defaultValue = "true", required = false) boolean order
     ){
 
-    return ResponseEntity.ok(specialityService.getallSpecialityOfTrainingCenter(specialityRequest,offset,pageSize, field,order));
+    return ResponseEntity.ok(specialityService.getallSpecialityOfTrainingCenter(trainingCenterId,offset,pageSize, field,order));
     }
     
     @GetMapping("/get-by-course")
     public ResponseEntity<PageResponse<SpecialityResponse>> getAllSpecialityOfCourse(
-        @RequestBody SpecialityCourseRequest specialityCourseRequest,
+        @RequestParam Long courseId,
         @RequestParam(defaultValue = "0", required = false) int offset,
         @RequestParam(defaultValue = "10", required = false) int pageSize,
         @RequestParam(defaultValue = "name", required = false) String field,
         @RequestParam(defaultValue = "true", required = false) boolean order
     ){
 
-    return ResponseEntity.ok(specialityService.getAllSpecialityOfCourse(specialityCourseRequest,offset,pageSize, field,order));
+    return ResponseEntity.ok(specialityService.getAllSpecialityOfCourse(courseId,offset,pageSize, field,order));
     }
     
     @PostMapping("/create")
@@ -111,6 +111,18 @@ public class SpecialityController {
     return ResponseEntity.ok(specialityService.findByName(name));
         }
     
+    
+    @GetMapping("/get-by-Exam/{examType}")
+    public ResponseEntity<PageResponse<SpecialityResponse>> getAllSpecialityOfCourse(
+        @PathVariable String examType,
+        @RequestParam(defaultValue = "0", required = false) int offset,
+        @RequestParam(defaultValue = "10", required = false) int pageSize,
+        @RequestParam(defaultValue = "name", required = false) String field,
+        @RequestParam(defaultValue = "true", required = false) boolean order
+    ){
+
+    return ResponseEntity.ok(specialityService.findAllByExamType(examType,offset,pageSize, field,order));
+    }
 
 
 }

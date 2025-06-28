@@ -1,1 +1,58 @@
-<p>my-payments works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Mes paiements</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>Libellé</th>
+                <th>Montant</th>
+                <th>Date</th>
+                <th>Méthode</th>
+                <th>Statut</th>
+                <th>Reçu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of payments">
+                <td>{{ payment.label }}</td>
+                <td>{{ payment.amount }}</td>
+                <td>{{ payment.date }}</td>
+                <td>{{ payment.method }}</td>
+                <td>
+                  <span [ngClass]="{
+                    'text-success': payment.status === 'Validé',
+                    'text-warning': payment.status === 'En attente',
+                    'text-danger': payment.status === 'Rejeté'
+                  }">
+                    {{ payment.status }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-primary btn-sm" *ngIf="payment.receiptUrl" (click)="downloadReceipt(payment)">
+                    <i class="bx bx-download"></i> Télécharger
+                  </button>
+                  <span *ngIf="!payment.receiptUrl" class="text-muted">Non disponible</span>
+                </td>
+              </tr>
+              <tr *ngIf="payments.length === 0">
+                <td colspan="6" class="text-center">Aucun paiement trouvé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

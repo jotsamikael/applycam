@@ -1,12 +1,16 @@
 package com.jotsamikael.applycam.trainingCenter;
 
+import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -64,9 +68,10 @@ public class TrainingCenterController {
             @PathVariable("agreement-number") String agreementNumber,
             @Parameter(description = "Agreement file to upload")
             @RequestParam MultipartFile file,
+            @RequestParam String fileType,
             Authentication connectedUser
     ){
-        service.uploadAgreementFile(file,connectedUser, agreementNumber);
+        service.uploadAgreementFile(file,connectedUser, agreementNumber,fileType);
         return  ResponseEntity.accepted().build();
     }
 
@@ -84,5 +89,29 @@ public class TrainingCenterController {
                                              Authentication connectedUser) {
        return ResponseEntity.ok(service.updateTrainingCenter(fullname, request,connectedUser));
    }
+   
+   @PatchMapping("/status/{fullName}")
+   public ResponseEntity<String> changeStatus(
+           @PathVariable String fullName,
+           @RequestParam ContentStatus status,
+           @RequestParam(required = false) String comment,
+           Authentication connectedUser) {
+       
+       try {
+           String result;
+           if (status == ContentStatus.VALIDATED) {
+               result = service.validateTrainingCenter(fullName,connectedUser);
+           } else {
+               result = service.changeTrainingCenterStatus(fullName, status, comment,connectedUser);
+           }
+           return ResponseEntity.ok(result);
+       } catch (EntityNotFoundException e) {
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+       } catch (RuntimeException e) {
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+       }
+   }
+   
+   
    
 }

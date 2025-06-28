@@ -3,6 +3,8 @@ package com.jotsamikael.applycam.auth;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jotsamikael.applycam.common.ContentStatus;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -26,11 +28,6 @@ public class CandidateRegistrationRequest {
     @NotNull(message = "Lastname can not be blank")
     private String lastname;
 
-    @NotEmpty(message = "Sex is mandatory")
-    @NotNull(message = "Sex can not be blank")
-    private String sex;
-
-
     @NotEmpty(message = "email is mandatory")
     @NotNull(message = "email can not be blank")
     @Email(message = "email is not formatted")
@@ -41,13 +38,6 @@ public class CandidateRegistrationRequest {
     @Size(min = 9, message = "Phone number must be 9 character minimum")
     private String phoneNumber;
 
-
-    @NotEmpty(message = "national Id number is mandatory")
-    @NotNull(message = "national Id  number can not be blank")
-    @Size(min = 9, message = "national Id  number must be 9 character minimum")
-    private String nationalIdNumber;
-
-
     @Size(min = 8, message = "Password should be 8 character minimum")
     private String password;
     
@@ -56,45 +46,20 @@ public class CandidateRegistrationRequest {
     @Size(min = 8, message = "Password should be 8 character minimum")
     private String confirmPassword;
     
-    @NotEmpty(message = "date of Birth  is mandatory")
-    @NotNull(message = "date of Birth  can not be blank")
-    private String dateOfBirth;
+    @NotNull(message = "the language Spoken   can not be blank")
+    private String language;
     
-    @NotEmpty(message = "place of Birth  is mandatory")
-    @NotNull(message = "place of Birth   can not be blank")
-    private String placeOfBirth;
+    @NotNull(message = "the Start year cannot be blank")
+    private String startYear;
+    @NotNull(message = "the End year cannot be blank")
+    private String endYear;
     
-    @NotEmpty(message = "School Level is mandatory")
-    @NotNull(message = "School Level is mandatory")
-    private String  highestSchoolLevel;
-    
-    @NotEmpty(message = "Father fullname is mandatory")
-    @NotNull(message = "Father fullname is mandatory")
-    private String fatherFullname;
-
-    @NotEmpty(message = "Mother fullname is mandatory")
-    @NotNull(message = "Mother fullname is mandatory")
-    private String motherFullname;
-
-    @NotEmpty(message = "Mother profession is mandatory")
-    @NotNull(message = " is mandatory")
-    private String motherProfession;
-
-    @NotEmpty(message = "Firstname is mandatory")
-    @NotNull(message = "Firstname is mandatory")
-    private String fatherProfession;
-
-    @NotEmpty(message = "Firstname is mandatory")
-    @NotNull(message = "Firstname is mandatory")
-    private String townOfResidence;
+    @NotNull(message = "the trainingCenter name  cannot be blank")
+    private String trainingCenterName;
     
     
     
-    private MultipartFile nationalIdCard;
     
-    private MultipartFile highestDiplomat;
     
-    private MultipartFile profilePicture;
     
-    private MultipartFile birthCertificate;
 }

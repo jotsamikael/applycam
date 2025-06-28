@@ -11,10 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { ApplicationRequest } from '../../models/application-request';
 
 export interface CandidateAppliance$Params {
-      body?: ApplicationRequest
+      body: ApplicationRequest
 }
 
-export function candidateAppliance(http: HttpClient, rootUrl: string, params?: CandidateAppliance$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+export function candidateAppliance(http: HttpClient, rootUrl: string, params: CandidateAppliance$Params, context?: HttpContext): Observable<StrictHttpResponse<{
 }>> {
   const rb = new RequestBuilder(rootUrl, candidateAppliance.PATH, 'post');
   if (params) {
@@ -32,4 +32,4 @@ export function candidateAppliance(http: HttpClient, rootUrl: string, params?: C
   );
 }
 
-candidateAppliance.PATH = '/application/apply/PersonalInformation';
+candidateAppliance.PATH = '/application/PersonalInformation';

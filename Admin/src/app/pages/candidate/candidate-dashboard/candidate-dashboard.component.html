@@ -1,1 +1,99 @@
-<p>candidate-dashboard works!</p>
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Tableau de bord du candidat</h4>
+        </div>
+        <button class="btn btn-danger" matTooltip="Déconnexion">
+          <i class="bx bx-log-out"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div *ngFor="let stat of candidateStats" class="col-md-4 d-inline-block">
+        <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+      </div>
+    </div>
+  </div>
+
+  <!-- Infos personnelles -->
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Mes informations</h4>
+          <table class="table table-bordered">
+            <tr>
+              <th>Nom</th>
+              <td>{{ candidate?.lastName }}</td>
+            </tr>
+            <tr>
+              <th>Prénom</th>
+              <td>{{ candidate?.firstName }}</td>
+            </tr>
+            <tr>
+              <th>Email</th>
+              <td>{{ candidate?.email }}</td>
+            </tr>
+            <tr>
+              <th>Téléphone</th>
+              <td>{{ candidate?.phone }}</td>
+            </tr>
+            <tr>
+              <th>Session</th>
+              <td>{{ candidate?.session }}</td>
+            </tr>
+            <tr>
+              <th>Centre d'examen</th>
+              <td>{{ candidate?.examCenter }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pièces jointes -->
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Mes pièces jointes</h4>
+          <table mat-table [dataSource]="attachments" class="mat-elevation-z8 w-100">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Nom</th>
+              <td mat-cell *matCellDef="let att">{{ att.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let att">
+                <span [ngClass]="{'text-success': att.status === 'Validée', 'text-danger': att.status !== 'Validée'}">
+                  {{ att.status }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let att">
+                <button mat-icon-button (click)="download(att)">
+                  <mat-icon>download</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" (click)="edit(att)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['name', 'status', 'actions']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['name', 'status', 'actions'];"></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,1 +1,57 @@
-<p>my-exams works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Mes examens</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>Intitulé</th>
+                <th>Session</th>
+                <th>Centre d'examen</th>
+                <th>Statut</th>
+                <th>Résultat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let exam of exams">
+                <td>{{ exam.title }}</td>
+                <td>{{ exam.session }}</td>
+                <td>{{ exam.examCenter }}</td>
+                <td>
+                  <span [ngClass]="{
+                    'text-success': exam.status === 'Terminé',
+                    'text-warning': exam.status !== 'Terminé'
+                  }">
+                    {{ exam.status }}
+                  </span>
+                </td>
+                <td>
+                  <span [ngClass]="{
+                    'text-success': exam.result === 'Admis',
+                    'text-danger': exam.result === 'Ajourné'
+                  }">
+                    {{ exam.result || '-' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="exams.length === 0">
+                <td colspan="5" class="text-center">Aucun examen trouvé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -26,7 +26,7 @@ public class StaffController {
         return ResponseEntity.ok(staffService.createStaff(request, connectedUser));
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<PageResponse<StaffResponse>> getAllStaffs(
             @RequestParam(defaultValue = "0", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int pageSize,

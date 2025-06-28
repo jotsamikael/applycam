@@ -23,5 +23,7 @@ public interface SessionRepository  extends JpaRepository<Session, Long>{
 	    Page<Session> findAllSession(Pageable pageable);
 
 	    Page<Session> findAllBySessionYear(String sessionYear,Pageable pageable);
+	    
+	    Optional<Session> findBySessionYearAndExamType(String sessionYear, String examType);
 
 }

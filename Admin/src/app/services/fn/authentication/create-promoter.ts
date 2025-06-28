@@ -11,22 +11,14 @@ import { RequestBuilder } from '../../request-builder';
 import { CreatePromoterAndCenterRequest } from '../../models/create-promoter-and-center-request';
 
 export interface CreatePromoter$Params {
-      body?: {
-'promoterData': CreatePromoterAndCenterRequest;
-'approvalFile': Blob;
-'cniFile': Blob;
-'engagementLetter': Blob;
-'internalRegulation': Blob;
-'locationPlan': Blob;
-'promoterPhoto': Blob;
-}
+      body: CreatePromoterAndCenterRequest
 }
 
-export function createPromoter(http: HttpClient, rootUrl: string, params?: CreatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+export function createPromoter(http: HttpClient, rootUrl: string, params: CreatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<{
 }>> {
   const rb = new RequestBuilder(rootUrl, createPromoter.PATH, 'post');
   if (params) {
-    rb.body(params.body, 'multipart/form-data');
+    rb.body(params.body, 'application/json');
   }
 
   return http.request(

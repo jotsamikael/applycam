@@ -9,10 +9,9 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 import { PageResponseSpecialityResponse } from '../../models/page-response-speciality-response';
-import { SpecialityCourseRequest } from '../../models/speciality-course-request';
 
 export interface GetAllSpecialityOfCourse$Params {
-  specialityCourseRequest: SpecialityCourseRequest;
+  courseId: number;
   offset?: number;
   pageSize?: number;
   field?: string;
@@ -22,7 +21,7 @@ export interface GetAllSpecialityOfCourse$Params {
 export function getAllSpecialityOfCourse(http: HttpClient, rootUrl: string, params: GetAllSpecialityOfCourse$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
   const rb = new RequestBuilder(rootUrl, getAllSpecialityOfCourse.PATH, 'get');
   if (params) {
-    rb.query('specialityCourseRequest', params.specialityCourseRequest, {});
+    rb.query('courseId', params.courseId, {});
     rb.query('offset', params.offset, {});
     rb.query('pageSize', params.pageSize, {});
     rb.query('field', params.field, {});

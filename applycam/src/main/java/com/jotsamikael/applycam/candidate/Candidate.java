@@ -3,10 +3,13 @@ package com.jotsamikael.applycam.candidate;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.common.ContentStatus;
+import com.jotsamikael.applycam.examCenter.ExamCenter;
 import com.jotsamikael.applycam.hasSchooled.HasSchooled;
 import com.jotsamikael.applycam.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -30,7 +33,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "_candidate")
 public class Candidate extends User {
-    private String sex;
+    
     private String placeOfBirth;
     private String motherFullName;
     private String fatherFullName;
@@ -38,13 +41,26 @@ public class Candidate extends User {
     private String fatherProfession;
     private String highestSchoolLevel;
     private String nationality;
-    private String townOfResidence;
+    private String regionOrigins;
     private boolean freeCandidate;
     private boolean repeatCandidate;
+    private String townOfResidence;
+    private String language;
+    private String departmentOfOrigin;
+    private String matrimonialSituation;
+    private String learningLanguage;
+    private String formationMode;
+    private String financialRessource;
+    private int numberOfKid;
     
     
-
-
+    
+    
+    private String cvUrl;
+    private String letterUrl;
+    private String financialJustificationUrl;
+    private String stageCertificateUrl;
+    private String oldApplyanceUrl;
     private String profilePictureUrl;
     private String birthCertificateUrl;
     private String nationalIdCardUrl;
@@ -57,4 +73,8 @@ public class Candidate extends User {
 
     @OneToMany(mappedBy = "candidate")
     private List<Application> applicationList;
+    
+    @ManyToOne
+    @JoinColumn(name = "exam_center_id")
+    private ExamCenter examCenter;
 }

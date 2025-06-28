@@ -11,8 +11,24 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { ApplicationResponse } from '../models/application-response';
 import { candidateAppliance } from '../fn/application/candidate-appliance';
 import { CandidateAppliance$Params } from '../fn/application/candidate-appliance';
+import { deleteApplication } from '../fn/application/delete-application';
+import { DeleteApplication$Params } from '../fn/application/delete-application';
+import { getAllApplications } from '../fn/application/get-all-applications';
+import { GetAllApplications$Params } from '../fn/application/get-all-applications';
+import { getMyApplications } from '../fn/application/get-my-applications';
+import { GetMyApplications$Params } from '../fn/application/get-my-applications';
+import { PageResponseApplicationResponse } from '../models/page-response-application-response';
+import { rejectApplication } from '../fn/application/reject-application';
+import { RejectApplication$Params } from '../fn/application/reject-application';
+import { searchApplicationsByCandidateName } from '../fn/application/search-applications-by-candidate-name';
+import { SearchApplicationsByCandidateName$Params } from '../fn/application/search-applications-by-candidate-name';
+import { uploadCandidateFile } from '../fn/application/upload-candidate-file';
+import { UploadCandidateFile$Params } from '../fn/application/upload-candidate-file';
+import { validateApplication } from '../fn/application/validate-application';
+import { ValidateApplication$Params } from '../fn/application/validate-application';
 
 @Injectable({ providedIn: 'root' })
 export class ApplicationService extends BaseService {
@@ -20,8 +36,33 @@ export class ApplicationService extends BaseService {
     super(config, http);
   }
 
+  /** Path part for operation `rejectApplication()` */
+  static readonly RejectApplicationPath = '/application/reject/{id}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `rejectApplication()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  rejectApplication$Response(params: RejectApplication$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return rejectApplication(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `rejectApplication$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  rejectApplication(params: RejectApplication$Params, context?: HttpContext): Observable<string> {
+    return this.rejectApplication$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
   /** Path part for operation `candidateAppliance()` */
-  static readonly CandidateAppliancePath = '/application/apply/PersonalInformation';
+  static readonly CandidateAppliancePath = '/application/PersonalInformation';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
@@ -29,7 +70,7 @@ export class ApplicationService extends BaseService {
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  candidateAppliance$Response(params?: CandidateAppliance$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+  candidateAppliance$Response(params: CandidateAppliance$Params, context?: HttpContext): Observable<StrictHttpResponse<{
 }>> {
     return candidateAppliance(this.http, this.rootUrl, params, context);
   }
@@ -40,12 +81,166 @@ export class ApplicationService extends BaseService {
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  candidateAppliance(params?: CandidateAppliance$Params, context?: HttpContext): Observable<{
+  candidateAppliance(params: CandidateAppliance$Params, context?: HttpContext): Observable<{
 }> {
     return this.candidateAppliance$Response(params, context).pipe(
       map((r: StrictHttpResponse<{
 }>): {
 } => r.body)
+    );
+  }
+
+  /** Path part for operation `validateApplication()` */
+  static readonly ValidateApplicationPath = '/application/validate/{id}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `validateApplication()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  validateApplication$Response(params: ValidateApplication$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return validateApplication(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `validateApplication$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  validateApplication(params: ValidateApplication$Params, context?: HttpContext): Observable<string> {
+    return this.validateApplication$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteApplication()` */
+  static readonly DeleteApplicationPath = '/application/delete/{applicationId}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteApplication()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteApplication$Response(params: DeleteApplication$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteApplication(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteApplication$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteApplication(params: DeleteApplication$Params, context?: HttpContext): Observable<void> {
+    return this.deleteApplication$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `uploadCandidateFile()` */
+  static readonly UploadCandidateFilePath = '/application/PersonalInformation/documents';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `uploadCandidateFile()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  uploadCandidateFile$Response(params?: UploadCandidateFile$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+}>> {
+    return uploadCandidateFile(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `uploadCandidateFile$Response()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  uploadCandidateFile(params?: UploadCandidateFile$Params, context?: HttpContext): Observable<{
+}> {
+    return this.uploadCandidateFile$Response(params, context).pipe(
+      map((r: StrictHttpResponse<{
+}>): {
+} => r.body)
+    );
+  }
+
+  /** Path part for operation `getMyApplications()` */
+  static readonly GetMyApplicationsPath = '/application/my-applications';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getMyApplications()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getMyApplications$Response(params?: GetMyApplications$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<ApplicationResponse>>> {
+    return getMyApplications(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getMyApplications$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getMyApplications(params?: GetMyApplications$Params, context?: HttpContext): Observable<Array<ApplicationResponse>> {
+    return this.getMyApplications$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<ApplicationResponse>>): Array<ApplicationResponse> => r.body)
+    );
+  }
+
+  /** Path part for operation `searchApplicationsByCandidateName()` */
+  static readonly SearchApplicationsByCandidateNamePath = '/application/get-application-By-candidate';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `searchApplicationsByCandidateName()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchApplicationsByCandidateName$Response(params: SearchApplicationsByCandidateName$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<ApplicationResponse>>> {
+    return searchApplicationsByCandidateName(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `searchApplicationsByCandidateName$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchApplicationsByCandidateName(params: SearchApplicationsByCandidateName$Params, context?: HttpContext): Observable<Array<ApplicationResponse>> {
+    return this.searchApplicationsByCandidateName$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<ApplicationResponse>>): Array<ApplicationResponse> => r.body)
+    );
+  }
+
+  /** Path part for operation `getAllApplications()` */
+  static readonly GetAllApplicationsPath = '/application/get-all';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAllApplications()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllApplications$Response(params?: GetAllApplications$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseApplicationResponse>> {
+    return getAllApplications(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAllApplications$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllApplications(params?: GetAllApplications$Params, context?: HttpContext): Observable<PageResponseApplicationResponse> {
+    return this.getAllApplications$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseApplicationResponse>): PageResponseApplicationResponse => r.body)
     );
   }
 

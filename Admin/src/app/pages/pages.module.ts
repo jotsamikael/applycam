@@ -116,6 +116,8 @@ import { SystemLogsComponent } from './staff/system-logs/system-logs.component';
 import { SystemBackupsComponent } from './staff/system-backups/system-backups.component';
 import { MyCertificatesComponent } from './candidate/my-certificates/my-certificates.component';
 import { MyPaymentsComponent } from './candidate/my-payments/my-payments.component';
+import { PaymentGatewaysComponent } from './staff/payment-gateways/payment-gateways.component';
+import { PromoterComponent } from './staff/promoter/promoter.component';
 
 @NgModule({
   declarations: [
@@ -162,6 +164,8 @@ import { MyPaymentsComponent } from './candidate/my-payments/my-payments.compone
     SystemBackupsComponent,
     MyCertificatesComponent,
     MyPaymentsComponent,
+    PaymentGatewaysComponent,
+    PromoterComponent,
   ],
   imports: [
     MatAutocompleteModule,

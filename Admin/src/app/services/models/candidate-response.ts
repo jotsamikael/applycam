@@ -4,7 +4,7 @@
 
 export interface CandidateResponse {
   birthCertificateUrl?: string;
-  contentStatus?: 'SUBMITTED' | 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED';
+  contentStatus?: 'READYTOPAY' | 'DRAFT' | 'PAID' | 'VALIDATED' | 'INCOMPLETED' | 'REJECTED' | 'PENDING';
   dateOfBirth?: string;
   email?: string;
   fatherFullName?: string;

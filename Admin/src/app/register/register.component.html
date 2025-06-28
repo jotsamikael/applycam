@@ -37,134 +37,400 @@
 
               <!-- Form -->
               <form [formGroup]="candidateForm" (ngSubmit)="registerCandidate()">
-                <!-- Step 1: Personal Info -->
+                <!-- Step 1: Account Creation -->
                 <div *ngIf="currentStepCandidate === 0" class="space-y-4 mt-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="form-label">Nom complet </label>
-                      <input formControlName="fullName" class="form-control">
+                      <label class="form-label">Nom <span class="text-danger">*</span></label>
+                      <input formControlName="lastName" class="form-control" required>
+                      <small *ngIf="candidateForm.get('lastName')?.touched && candidateForm.get('lastName')?.invalid" 
+                             class="text-danger">
+                        Le nom est requis
+                      </small>
                     </div>
                     <div>
-                      <label class="form-label">Email </label>
-                      <input formControlName="email" type="email" class="form-control">
+                      <label class="form-label">Prénoms <span class="text-danger">*</span></label>
+                      <input formControlName="firstName" class="form-control" required>
+                      <small *ngIf="candidateForm.get('firstName')?.touched && candidateForm.get('firstName')?.invalid" 
+                             class="text-danger">
+                        Les prénoms sont requis
+                      </small>
                     </div>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="form-label">Sexe </label>
-                      <select formControlName="sex" class="form-select">
+                      <label class="form-label">Email <span class="text-danger">*</span></label>
+                      <input formControlName="email" type="email" class="form-control" required>
+                      <small *ngIf="candidateForm.get('email')?.touched && candidateForm.get('email')?.invalid" 
+                             class="text-danger">
+                        Email invalide
+                      </small>
+                    </div>
+                    <div>
+                      <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                      <input formControlName="phoneNumber" class="form-control" required>
+                      <small *ngIf="candidateForm.get('phoneNumber')?.touched && candidateForm.get('phoneNumber')?.invalid" 
+                             class="text-danger">
+                        Numéro de téléphone invalide
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Mot de passe <span class="text-danger">*</span></label>
+                      <input formControlName="password" type="password" class="form-control" required>
+                      <small *ngIf="candidateForm.get('password')?.touched && candidateForm.get('password')?.invalid" 
+                             class="text-danger">
+                        <div *ngIf="candidateForm.get('password')?.errors?.required">Mot de passe requis</div>
+                        <div *ngIf="candidateForm.get('password')?.errors?.minlength">Minimum 8 caractères</div>
+                        <div *ngIf="candidateForm.get('password')?.errors?.pattern">
+                          Doit contenir au moins une majuscule, une minuscule et un chiffre
+                        </div>
+                      </small>
+                    </div>
+                    <div>
+                      <label class="form-label">Confirmation <span class="text-danger">*</span></label>
+                      <input formControlName="confirmPassword" type="password" class="form-control" required>
+                      <small *ngIf="candidateForm.get('confirmPassword')?.touched && 
+                                  candidateForm.get('confirmPassword')?.invalid" 
+                             class="text-danger">
+                        <div *ngIf="candidateForm.get('confirmPassword')?.errors?.required">
+                          Confirmation requise
+                        </div>
+                        <div *ngIf="candidateForm.get('confirmPassword')?.errors?.passwordMismatch">
+                          Les mots de passe ne correspondent pas
+                        </div>
+                      </small>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="form-label">Langue préférée</label>
+                    <select formControlName="preferredLanguage" class="form-select">
+                      <option value="fr">Français</option>
+                      <option value="en">Anglais</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Step 2: Personal Information -->
+                <div *ngIf="currentStepCandidate === 1" class="space-y-4 mt-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                      <select formControlName="sex" class="form-select" required>
                         <option value="">Sélectionner</option>
                         <option value="M">Masculin</option>
                         <option value="F">Féminin</option>
                       </select>
                     </div>
                     <div>
-                      <label class="form-label">Date de naissance </label>
-                      <input formControlName="dateOfBirth" type="date" class="form-control">
+                      <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                      <input formControlName="dateOfBirth" type="date" class="form-control" required>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="form-label">Lieu de naissance (Ville) <span class="text-danger">*</span></label>
+                      <input formControlName="birthCity" class="form-control" required>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="form-label">Région</label>
+                    <select formControlName="region" class="form-select">
+                      <option value="">Sélectionner</option>
+                      <option value="Adamaoua">Adamaoua</option>
+                      <option value="Centre">Centre</option>
+                      <option value="Est">Est</option>
+                      <option value="Extrême-Nord">Extrême-Nord</option>
+                      <option value="Littoral">Littoral</option>
+                      <option value="Nord">Nord</option>
+                      <option value="Nord-Ouest">Nord-Ouest</option>
+                      <option value="Ouest">Ouest</option>
+                      <option value="Sud">Sud</option>
+                      <option value="Sud-Ouest">Sud-Ouest</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label">Département</label>
+                    <select formControlName="departement" class="form-select" [disabled]="!promoterForm.value.region">
+                      <option value="">Sélectionnez d'abord une région</option>
+                      <option *ngFor="let dept of departmentsByRegion[candidateForm.value.region]" [value]="dept">
+                        {{dept}}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Nationalité <span class="text-danger">*</span></label>
+                      <input formControlName="nationality" class="form-control" required>
+                    </div>
+                    <div>
+                      <label class="form-label">Région d'origine <span class="text-danger">*</span></label>
+                      <select formControlName="originRegion" class="form-select" required>
+                      <option value="">Sélectionner</option>
+                      <option value="Adamaoua">Adamaoua</option>
+                      <option value="Centre">Centre</option>
+                      <option value="Est">Est</option>
+                      <option value="Extrême-Nord">Extrême-Nord</option>
+                      <option value="Littoral">Littoral</option>
+                      <option value="Nord">Nord</option>
+                      <option value="Nord-Ouest">Nord-Ouest</option>
+                      <option value="Ouest">Ouest</option>
+                      <option value="Sud">Sud</option>
+                      <option value="Sud-Ouest">Sud-Ouest</option>
+                      </select>
                     </div>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="form-label">Téléphone </label>
-                      <input formControlName="phoneNumber" class="form-control">
-                    </div>
-                     <div>
-                      <label class="form-label">Mot de passe</label>
-                      <input formControlName="password" type="password" class="form-control" 
-                            placeholder="Minimum 8 caractères">
-                      <small>
-                        <div *ngIf="candidatePassword?.touched && candidatePassword?.invalid" class="text-danger">
-                        <div *ngIf="candidatePassword?.errors?.required">Mot de passe requis</div>
-                        <div *ngIf="candidatePassword?.errors?.minlength">Minimum 8 caractères</div>
-                        <div *ngIf="candidatePassword?.errors?.pattern">
-                          Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre
-                        </div>
-                      </div>
-                      </small>
+                      <label class="form-label">Situation matrimoniale</label>
+                      <select formControlName="maritalStatus" class="form-select">
+                        <option value="">Sélectionner</option>
+                        <option value="single">Célibataire</option>
+                        <option value="married">Marié(e)</option>
+                        <option value="divorced">Divorcé(e)</option>
+                        <option value="widowed">Veuf/Veuve</option>
+                      </select>
                     </div>
                     <div>
-                      <label class="form-label">Confirmer le mot de passe</label>
-                      <input formControlName="confirmPassword" type="password" class="form-control" 
-                            placeholder="Retapez votre mot de passe">
-                      <small *ngIf="candidateForm.get('confirmPassword')?.touched && candidateForm.get('confirmPassword')?.invalid" class="text-danger">
-                        <div *ngIf="candidateForm.get('confirmPassword')?.errors?.required">Confirmation requise</div>
-                        <div *ngIf="candidateForm.get('confirmPassword')?.errors?.passwordMismatch">Les mots de passe ne correspondent pas</div>
-                      </small>
+                      <label class="form-label">Nombre d'enfants</label>
+                      <input formControlName="childrenCount" type="number" min="0" class="form-control">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="form-label">Langue d'enseignement <span class="text-danger">*</span></label>
+                    <select formControlName="teachingLanguage" class="form-select" required>
+                      <option value="fr">Français</option>
+                      <option value="en">Anglais</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Step 3: Exam Information -->
+                <div *ngIf="currentStepCandidate === 2" class="space-y-4 mt-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Première candidature ? <span class="text-danger">*</span></label>
+                      <select formControlName="isFirstAttempt" class="form-select" required>
+                        <option value="">Sélectionner</option>
+                        <option value="true">Oui</option>
+                        <option value="false">Non</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="form-label">Type d'examen <span class="text-danger">*</span></label>
+                      <select formControlName="examType" class="form-select" required>
+                        <option value="">Sélectionner</option>
+                        <option value="CQP">CQP</option>
+                        <option value="DQP">DQP</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="form-label">Filière souhaitée <span class="text-danger">*</span></label>
+                    <select formControlName="desiredField" class="form-select" required>
+                      <option value="">Sélectionner</option>
+                      <option *ngFor="let field of fieldsByExamType[candidateForm.value.examType]" [value]="field">
+                        {{field}}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Code du centre de formation</label>
+                      <input formControlName="trainingCenterCode" class="form-control">
+                    </div>
+                    <div>
+                      <label class="form-label">Nom du centre</label>
+                      <input formControlName="trainingCenterName" class="form-control" disabled>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Ville du centre</label>
+                      <input formControlName="trainingCenterCity" class="form-control" disabled>
+                    </div>
+                    <div>
+                      <label class="form-label">Session d'examen <span class="text-danger">*</span></label>
+                      <input formControlName="examSession" type="month" class="form-control" required>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Mode de formation <span class="text-danger">*</span></label>
+                      <select formControlName="trainingMode" class="form-select" required>
+                        <option value="">Sélectionner</option>
+                        <option value="presentiel">Présentiel</option>
+                        <option value="alternance">Alternance</option>
+                        <option value="continue">Formation Continue</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="form-label">Source de financement <span class="text-danger">*</span></label>
+                      <select formControlName="fundingSource" class="form-select" required>
+                        <option value="">Sélectionner</option>
+                        <option value="personal">Personnel</option>
+                        <option value="fne">FNE</option>
+                        <option value="company">Entreprise</option>
+                        <option value="other">Autre</option>
+                      </select>
                     </div>
                   </div>
                 </div>
 
-              <!-- Dans la section Step 2: Documents du candidat -->
-<div *ngIf="currentStepCandidate === 1" class="space-y-4 mt-4">
-  <div class="border rounded p-4">
-  <label class="form-label">Photo de profil <span class="text-danger">*</span></label>
-  <input type="file" class="form-control mt-2" 
-         (change)="onCandidateFileChange($event, 'profilePhoto')"
-         accept=".jpg,.jpeg,.png">
-  <small *ngIf="candidateForm.get('profilePhoto')?.touched && candidateForm.get('profilePhoto')?.invalid" 
-         class="text-danger">
-    Photo de profil requise
-  </small>
-</div>
-  
-  <div class="border rounded p-4">
-    <label class="form-label">Acte de naissance </label>
-    <input type="file" class="form-control mt-2" 
-           (change)="onCandidateFileChange($event, 'birthCertificate')"
-           accept=".pdf,.jpg,.jpeg,.png">
-  </div>
-</div>
-                <!-- Step 3: Confirmation -->
-<div *ngIf="currentStepCandidate === 2" class="space-y-4 mt-4">
-  <div class="bg-blue-50 p-4 rounded">
-    <h3 class="font-medium text-blue-800">Vérification des informations</h3>
-    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Informations personnelles -->
-      <div class="space-y-2">
-        <h4 class="font-semibold text-blue-700 border-b pb-1">Informations personnelles</h4>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="font-medium">Nom complet:</div>
-          <div>{{candidateForm.value.fullName || 'Non renseigné'}}</div>
-          
-          <div class="font-medium">Email:</div>
-          <div>{{candidateForm.value.email || 'Non renseigné'}}</div>
-          
-          <div class="font-medium">Sexe:</div>
-          <div>{{candidateForm.value.sex === 'M' ? 'Masculin' : 
-                candidateForm.value.sex === 'F' ? 'Féminin' : 'Non renseigné'}}</div>
-          
-          <div class="font-medium">Date de naissance:</div>
-          <div>{{candidateForm.value.dateOfBirth | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
-          
-          <div class="font-medium">Téléphone:</div>
-          <div>{{candidateForm.value.phoneNumber || 'Non renseigné'}}</div>
-          <div class="font-medium">Mot de passe:</div>
-          <div>••••••••</div>
-        </div>
-      </div>
+                <!-- Step 4: Documents Upload -->
+                <div *ngIf="currentStepCandidate === 3" class="space-y-4 mt-4">
+                  <div class="border rounded p-4">
+                    <label class="form-label">Acte de naissance (PDF/Image) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control mt-2" 
+                           (change)="onCandidateFileChange($event, 'birthCertificate')"
+                           accept=".pdf,.jpg,.jpeg,.png" required>
+                    <small class="text-muted">Taille maximale : 5 Mo</small>
+                  </div>
 
-      <!-- Documents -->
-      <div class="space-y-2">
-        <h4 class="font-semibold text-blue-700 border-b pb-1">Documents</h4>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="font-medium">Photo de profil:</div>
-          <div>{{candidateForm.value.profilePhoto ? 'Uploadé' : 'Manquant'}}</div>
-          
-          <div class="font-medium">Acte de naissance:</div>
-          <div>{{candidateForm.value.birthCertificate ? 'Uploadé' : 'Manquant'}}</div>
-        </div>
-      </div>
-    </div>
-  </div>
+                  <div class="border rounded p-4">
+                    <label class="form-label">Pièce d'identité (CNI/Passeport) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control mt-2" 
+                           (change)="onCandidateFileChange($event, 'identityDocument')"
+                           accept=".pdf,.jpg,.jpeg,.png" required>
+                  </div>
 
-  <div class="mt-4">
-    <mat-checkbox formControlName="termsAccepted">
-      J'accepte les conditions d'utilisation
-    </mat-checkbox>
-  </div>
-</div>
+                  <div class="border rounded p-4">
+                    <label class="form-label">Diplôme/Attestation <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control mt-2" 
+                           (change)="onCandidateFileChange($event, 'diploma')"
+                           accept=".pdf,.jpg,.jpeg,.png" required>
+                  </div>
+
+                  <div class="border rounded p-4">
+                    <label class="form-label">Photos d'identité 4x4 (2 photos) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control mt-2" 
+                           (change)="onCandidateFileChange($event, 'identityPhotos')"
+                           accept=".jpg,.jpeg,.png" multiple required>
+                  </div>
+
+                  <div class="border rounded p-4">
+                    <label class="form-label">Justificatif première candidature</label>
+                    <input type="file" class="form-control mt-2" 
+                           (change)="onCandidateFileChange($event, 'firstAttemptProof')"
+                           accept=".pdf,.jpg,.jpeg,.png">
+                  </div>
+
+                  <div class="border rounded p-4">
+                    <label class="form-label">Lettre de motivation (facultative)</label>
+                    <input type="file" class="form-control mt-2" 
+                           (change)="onCandidateFileChange($event, 'motivationLetter')"
+                           accept=".pdf">
+                  </div>
+                </div>
+
+                <!-- Step 5: Verification and Payment -->
+                <div *ngIf="currentStepCandidate === 4" class="space-y-4 mt-4">
+                  <div class="bg-blue-50 p-4 rounded">
+                    <h3 class="font-medium text-blue-800">Vérification des informations</h3>
+                    
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Personal Info -->
+                      <div class="space-y-2">
+                        <h4 class="font-semibold text-blue-700 border-b pb-1">Informations personnelles</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                          <div class="font-medium">Nom complet:</div>
+                          <div>{{candidateForm.value.lastName}} {{candidateForm.value.firstName}}</div>
+                          
+                          <div class="font-medium">Email:</div>
+                          <div>{{candidateForm.value.email}}</div>
+                          
+                          <div class="font-medium">Téléphone:</div>
+                          <div>{{candidateForm.value.phoneNumber}}</div>
+                          
+                          <div class="font-medium">Date de naissance:</div>
+                          <div>{{candidateForm.value.dateOfBirth | date:'dd/MM/yyyy'}}</div>
+                          
+                          <div class="font-medium">Lieu de naissance:</div>
+                          <div>{{candidateForm.value.birthCity}}, {{candidateForm.value.birthDepartment}}</div>
+                        </div>
+                      </div>
+
+                      <!-- Exam Info -->
+                      <div class="space-y-2">
+                        <h4 class="font-semibold text-blue-700 border-b pb-1">Informations d'examen</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                          <div class="font-medium">Type d'examen:</div>
+                          <div>{{candidateForm.value.examType}}</div>
+                          
+                          <div class="font-medium">Filière:</div>
+                          <div>{{candidateForm.value.desiredField}}</div>
+                          
+                          <div class="font-medium">Centre de formation:</div>
+                          <div>{{candidateForm.value.trainingCenterName || 'Non spécifié'}}</div>
+                          
+                          <div class="font-medium">Session:</div>
+                          <div>{{candidateForm.value.examSession | date:'MM/yyyy'}}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="mt-4">
+                      <h4 class="font-semibold text-blue-700 border-b pb-1">Documents</h4>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="font-medium">Acte de naissance:</div>
+                        <div>{{candidateForm.value.birthCertificate ? '✓' : '✗'}}</div>
+                        
+                        <div class="font-medium">Pièce d'identité:</div>
+                        <div>{{candidateForm.value.identityDocument ? '✓' : '✗'}}</div>
+                        
+                        <div class="font-medium">Diplôme/Attestation:</div>
+                        <div>{{candidateForm.value.diploma ? '✓' : '✗'}}</div>
+                        
+                        <div class="font-medium">Photos d'identité:</div>
+                        <div>{{candidateForm.value.identityPhotos ? '✓' : '✗'}}</div>
+                      </div>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="mt-4">
+                      <h4 class="font-semibold text-blue-700">Frais d'inscription</h4>
+                      <div class="text-xl font-bold mt-2">
+                        Montant total: {{calculateFees() | currency:'XAF':'symbol':'1.0-0'}}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4">
+                    <mat-checkbox formControlName="termsAccepted" required>
+                      J'accepte les conditions d'utilisation
+                    </mat-checkbox>
+                  </div>
+
+                  <div class="mt-4">
+                    <h4 class="font-semibold">Méthode de paiement</h4>
+                    <div class="flex flex-wrap gap-4 mt-2">
+                      <div *ngFor="let method of paymentMethods" class="flex items-center">
+                        <input type="radio" [id]="method.id" name="paymentMethod" 
+                               [value]="method.value" [(ngModel)]="selectedPaymentMethod">
+                        <label [for]="method.id" class="flex items-center cursor-pointer">
+                          <img [src]="method.logo" [alt]="method.label" class="h-6 mr-2">
+                          {{method.label}}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Navigation -->
                 <div class="flex justify-between mt-6">
                   <button *ngIf="currentStepCandidate > 0" type="button" 
@@ -174,13 +440,15 @@
                   <div *ngIf="currentStepCandidate === 0"></div>
 
                   <button *ngIf="currentStepCandidate < candidateSteps.length - 1" type="button"
-                    class="btn btn-primary" (click)="nextCandidateStep()">
+                    class="btn btn-primary" (click)="nextCandidateStep()" 
+                    [disabled]="!isCurrentStepValid()">
                     Suivant
                   </button>
 
                   <button *ngIf="currentStepCandidate === candidateSteps.length - 1" type="button"
-                    class="btn btn-success" (click)="registerCandidate()" [disabled]="processing">
-                    <span *ngIf="!processing">S'inscrire</span>
+                    class="btn btn-success" (click)="processPayment()" 
+                    [disabled]="processing || candidateForm.invalid || !candidateForm.value.termsAccepted">
+                    <span *ngIf="!processing">Payer et finaliser</span>
                     <span *ngIf="processing">En cours...</span>
                   </button>
                 </div>
@@ -376,9 +644,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="form-label">Année de création</label>
-                    <input formControlName="creationDate" type="number" class="form-control" 
-                          (change)="calculateCenterAge()" min="1900" [max]="currentDate">
+                    <label class="form-label">Date de création</label>
+                    <input formControlName="creationDate" type="date" class="form-control" 
+                           min="1900" [max]="currentDate">
                   </div>
                   <div>
   <label>Âge du centre :</label>

@@ -1,1 +1,384 @@
-<p>help-support-inquiry works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Aide & Support - Guide Utilisateur</h4>
+          <p class="text-muted">Version complète - Juin 2024</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-2 mt-3">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-body bg-light">
+          <h5 class="card-title">Bienvenue sur la plateforme de gestion des examens CQP/DQP</h5>
+          <p class="card-text">
+            Ce système digital vise à moderniser l'ensemble du processus d'inscription, de gestion des examens 
+            et de publication des résultats pour les qualifications professionnelles.
+          </p>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Nouveauté :</strong> La plateforme élimine la double saisie manuelle et automatise la répartition géographique des candidats.
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Candidats -->
+      <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-user-graduate me-2"></i>
+            Guide du Candidat - Procédures Complètes
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="accordion" id="candidateAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#candidateProcess">
+                  Procédure d'inscription détaillée
+                </button>
+              </h2>
+              <div id="candidateProcess" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <ol class="list-group list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                      <div class="ms-2 me-auto">
+                        <div class="fw-bold">Création de compte</div>
+                        Fournir : Email valide, CNI, informations personnelles exactes
+                      </div>
+                      <span class="badge bg-primary rounded-pill">Obligatoire</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                      <div class="ms-2 me-auto">
+                        <div class="fw-bold">Dépôt numérique</div>
+                        Documents requis :
+                        <ul class="mt-2">
+                          <li>Acte de naissance (fiche timbrée au verso)</li>
+                          <li>Photocopie certifiée du diplôme requis</li>
+                          <li>CNI valide (recto-verso)</li>
+                          <li>Photo d'identité récente</li>
+                        </ul>
+                      </div>
+                      <span class="badge bg-primary rounded-pill">PDF uniquement</span>
+                    </li>
+                    <li class="list-group-item">
+                      <div class="fw-bold">Validation par le promoteur</div>
+                      Votre promoteur déposera le dossier physique comprenant :
+                      <ul class="mt-2">
+                        <li>Votre fiche d'inscription imprimée</li>
+                        <li>Les copies certifiées conformes</li>
+                        <li>L'agrément du centre de formation</li>
+                      </ul>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#candidateFollowup">
+                  Suivi post-inscription
+                </button>
+              </h2>
+              <div id="candidateFollowup" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-calendar-check me-2"></i>Calendrier</h6>
+                      <ul>
+                        <li><strong>CQP :</strong> Sessions multiples (Masse, Joie, Septembre, Décembre)</li>
+                        <li><strong>DQP :</strong> Session annuelle (Septembre) avec stage obligatoire de 2 mois</li>
+                      </ul>
+                    </div>
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-map-marker-alt me-2"></i>Affectation</h6>
+                      <p>
+                        Vous serez automatiquement affecté à un centre dans votre région.
+                        Consultez votre espace personnel 30 jours avant l'examen.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-hand-holding-usd me-2"></i>
+            <strong>Transparence financière :</strong> Les frais officiels sont affichés dans votre espace. Signalez toute majoration abusive.
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Promoteurs -->
+      <div class="card mb-4 border-success">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-user-tie me-2"></i>
+            Guide du Promoteur - Responsabilités Clés
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6><i class="fas fa-clipboard-list me-2"></i>Gestion des candidats</h6>
+              <ul>
+                <li>Visualisation en temps réel des dossiers</li>
+                <li>Alertes pour documents manquants</li>
+                <li>Export PDF des listes candidates</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6><i class="fas fa-building me-2"></i>Gestion des centres</h6>
+              <ul>
+                <li>Mise à jour des informations du centre</li>
+                <li>Vérification de l'agrément en ligne</li>
+                <li>Suivi des filières autorisées</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 p-3 bg-light rounded">
+            <h6><i class="fas fa-exclamation-circle text-danger me-2"></i>Obligations réglementaires</h6>
+            <ol>
+              <li>Dépôt physique des dossiers complets dans les 15 jours suivant l'inscription en ligne</li>
+              <li>Fourniture de l'agrément valide pour chaque dossier</li>
+              <li>Respect strict des frais d'inscription officiels</li>
+            </ol>
+          </div>
+
+          <table class="table table-bordered mt-3">
+            <thead class="table-dark">
+              <tr>
+                <th>Document</th>
+                <th>Format</th>
+                <th>Échéance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Fiche d'inscription</td>
+                <td>Original + 2 copies</td>
+                <td>Avant examen</td>
+              </tr>
+              <tr>
+                <td>Agrément du centre</td>
+                <td>Copie certifiée</td>
+                <td>Valide 6 mois</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section Ministère -->
+      <div class="card mb-4 border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-landmark me-2"></i>
+            Guide du Responsable Ministériel - Workflow Complet
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="accordion" id="ministryAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#validationProcess">
+                  Validation des dossiers
+                </button>
+              </h2>
+              <div id="validationProcess" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h6 class="card-title"><i class="fas fa-check-circle text-success me-2"></i>Vérifications</h6>
+                          <ul>
+                            <li>Complétude du dossier</li>
+                            <li>Validité des pièces</li>
+                            <li>Correspondance agrément/filière</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h6 class="card-title"><i class="fas fa-sitemap text-primary me-2"></i>Affectation</h6>
+                          <ul>
+                            <li>Algorithme automatique par région</li>
+                            <li>Ajustements manuels possibles</li>
+                            <li>Capacité des centres</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h6 class="card-title"><i class="fas fa-chart-bar text-info me-2"></i>Reporting</h6>
+                          <ul>
+                            <li>Statistiques par région</li>
+                            <li>Taux de complétude</li>
+                            <li>Alertes anomalies</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#examProcess">
+                  Gestion des examens
+                </button>
+              </h2>
+              <div id="examProcess" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <h6>Workflow CQP vs DQP</h6>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr class="table-secondary">
+                          <th>Étape</th>
+                          <th>CQP</th>
+                          <th>DQP</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Correction</td>
+                          <td>Par centre</td>
+                          <td>Centralisée</td>
+                        </tr>
+                        <tr>
+                          <td>Saisie notes</td>
+                          <td>Directe dans système</td>
+                          <td>Via interface sécurisée</td>
+                        </tr>
+                        <tr>
+                          <td>Publication</td>
+                          <td>48h après correction</td>
+                          <td>Après délibération</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-dark mt-3">
+            <i class="fas fa-lock me-2"></i>
+            <strong>Sécurité :</strong> Toutes les actions sont tracées dans l'historique avec horodatage et identifiant agent.
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info mt-4">
+        <div class="d-flex">
+          <div class="flex-shrink-0">
+            <i class="fas fa-headset fa-2x"></i>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h5>Besoin d'aide supplémentaire ?</h5>
+            <p>
+              Contactez notre support technique :<br>
+              <strong>Email :</strong> support@qualipro.cm<br>
+              <strong>Téléphone :</strong> (+237) 222 22 22 22<br>
+              <strong>Horaires :</strong> Lundi-Vendredi, 8h-17h
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Colonne latérale -->
+  <div class="col-md-4">
+    <div class="card sticky-top" style="top: 20px;">
+      <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">Ressources Utiles</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <a href="#" class="text-decoration-none" (click)="downloadPDF('modele_inscription_cqp.pdf')">
+              <i class="fas fa-file-pdf text-danger me-2"></i>
+              Modèle fiche d'inscription CQP
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="#" class="text-decoration-none" (click)="downloadPDF('modele_inscription_dqp.pdf')">
+              <i class="fas fa-file-pdf text-danger me-2"></i>
+              Modèle fiche d'inscription DQP
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="#" class="text-decoration-none" (click)="downloadPDF('liste_centres_agrees_2024.pdf')">
+              <i class="fas fa-list-alt text-primary me-2"></i>
+              Liste des centres agréés 2024
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="#" class="text-decoration-none" (click)="downloadPDF('grille_tarifaire_officielle.pdf')">
+              <i class="fas fa-euro-sign text-success me-2"></i>
+              Grille tarifaire officielle
+            </a>
+          </li>
+        </ul>
+          
+          <hr>
+          
+          <h6 class="mt-3">Calendrier 2024</h6>
+          <div class="calendar-highlight p-2 bg-light rounded">
+            <div class="d-flex">
+              <div class="date-square bg-primary text-white text-center me-2">
+                <div class="fw-bold">15 Sep</div>
+                <small>DQP</small>
+              </div>
+              <div class="flex-grow-1">
+                <small>Date limite dépôt dossiers DQP</small>
+              </div>
+            </div>
+            <div class="d-flex mt-2">
+              <div class="date-square bg-success text-white text-center me-2">
+                <div class="fw-bold">30 Oct</div>
+                <small>CQP</small>
+              </div>
+              <div class="flex-grow-1">
+                <small>Session de masse</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .date-square {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .sticky-top {
+    z-index: 1;
+  }
+  .card-header {
+    font-weight: 600;
+  }
+</style>

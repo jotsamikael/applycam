@@ -1,1 +1,49 @@
-<p>my-certificates works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <div class="page-title-left">
+          <h4 class="mb-0">Mes diplômes professionnels</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-2 mt-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>Intitulé</th>
+                <th>Session</th>
+                <th>Date de délivrance</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cert of certificates">
+                <td>{{ cert.title }}</td>
+                <td>{{ cert.session }}</td>
+                <td>{{ cert.dateIssued }}</td>
+                <td>
+                  <span [ngClass]="{'text-success': cert.status === 'Disponible', 'text-warning': cert.status !== 'Disponible'}">
+                    {{ cert.status }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-primary btn-sm" *ngIf="cert.fileUrl" (click)="download(cert)">
+                    <i class="bx bx-download"></i> Télécharger
+                  </button>
+                  <span *ngIf="!cert.fileUrl" class="text-muted">Non disponible</span>
+                </td>
+              </tr>
+              <tr *ngIf="certificates.length === 0">
+                <td colspan="5" class="text-center">Aucun diplôme disponible.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>

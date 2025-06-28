@@ -1,7 +1,7 @@
 import { MenuItem } from './menu.model';
 
 export const MENU: MenuItem[] = [
-    // Superadmin -> Operational (EXISTANT)
+    // OPERATIONAL
     {
         id: 1,
         label: 'OPERATIONAL',
@@ -10,23 +10,17 @@ export const MENU: MenuItem[] = [
     },
     {
         id: 2,
-        label: 'Overview',
+        label: 'Dashboard',
         icon: 'bx-home',
         link: 'overview-staff',
         roles: ['super_admin', 'STAFF']
     },
+    // Gestion des centres et du personnel
     {
         id: 3,
         label: 'Training Centers',
         icon: 'bx-building-house',
         link: 'training-centers-management',
-        roles: ['super_admin', 'STAFF']
-    },
-    {
-        id: 4,
-        label: 'Candidates',
-        icon: 'bx-user',
-        link: 'candidates-management',
         roles: ['super_admin', 'STAFF']
     },
     {
@@ -36,31 +30,43 @@ export const MENU: MenuItem[] = [
         link: 'staff-management',
         roles: ['super_admin', 'STAFF']
     },
+    // Gestion des candidats et applications
     {
-        id: 6,
-        label: 'Payment Gateways',
-        icon: 'bx-credit-card',
-        link: 'payment-gateway-management',
+        id: 4,
+        label: 'Candidates',
+        icon: 'bx-user',
+        link: 'candidates-management',
+        roles: ['super_admin', 'STAFF']
+    },
+     {
+        id: 49,
+        label: 'Promoter',
+        icon: 'bx-user',
+        link: 'promoter',
         roles: ['super_admin', 'STAFF']
     },
     {
-        id: 7,
-        label: 'Cron Jobs',
-        icon: 'bx-time-five',
-        link: 'cron-job-management',
+        id: 48,
+        label: 'Applications',
+        icon: 'bxs-folder-open',
+        link: 'application-management',
         roles: ['super_admin', 'STAFF']
+    },
+    // Examens
+    {
+        id: 33,
+        label: 'Exam Centers',
+        link: 'exams-centers-management',
+        icon: 'bx-building',
+        roles: ['super_admin', 'STAFF'],
     },
     {
-        id: 8,
-        label: 'Help & Support',
-        icon: 'bx-support',
-        link: 'support-management',
-        roles: ['super_admin', 'STAFF']
+        id: 34,
+        label: 'Exam Sessions',
+        link: 'exam-session-management',
+        icon: 'bx-calendar-event',
+        roles: ['super_admin', 'STAFF'],
     },
-
-    // Superadmin -> Settings (EXISTANT)
-    
-  // Admin/Staff - Results
     {
         id: 35,
         label: 'Results Management',
@@ -68,8 +74,15 @@ export const MENU: MenuItem[] = [
         link: 'results-management',
         roles: ['super_admin', 'STAFF']
     },
-
-     // System Components
+    // Paiements
+    {
+        id: 6,
+        label: 'Payment Gateways',
+        icon: 'bx-credit-card',
+        link: 'payment-gateway-management',
+        roles: ['super_admin', 'STAFF']
+    },
+    // Statistiques et logs
     {
         id: 45,
         label: 'Statistics',
@@ -91,86 +104,14 @@ export const MENU: MenuItem[] = [
         icon: 'bx-cloud-upload',
         roles: ['super_admin', 'STAFF'],
     },
-        
-   // Admin/Staff - Exam Management
-    {
-        id: 33,
-        label: 'Exam Centers',
-        link: 'exam-centers-management',
-        icon: 'bx-building',
-        roles: ['super_admin', 'STAFF'],
-    },
-    {
-        id: 34,
-        label: 'Exam Sessions',
-        link: 'exam-session-management',
-        icon: 'bx-calendar-event',
-        roles: ['super_admin', 'STAFF'],
-    },
-        
+    
+
+    // APP SETTINGS
     {
         id: 9,
         label: 'APP SETTINGS',
         isTitle: true,
         roles: ['super_admin', 'STAFF']
-    },
-    {
-        id: 10,
-        label: 'Page Settings',
-        icon: 'bx-cog',
-        link: 'page-settings',
-        roles: ['super_admin', 'STAFF']
-    },
-    {
-        id: 11,
-        icon: 'bx-shield',
-        label: 'Admin & Role',
-        roles: ['super_admin', 'STAFF'],
-        subItems: [
-            {
-                id: 12,
-                label: 'Admin',
-                link: 'admin-settings',
-                parentId: 11,
-                icon: 'bx-user'
-            },
-            {
-                id: 13,
-                label: 'Roles',
-                link: 'role-settings',
-                parentId: 11,
-                icon: 'bx-key'
-            }
-        ]
-    },
-    {
-        id: 14,
-        icon: 'bx-code-alt',
-        label: 'Developer Settings',
-        roles: ['super_admin', 'admin', 'STAFF'],
-        subItems: [
-            {
-                id: 15,
-                label: 'App Settings',
-                link: 'app-settings',
-                parentId: 14,
-                icon: 'bx-slider-alt'
-            },
-            {
-                id: 16,
-                label: 'SMTP Settings',
-                link: 'smtp-settings',
-                parentId: 14,
-                icon: 'bx-envelope'
-            },
-            {
-                id: 17,
-                label: 'Storage Settings',
-                link: 'storage-settings',
-                parentId: 14,
-                icon: 'bx-server'
-            }
-        ]
     },
 
 

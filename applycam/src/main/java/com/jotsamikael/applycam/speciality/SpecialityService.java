@@ -19,6 +19,8 @@ import com.jotsamikael.applycam.course.Course;
 import com.jotsamikael.applycam.course.CourseRepository;
 import com.jotsamikael.applycam.course.CourseRequest;
 import com.jotsamikael.applycam.course.CourseResponse;
+import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
+import com.jotsamikael.applycam.offersSpeciality.OffersSpecialityRepository;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
 import com.jotsamikael.applycam.user.User;
@@ -33,6 +35,7 @@ public class SpecialityService {
     private final SpecialityRepository specialityRepository;
     private final TrainingCenterRepository trainingCenterRepository;
     private final CourseRepository courseRepository;
+    private final OffersSpecialityRepository offersSpecialityRepository;
 
     public String addSpecialitybyTrainingCenterId(SpecialityRequest specialityRequest) {
 
@@ -43,27 +46,38 @@ public class SpecialityService {
         .orElseThrow(() -> new EntityNotFoundException("Speciality not found"));
         
         if (!speciality.isActived() ) {
-           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be added to the training Center it has been enabled.");
+           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be added to the training Center it has been disabled.");
            }
         
-         speciality = Speciality.builder()
-            .offersSpecialityList(trainingCenter.getOffersSpecialityList())
-            .build();
+        
+        boolean alreadyLinked = trainingCenter.getOffersSpecialityList().stream()
+                .anyMatch(os -> os.getSpeciality().equals(speciality));
 
-        specialityRepository.save(speciality);
+            if (alreadyLinked) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Speciality already linked.");
+            }
 
-        return speciality.getName();
+            OffersSpeciality offer = new OffersSpeciality();
+            offer.setTrainingCenter(trainingCenter);
+            offer.setSpeciality(speciality);
+
+            offersSpecialityRepository.save(offer);
+
+            return "Speciality " + speciality.getName() + " linked to training center.";
+        
+      
     }
 
-    public PageResponse<SpecialityResponse> getallSpecialityOfTrainingCenter(SpecialityRequest specialityRequest,int offset, int pageSize, String field, boolean order) {
+    public PageResponse<SpecialityResponse> getallSpecialityOfTrainingCenter(Long trainingCenterId,int offset, int pageSize, String field, boolean order) {
         Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
 
-        Page<Speciality> list = specialityRepository.findAllByTrainingCenterId(specialityRequest.getTrainingCenterId(), PageRequest.of(offset, pageSize, sort));
+        Page<Speciality> list = specialityRepository.findAllByTrainingCenterId(trainingCenterId, PageRequest.of(offset, pageSize, sort));
 
         List<SpecialityResponse> specialityResponses = list.getContent().stream().map(speciality->SpecialityResponse.builder()
         .id(speciality.getId())
         .name(speciality.getName())
         .description(speciality.getDescription())
+        .examType(speciality.getExamType())
         .build()).toList();
 
        
@@ -85,6 +99,7 @@ public class SpecialityService {
         var speciality = Speciality.builder()
         .name(createSpecialityRequest.getName())
         .description(createSpecialityRequest.getDescription())
+        .examType(createSpecialityRequest.getExamType())
         .createdBy(user.getIdUser())
 	    .createdDate(LocalDateTime.now())
 	    .isActived(true)
@@ -103,6 +118,7 @@ public class SpecialityService {
                 .id(speciality.getId())
                 .name(speciality.getName())
                 .description(speciality.getDescription())
+                .examType(speciality.getExamType())
                 .build())
             .toList();
 
@@ -136,9 +152,12 @@ public class SpecialityService {
         }
 
         // Éviter les doublons
-        if (!course.getSpecialityList().contains(speciality)) {
-            course.getSpecialityList().add(speciality);
+        if (course.getSpecialityList().contains(speciality)) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be added it was already added.");
+            
         }
+        
+        course.getSpecialityList().add(speciality);
 
         // Sauvegarder le cours mis à jour
         courseRepository.save(course);
@@ -148,15 +167,16 @@ public class SpecialityService {
         return "Speciality added to course successfully.";
     }
     
-    public PageResponse<SpecialityResponse> getAllSpecialityOfCourse(SpecialityCourseRequest specialityCourseRequest,int offset, int pageSize, String field, boolean order){
+    public PageResponse<SpecialityResponse> getAllSpecialityOfCourse(Long courseId,int offset, int pageSize, String field, boolean order){
     	Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
     	
-    	Page<Speciality> list = specialityRepository.findAllByCourseId(specialityCourseRequest.getCourseId(), PageRequest.of(offset, pageSize, sort));
+    	Page<Speciality> list = specialityRepository.findAllByCourseId(courseId, PageRequest.of(offset, pageSize, sort));
     	
     	 List<SpecialityResponse> specialityResponses = list.getContent().stream().map(speciality->SpecialityResponse.builder()
     		        .id(speciality.getId())
     		        .name(speciality.getName())
     		        .description(speciality.getDescription())
+    		        .examType(speciality.getExamType())
     		        .build()).toList();
 
     		       
@@ -201,6 +221,7 @@ public class SpecialityService {
        speciality.setName(updateSpecialityRequest.getName());
        speciality.setCode(updateSpecialityRequest.getCode());
        speciality.setDescription(updateSpecialityRequest.getDescription());
+       speciality.setExamType(updateSpecialityRequest.getExamType());
        speciality.setLastModifiedBy(user.getIdUser());
        speciality.setLastModifiedDate(LocalDateTime.now());
 
@@ -224,7 +245,34 @@ public class SpecialityService {
             .name(speciality.getName())
             .code(speciality.getCode())
             .description(speciality.getDescription())
+            .examType(speciality.getExamType())
             .build();
+    }
+    
+    public PageResponse<SpecialityResponse> findAllByExamType(String examType,int offset, int pageSize, String field, boolean order){
+    	
+    	Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+    	
+    	
+    	Page<Speciality> list = specialityRepository.findAllByExamType(examType, PageRequest.of(offset, pageSize, sort));
+    	
+    	List<SpecialityResponse> specialityResponses = list.getContent().stream().map(speciality->SpecialityResponse.builder()
+		        .id(speciality.getId())
+		        .name(speciality.getName())
+		        .description(speciality.getDescription())
+		        .examType(speciality.getExamType())
+		        .build()).toList();
+    	
+    	return new PageResponse<>(
+	            specialityResponses,
+	            list.getNumber(),
+	            list.getSize(),
+	            list.getTotalElements(),
+	            list.getTotalPages(),
+	            list.isFirst(),
+	            list.isLast()
+	        );
+    	
     }
 }
 

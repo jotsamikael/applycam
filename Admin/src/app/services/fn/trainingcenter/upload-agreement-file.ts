@@ -11,6 +11,7 @@ import { RequestBuilder } from '../../request-builder';
 
 export interface UploadAgreementFile$Params {
   'agreement-number': string;
+  fileType: string;
       body?: {
 
 /**
@@ -25,6 +26,7 @@ export function uploadAgreementFile(http: HttpClient, rootUrl: string, params: U
   const rb = new RequestBuilder(rootUrl, uploadAgreementFile.PATH, 'post');
   if (params) {
     rb.path('agreement-number', params['agreement-number'], {});
+    rb.query('fileType', params.fileType, {});
     rb.body(params.body, 'multipart/form-data');
   }
 

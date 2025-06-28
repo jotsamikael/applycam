@@ -61,6 +61,8 @@ export class TrainingCenterManagementComponent implements OnInit, AfterViewInit,
     { label: 'My Training Centers', active: true }
   ];
 
+  agreementFile: File | null = null;
+
   constructor(
     private fb: FormBuilder,
     private modalService: BsModalService,
@@ -230,6 +232,10 @@ export class TrainingCenterManagementComponent implements OnInit, AfterViewInit,
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
+          // Upload du fichier d’agrément si présent
+          if (this.agreementFile) {
+            this.uploadAgreementFile(formValue.agreementNumber);
+          }
           Swal.fire({
             title: 'Success!',
             text: 'Training center created successfully',
@@ -329,6 +335,35 @@ export class TrainingCenterManagementComponent implements OnInit, AfterViewInit,
       }
     });
   }
+
+  onAgreementFileChange(event: any) {
+    const file = event.target.files[0];
+    this.agreementFile = file ? file : null;
+  }
+
+ uploadAgreementFile(agreementNumber: string) {
+  if (!this.agreementFile) return;
+
+  // Déduire le type de fichier ou le fixer à 'pdf'
+  const fileType = this.agreementFile.type || 'pdf';
+
+  this.trainingCenterService.uploadAgreementFile({
+    'agreement-number': agreementNumber,
+    fileType: fileType,
+    body: {
+      file: this.agreementFile
+    }
+  }).subscribe({
+    next: () => {
+      Swal.fire('Succès', 'Fichier d’agrément uploadé avec succès', 'success');
+      this.agreementFile = null;
+    },
+    error: (err) => {
+      Swal.fire('Erreur', 'Erreur lors de l’upload du fichier d’agrément', 'error');
+      this.agreementFile = null;
+    }
+  });
+}
 
   get createFormControls() {
     return this.createForm.controls;

@@ -1,1 +1,214 @@
-<p>candidates-management works!</p>
+<div class="container-fluid">
+    <app-page-title title="Candidates Management" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+    <div class="row justify-content-end mb-3">
+        <div class="col-md-4 text-end">
+            <button class="btn btn-soft-primary waves-effect waves-light mx-2" (click)="openCreateNewModal()">
+                <i class="bx bx-plus me-1"></i> Create Candidate
+            </button>
+        </div>
+    </div>
+
+    <div class="row justify-content-end mt-3">
+        <div class="col-md-3">
+            <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Filter</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Filter candidates" #input>
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="mat-elevation-z8">
+                <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+                    <!-- Last Name Column -->
+                    <ng-container matColumnDef="lastname">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last Name </th>
+                        <td mat-cell *matCellDef="let row"> {{row.lastname}} </td>
+                    </ng-container>
+
+                    <!-- First Name Column -->
+                    <ng-container matColumnDef="firstname">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> First Name </th>
+                        <td mat-cell *matCellDef="let row"> {{row.firstname}} </td>
+                    </ng-container>
+
+                    <!-- Email Column -->
+                    <ng-container matColumnDef="email">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+                        <td mat-cell *matCellDef="let row"> {{row.email}} </td>
+                    </ng-container>
+
+                    <!-- Date of Birth Column -->
+                    <ng-container matColumnDef="dateOfBirth">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date of Birth </th>
+                        <td mat-cell *matCellDef="let row"> {{row.dateOfBirth | date}} </td>
+                    </ng-container>
+
+                    <!-- Nationality Column -->
+                    <ng-container matColumnDef="nationality">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Nationality </th>
+                        <td mat-cell *matCellDef="let row"> {{row.nationality}} </td>
+                    </ng-container>
+
+                    <!-- Status Column -->
+                    <ng-container matColumnDef="contentStatus">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                        <td mat-cell *matCellDef="let row"> {{row.contentStatus}} </td>
+                    </ng-container>
+
+                    <!-- Actions Column -->
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef class="text-end">Actions</th>
+                        <td mat-cell *matCellDef="let row" class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary btn-sm" (click)="edit(row)" title="Edit">
+                                    <i class="bx bx-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" (click)="delete(row)" title="Delete">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                    <!-- Row shown when there is no matching data. -->
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="7">No data matching the filter "{{input.value}}"</td>
+                    </tr>
+                </table>
+
+                <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons aria-label="Select page of candidates"></mat-paginator>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Candidate Modal -->
+<ng-template #addNew>
+  <div class="modal-header">
+    <h5 class="modal-title">Create New Candidate</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()" aria-label="Close"></button>
+  </div>
+  <form [formGroup]="CandidateForm" (ngSubmit)="createNewCandidate()">
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Last Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="lastname" type="text">
+          <div *ngIf="f.lastname.touched && f.lastname.invalid" class="text-danger">
+            <small *ngIf="f.lastname.errors?.required">Last name is required</small>
+            <small *ngIf="f.lastname.errors?.maxlength">Max 64 characters</small>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">First Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="firstname" type="text">
+          <div *ngIf="f.firstname.touched && f.firstname.invalid" class="text-danger">
+            <small *ngIf="f.firstname.errors?.required">First name is required</small>
+            <small *ngIf="f.firstname.errors?.maxlength">Max 64 characters</small>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="email" type="email">
+          <div *ngIf="f.email.touched && f.email.invalid" class="text-danger">
+            <small *ngIf="f.email.errors?.required">Email is required</small>
+            <small *ngIf="f.email.errors?.email">Invalid email</small>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="dateOfBirth" type="date">
+          <div *ngIf="f.dateOfBirth.touched && f.dateOfBirth.invalid" class="text-danger">
+            <small *ngIf="f.dateOfBirth.errors?.required">Date of birth is required</small>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nationality <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="nationality" type="text">
+          <div *ngIf="f.nationality.touched && f.nationality.invalid" class="text-danger">
+            <small *ngIf="f.nationality.errors?.required">Nationality is required</small>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">National ID Number <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="nationalIdNumber" type="text">
+          <div *ngIf="f.nationalIdNumber.touched && f.nationalIdNumber.invalid" class="text-danger">
+            <small *ngIf="f.nationalIdNumber.errors?.required">National ID Number is required</small>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Highest School Level <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="highestSchoolLevel" type="text">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Father Full Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="fatherFullName" type="text">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Father Profession <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="fatherProfession" type="text">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Mother Full Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="motherFullName" type="text">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Mother Profession <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="motherProfession" type="text">
+        </div>
+      </div>
+      <!-- Ajoute ici les autres champs du modèle CandidateRequest si besoin -->
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Close</button>
+      <button type="submit" class="btn btn-primary" [disabled]="CandidateForm.invalid || processing">
+        <span *ngIf="!processing">Create Candidate</span>
+        <span *ngIf="processing" class="d-flex align-items-center">
+          <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          Creating...
+        </span>
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Edit Candidate Modal -->
+<ng-template #editTemplate>
+    <div class="modal-header">
+        <h5 class="modal-title">Edit Candidate</h5>
+        <button type="button" class="btn-close" (click)="modalRef?.hide()" aria-label="Close"></button>
+    </div>
+    <form [formGroup]="CandidateForm" (ngSubmit)="updateCandidate()">
+        <div class="modal-body">
+            <!-- Même contenu que le modal de création -->
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="CandidateForm.invalid || processing">
+                <span *ngIf="!processing">Save Changes</span>
+                <span *ngIf="processing" class="d-flex align-items-center">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+            </button>
+        </div>
+    </form>
+</ng-template>

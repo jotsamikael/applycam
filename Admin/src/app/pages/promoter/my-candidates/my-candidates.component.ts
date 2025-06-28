@@ -32,7 +32,7 @@ export class MyCandidatesComponent implements OnInit {
       lastname: 'Dupont',
       email: 'jean.dupont@example.com',
       phoneNumber: '123456789',
-      contentStatus: 'APPROVED',
+      contentStatus: 'VALIDATED', // corrigé
       nationalIdNumber: '1234567890',
       sex: 'M'
     },
@@ -42,7 +42,7 @@ export class MyCandidatesComponent implements OnInit {
       lastname: 'Kamga',
       email: 'marie.kamga@example.com',
       phoneNumber: '987654321',
-      contentStatus: 'PENDING_REVIEW',
+      contentStatus: 'DRAFT', // corrigé
       nationalIdNumber: '0987654321',
       sex: 'F'
     }
@@ -89,8 +89,8 @@ export class MyCandidatesComponent implements OnInit {
 
   updateStats(): void {
     this.followUpStat[0].value = this.candidates.length.toString();
-    this.followUpStat[1].value = this.candidates.filter(c => c.contentStatus === 'APPROVED').length.toString();
-    this.followUpStat[2].value = this.candidates.filter(c => c.contentStatus === 'PENDING_REVIEW').length.toString();
+    this.followUpStat[1].value = this.candidates.filter(c => c.contentStatus === 'VALIDATED').length.toString(); // corrigé
+    this.followUpStat[2].value = this.candidates.filter(c => c.contentStatus === 'DRAFT').length.toString(); // corrigé
   }
 
   openCreateModal(): void {

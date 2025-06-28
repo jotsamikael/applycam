@@ -8,6 +8,7 @@ export interface PromoterResponse {
   email?: string;
   enabled?: boolean;
   firstname?: string;
+  idUser?: number;
   lastname?: string;
   nationalIdNumber?: string;
   phoneNumber?: string;

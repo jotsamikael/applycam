@@ -15,6 +15,7 @@ export interface Speciality {
   createdBy?: number;
   createdDate?: string;
   description?: string;
+  examType?: string;
   id?: number;
   lastModifiedBy?: number;
   lastModifiedDate?: string;

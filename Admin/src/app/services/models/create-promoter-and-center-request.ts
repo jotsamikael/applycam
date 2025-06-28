@@ -4,7 +4,6 @@
 
 export interface CreatePromoterAndCenterRequest {
   approvalEnd: string;
-  approvalNumber: string;
   approvalStart: string;
   birthDate: string;
   centerAcronym: string;

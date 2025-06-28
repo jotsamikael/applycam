@@ -1,1 +1,144 @@
-<p>campus-management</p>
+<div class="container-fluid">
+    <app-page-title [title]="'My Campuses'" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+    <div class="row justify-content-end mb-3">
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary waves-effect waves-light mx-2"
+                    (click)="openCreateModal()"
+                    [disabled]="processing">
+                <i class="bx bx-plus me-1"></i> Create Campus
+            </button>
+            <button class="btn btn-primary waves-effect waves-light"
+                    [disabled]="!dataSource.data?.length || processing">
+                <i class="bx bx-download me-1"></i> Export Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div *ngFor="let stat of stats" class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span class="avatar-title bg-soft-primary text-primary rounded-2 fs-2">
+                                <i class="bx {{stat.icon}}"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-uppercase fw-semibold fs-12 text-muted mb-1">{{stat.title}}</p>
+                            <h4 class="mb-0">{{stat.value}}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Table Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-between mb-3">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filter</mat-label>
+                                <input matInput
+                                       (keyup)="applyFilter($event)"
+                                       #input
+                                       placeholder="Filter campuses...">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Campus Name</th>
+                                <td mat-cell *matCellDef="let row">{{row.name}}</td>
+                            </ng-container>
+
+                            <!-- Town Column -->
+                            <ng-container matColumnDef="town">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Town</th>
+                                <td mat-cell *matCellDef="let row">{{row.town}}</td>
+                            </ng-container>
+
+                            <!-- Quarter Column -->
+                            <ng-container matColumnDef="quarter">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Quarter</th>
+                                <td mat-cell *matCellDef="let row">{{row.quarter}}</td>
+                            </ng-container>
+
+                            <!-- Capacity Column -->
+                            <ng-container matColumnDef="capacity">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Capacity</th>
+                                <td mat-cell *matCellDef="let row">{{row.capacity}}</td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="text-end">Actions</th>
+                                <td mat-cell *matCellDef="let row" class="text-end">
+                                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                                        <mat-icon>more_vert</mat-icon>
+                                    </button>
+                                    <mat-menu #menu="matMenu">
+                                        <button mat-menu-item (click)="viewCampusDetails(row)">
+                                            <mat-icon>visibility</mat-icon>
+                                            <span>View Details</span>
+                                        </button>
+                                        <button mat-menu-item (click)="openEditModal(row)">
+                                            <mat-icon>edit</mat-icon>
+                                            <span>Edit</span>
+                                        </button>
+                                        <button mat-menu-item (click)="confirmDelete(row)">
+                                            <mat-icon color="warn">delete</mat-icon>
+                                            <span>Delete</span>
+                                        </button>
+                                    </mat-menu>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                            <!-- No data row -->
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4" [attr.colspan]="displayedColumns.length">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">
+                                            folder_off
+                                        </mat-icon>
+                                        <h4 class="text-muted">
+                                            {{input.value ?
+                                             'No campuses match the filter "' + input.value + '"' :
+                                             'No campuses found'}}
+                                        </h4>
+                                        <button mat-raised-button
+                                                color="primary"
+                                                class="mt-2"
+                                                (click)="openCreateModal()">
+                                            Create New Campus
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"
+                                   showFirstLastButtons
+                                   aria-label="Select page of campuses">
+                    </mat-paginator>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ajoute ici les modals pour Create, Edit, Details comme dans le template training-center-management -->

@@ -4,7 +4,18 @@ import lombok.Getter;
 
 @Getter
 public enum EmailTemplateName {
-    ACTIVATE_ACCOUNT("activate_account");
+    ACTIVATE_ACCOUNT("activate_account"),
+	
+	ACCEPTED_APPLICATION("exam-assigned"),
+	
+	TRAINING_CENTER_VALIDATION("trainingcenter-validation"),
+	
+	TRAINING_CENTER_REJECTION("trainingcenter-rejection"),
+	
+	TRAINING_CENTER_PENDING("trainingcenter-pending"),
+	
+	REFUSED_APPLICATION("candidate-rejection");
+
 
     private final String name;
 

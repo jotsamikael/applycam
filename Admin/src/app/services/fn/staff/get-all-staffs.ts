@@ -36,4 +36,4 @@ export function getAllStaffs(http: HttpClient, rootUrl: string, params?: GetAllS
   );
 }
 
-getAllStaffs.PATH = '/staff';
+getAllStaffs.PATH = '/staff/getAll';

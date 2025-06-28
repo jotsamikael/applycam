@@ -2,18 +2,23 @@ package com.jotsamikael.applycam.auth;
 
 
 import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.candidate.CandidateRepository;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.email.EmailService;
 import com.jotsamikael.applycam.email.EmailTemplateName;
+import com.jotsamikael.applycam.hasSchooled.HasSchooled;
+import com.jotsamikael.applycam.hasSchooled.HasSchooledRepository;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.role.RoleRepository;
 import com.jotsamikael.applycam.security.JwtService;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
 import com.jotsamikael.applycam.user.Token;
 import com.jotsamikael.applycam.user.TokenRepository;
 import com.jotsamikael.applycam.user.User;
 import com.jotsamikael.applycam.user.UserRepository;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,6 +47,9 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final FileStorageService fileStorageService;
+    private final CandidateRepository candidateRepository;
+    private final TrainingCenterRepository trainingCenterRepository;
+    private final HasSchooledRepository hasSchooledRepository;
 
     @Value("${application.mailing.frontend.activation-url}")
     String activationUrl;
@@ -50,50 +59,66 @@ public class AuthenticationService {
                 //todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE CANDIDATE was not initialized"));
         
+        
+        
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DataIntegrityViolationException("Email already taken");
         }
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new DataIntegrityViolationException("Phone number already taken");
         }
-        if (userRepository.existsByNationalIdNumber(request.getNationalIdNumber())) {
-            throw new DataIntegrityViolationException("National ID already taken");
-        }
-        
         if (passwordEncoder.matches(request.getPassword(), request.getConfirmPassword())) {
             throw new IllegalArgumentException("password doesn't match.");
         }
         
-        
+      //verification du mot de pass
+        validatePassword(request.getPassword(),request.getConfirmPassword());
+      
+        TrainingCenter trainingCenter= trainingCenterRepository.findByFullName(request.getTrainingCenterName())
+        		.orElseThrow(()-> new EntityNotFoundException("Training Center does not exist"));
+       
         var candidate = Candidate.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
-                .phoneNumber(request.getPhoneNumber())
-                .email(request.getEmail())
-                .sex(request.getSex())
-                .nationalIdNumber(request.getNationalIdNumber())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .sex(request.getSex())
-                .dateOfBirth(LocalDate.parse(request.getDateOfBirth()))
-                .placeOfBirth(request.getPlaceOfBirth())
-                .highestSchoolLevel(request.getHighestSchoolLevel())
-                .fatherFullName(request.getFatherFullname())
-                .motherFullName(request.getMotherFullname())
-                .motherProfession(request.getMotherProfession())
-                .fatherProfession(request.getFatherProfession())
+                .phoneNumber(request.getPhoneNumber())
+                .language(request.getLanguage())
+                .email(request.getEmail())
                 .accountLocked(false)
                 .enabled(false)
                 .roles(List.of(userRole))
                 .createdDate(LocalDateTime.now())
                 .build();
         
+        HasSchooled hasSchooled = new HasSchooled();
+        hasSchooled.setCandidate(candidate);
+        hasSchooled.setTrainingCenter(trainingCenter);
+        hasSchooled.setStartYear(LocalDate.parse(request.getStartYear()));  
+        hasSchooled.setEndYear(LocalDate.parse(request.getEndYear()));     
+        hasSchooled.setActived(true);
+        
+        userRepository.save(candidate);
+        hasSchooledRepository.save(hasSchooled);
+        
+        	
+       /* 
         handleFileUploads(candidate, request.getBirthCertificate(), "BIRTHCERTIFICATE");
         handleFileUploads(candidate, request.getHighestDiplomat(), "DIPLOM");
         handleFileUploads(candidate, request.getProfilePicture(), "PHOTO");
+        */
         
         
-        userRepository.save(candidate);
+        
         sendValidationEmail(candidate);
+        
+    }
+    
+    
+    
+    private void validatePassword(String password,String confirmPassword) {
+        if (!password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
+        }
     }
 
     private void sendValidationEmail(User user) throws MessagingException {
@@ -147,6 +172,10 @@ public class AuthenticationService {
         var user = ((User) auth.getPrincipal());
         claims.put("full name", user.fullName());
         var jwtToken = jwtService.generateToken(claims, user);
+        
+        String status = "N/A";
+        String rejectionReason = null;
+        
         return AuthenticationResponse.builder()
                 .token(jwtToken).build();
     }
@@ -169,21 +198,6 @@ public class AuthenticationService {
         tokenRepository.save(savedToken);
     }
     
-    private void handleFileUploads(Candidate candidate, MultipartFile file,String fileType) {
-        if (file != null && !file.isEmpty()) {
-            String url = fileStorageService.saveFile(file, candidate.getIdUser());
-            switch (fileType) {
-            case "CNI" ->candidate.setNationalIdCardUrl(url);
-            case "PHOTO" -> candidate.setProfilePictureUrl(url);
-            case "BIRTHCERTIFICATE" -> candidate.setBirthCertificateUrl(url);
-            case "DIPLOM" -> candidate.setHighestDiplomatUrl(url);
-            
-            default -> throw new IllegalArgumentException("we do not handel this folder.");
-        }
-          
-        } else {
-            throw new IllegalArgumentException("missing file");
-        }
-    }
+    
 
 }
