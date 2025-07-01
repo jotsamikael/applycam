@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PromoterResponse {
+	private Long idUser;
     private String firstname;
     private String lastname;
     private LocalDate dateOfBirth;

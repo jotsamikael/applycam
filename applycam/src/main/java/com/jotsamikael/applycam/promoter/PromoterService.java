@@ -219,6 +219,8 @@ public class PromoterService {
         handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
         handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
         
+        trainingCenterRepository.save(trainingCenter);
+        repository.save(promoter);
      // Envoi d'email
         emailService.sendWaitingForValidationEmail(promoter, trainingCenter);
     }
@@ -247,6 +249,8 @@ public class PromoterService {
         handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
         handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
         
+        trainingCenterRepository.save(trainingCenter);
+        repository.save(promoter);
     }
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {

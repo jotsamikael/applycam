@@ -20,7 +20,7 @@ public class CandidateController {
     public ResponseEntity<PageResponse<CandidateResponse>> getAllCandidates(
             @RequestParam(defaultValue = "0", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int pageSize,
-            @RequestParam(defaultValue = "name", required = false) String field,
+            @RequestParam(defaultValue = "firstname", required = false) String field,
             @RequestParam(defaultValue = "true", required = false) boolean order
     ) {
         return ResponseEntity.ok(candidateService.getAllCandidates(offset, pageSize, field, order));
@@ -45,7 +45,7 @@ public class CandidateController {
             @PathVariable("year") int year,
             @RequestParam(defaultValue = "0", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int pageSize,
-            @RequestParam(defaultValue = "name", required = false) String field,
+            @RequestParam(defaultValue = "firstname", required = false) String field,
             @RequestParam(defaultValue = "true", required = false) boolean order
     ) {
         return ResponseEntity.ok(candidateService.getCandidatesOfConnectedPromoter(connectedUser,year,offset, pageSize, field, order));

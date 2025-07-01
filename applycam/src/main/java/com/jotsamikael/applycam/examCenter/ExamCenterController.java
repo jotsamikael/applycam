@@ -55,6 +55,15 @@ public class ExamCenterController {
 	        
 	    return ResponseEntity.ok(examService.findExamCenterByDivision(division,offset,pageSize, field,order));
 	        }
+	    @GetMapping("/get-all")
+	    public ResponseEntity<PageResponse<ExamCenterResponse>> getAllExamCenters(
+	            @RequestParam(defaultValue = "0") int offset,          // page offset
+	            @RequestParam(defaultValue = "10") int pageSize,          // page size
+	            @RequestParam(defaultValue = "name") String field,     // field to sort by
+	            @RequestParam(defaultValue = "true") boolean order      // true for ascending, false for descending
+	    ) {
+	        return ResponseEntity.ok(examService.getAllExamCenter(offset,pageSize, field,order));
+	    }
 	    
 	    @PatchMapping("/delete-Center/{examCenterId}")
 		 public ResponseEntity<?> deleteSession(

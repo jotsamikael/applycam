@@ -14,6 +14,7 @@ import com.jotsamikael.applycam.promoter.PromoterRepository;
 import com.jotsamikael.applycam.user.Token;
 import com.jotsamikael.applycam.user.TokenRepository;
 import com.jotsamikael.applycam.user.User;
+import com.jotsamikael.applycam.user.UserRepository;
 
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
@@ -44,7 +45,7 @@ public class TrainingCenterService {
     private final TrainingCenterHistoryRepository trainingCenterStatusHistoryRepository;
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
-    
+    private final UserRepository userRepository;
     
     @Value("${application.mailing.frontend.activation-url}")
     String activationUrl;
@@ -218,7 +219,8 @@ public class TrainingCenterService {
 
 	    try {
 	        User promoter = trainingCenter.getPromoter(); // ou trainingCenter.getUser()
-	        
+	        promoter.setEnabled(true);
+	        userRepository.save(promoter);
 	        // 1. Envoyer email de validation simple
 	        emailService.sendTemplateEmail(
 	                promoter.getEmail(),
@@ -229,7 +231,7 @@ public class TrainingCenterService {
 	        );
 
 	        // 2. Envoyer email d’activation avec token
-	        sendValidationEmail(promoter);
+	        //sendValidationEmail(promoter);
 
 	    } catch (MessagingException e) {
 	        throw new RuntimeException("Échec d’envoi d’email", e);
