@@ -1,0 +1,342 @@
+package com.jotsamikael.applycam.trainingCenter;
+
+import com.jotsamikael.applycam.candidate.Candidate;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterHistoryRepository;
+import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
+import com.jotsamikael.applycam.common.ContentStatus;
+import com.jotsamikael.applycam.common.FileStorageService;
+import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.email.EmailService;
+import com.jotsamikael.applycam.email.EmailTemplateName;
+import com.jotsamikael.applycam.exception.OperationNotPermittedException;
+import com.jotsamikael.applycam.promoter.Promoter;
+import com.jotsamikael.applycam.promoter.PromoterRepository;
+import com.jotsamikael.applycam.user.Token;
+import com.jotsamikael.applycam.user.TokenRepository;
+import com.jotsamikael.applycam.user.User;
+import com.jotsamikael.applycam.user.UserRepository;
+
+import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class TrainingCenterService {
+    private final TrainingCenterRepository trainingCenterRepository;
+    private final PromoterRepository promoterRepository;
+    private final TrainingCenterMapper mapper;
+    private final FileStorageService fileStorageService;
+    private final TrainingCenterHistoryRepository trainingCenterStatusHistoryRepository;
+    private final EmailService emailService;
+    private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    
+    @Value("${application.mailing.frontend.activation-url}")
+    String activationUrl;
+
+
+
+    public String createTrainingCenter(@Valid CreateTainingCenterRequest request, Authentication connectedUser) {
+        //get user object from connected user
+        User user = ((User) connectedUser.getPrincipal());
+        
+
+        //check connected user is promoter
+        Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+        //check if agreement is unique 
+        if(trainingCenterRepository.existsByAgreementNumber(request.getAgreementNumber())) {
+        	throw new DataIntegrityViolationException("AgreementNumber number already taken");
+        }
+        
+        // create training center
+        var trainingCenter = TrainingCenter.builder()
+                .fullName(request.getFullName())
+                .acronym(request.getAcronym())
+                .agreementNumber(request.getAgreementNumber())
+                .division(request.getDivision())
+                .fullAddress(request.getFullAddress())
+                .startDateOfAgreement(request.getStartDateOfAgreement())
+                .endDateOfAgreement(request.getEndDateOfAgreement())
+                .isCenterPresentCandidateForCqp(request.getIsCenterPresentCandidateForCqp())
+                .isCenterPresentCandidateForDqp(request.getIsCenterPresentCandidateForDqp())
+                .promoter(promoter) //add promoter reference
+                .createdBy(user.getIdUser())
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        trainingCenterRepository.save(trainingCenter);
+        //return agreement number
+        return trainingCenter.getFullName();
+    }
+
+    public TrainingCenterResponse getTrainingCenterByAgreementNumber(String agreementNumber) {
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber).orElseThrow(() -> new EntityNotFoundException("No training center found for agreement number: " + agreementNumber));
+
+        var trainingResponse = TrainingCenterResponse.builder()
+                .fullName(trainingCenter.getFullName())
+                .acronym(trainingCenter.getAcronym())
+                .agreementNumber(agreementNumber)
+                .division(trainingCenter.getDivision())
+                .isCenterPresentCandidateForDqp(trainingCenter.getIsCenterPresentCandidateForDqp())
+                .isCenterPresentCandidateForCqp(trainingCenter.getIsCenterPresentCandidateForCqp())
+                .startDateOfAgreement(trainingCenter.getStartDateOfAgreement())
+                .endDateOfAgreement(trainingCenter.getEndDateOfAgreement())
+                .offersSpecialityList(trainingCenter.getOffersSpecialityList())
+                .campusList(trainingCenter.getCampusList())
+                .promoter(trainingCenter.getPromoter().getEmail())
+                .build();
+
+        return trainingResponse;
+
+    }
+
+    public List<TrainingCenterResponse> getTrainingCenterOfConnectedPromoter(Authentication connectedUser) {
+        //get user object from connected user
+        User user = ((User) connectedUser.getPrincipal());
+
+        //check connected user is promoter
+        Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+
+       List<TrainingCenter> trainingCenterList = trainingCenterRepository.findByPromoter(promoter).orElseThrow(() -> new EntityNotFoundException("No training center found for" + user.getEmail()));
+
+        List<TrainingCenterResponse> responses = trainingCenterList.stream().map(mapper::toTrainingResponse).toList();
+
+        return responses;
+    }
+
+    public PageResponse<TrainingCenterResponse> getAllTrainingCenter(int offset, int pageSize, String field, boolean order) {
+
+        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+
+        Page<TrainingCenter> list = trainingCenterRepository.getAll(
+                PageRequest.of(offset, pageSize, sort));
+
+        List<TrainingCenterResponse> responses = list.stream().map(mapper::toTrainingResponse).toList();
+        return new PageResponse<>(
+                responses,
+                list.getNumber(),
+                list.getSize(),
+                list.getTotalElements(),
+                list.getTotalPages(),
+                list.isFirst(),
+                list.isLast()
+        );
+    }
+
+    public void uploadAgreementFile(MultipartFile file, Authentication connectedUser, String agreementNumber,String fileType) {
+        //get user object from connected user
+        User user = ((User) connectedUser.getPrincipal());
+
+        //check connected user is promoter
+        Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber).orElseThrow(() -> new EntityNotFoundException("Not a training center found for agreement number: " + agreementNumber));
+        var agreementFileUrl = fileStorageService.saveFile(file, promoter.getIdUser(),fileType);
+         trainingCenter.setAgreementFileUrl(agreementFileUrl);
+         trainingCenterRepository.save(trainingCenter);
+    }
+
+    public String getAgreementStatus(String agreementNumber, Authentication connectedUser) {
+        //get user object from connected user
+        User user = ((User) connectedUser.getPrincipal());
+
+        //check connected user is promoter
+        Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
+
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber).orElseThrow(() -> new EntityNotFoundException("Not a training center found for agreement number: " + agreementNumber));
+        
+        
+        if(trainingCenter.getPromoter().getIdUser() != promoter.getIdUser()){
+            throw new OperationNotPermittedException(" You cannot check others agreement status" );
+        }
+
+        if(trainingCenter.getEndDateOfAgreement().isAfter(LocalDate.now())){
+            trainingCenter.setAgreementStatus(AgreementStatus.VALID);
+        }
+        else{
+            trainingCenter.setAgreementStatus(AgreementStatus.EXPIRED);
+        }
+        trainingCenterRepository.save(trainingCenter);
+        return trainingCenter.getAgreementStatus().toString();
+        
+    }
+    
+   public String updateTrainingCenter(String agreementNumber,UpdateTrainingCenterRequest updateTrainingCenterRequest, Authentication connectedUser) {
+	   
+	   TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber).orElseThrow(()->new EntityNotFoundException("training center does not exist"));
+	   User user= (User) connectedUser.getPrincipal();
+	   
+	   trainingCenter.setFullName(updateTrainingCenterRequest.getFullName());
+       trainingCenter.setAcronym(updateTrainingCenterRequest.getAcronym());
+       trainingCenter.setAgreementNumber(updateTrainingCenterRequest.getAgreementNumber());
+       trainingCenter.setStartDateOfAgreement(updateTrainingCenterRequest.getStartDateOfAgreement());
+       trainingCenter.setEndDateOfAgreement(updateTrainingCenterRequest.getEndDateOfAgreement());
+       trainingCenter.setDivision(updateTrainingCenterRequest.getDivision());
+       trainingCenter.setFullAddress(updateTrainingCenterRequest.getFullAddress());
+       trainingCenter.setIsCenterPresentCandidateForCqp(updateTrainingCenterRequest.isCenterPresentCandidateForCqp());
+       trainingCenter.setIsCenterPresentCandidateForDqp(updateTrainingCenterRequest.isCenterPresentCandidateForCqp());
+       trainingCenter.setLastModifiedBy(user.getIdUser());
+       trainingCenter.setLastModifiedDate(LocalDateTime.now());
+       
+       trainingCenterRepository.save(trainingCenter);
+       return trainingCenter.getAgreementNumber();
+	   
+   }
+   
+   public String validateTrainingCenter(String fullName, Authentication connectedUser) {
+	   
+	   User user= (User) connectedUser.getPrincipal();
+	   
+	    TrainingCenter trainingCenter = trainingCenterRepository
+	        .findByFullName(fullName)
+	        .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+
+	    Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
+	    TrainingCenterStatusHistory statusHistory;
+
+	    if (optionalHistory.isPresent()) {
+	        // Mise à jour de l'historique existant
+	        statusHistory = optionalHistory.get();
+	    } else {
+	        // Création d’un nouvel historique s’il n’existe pas encore
+	        statusHistory = new TrainingCenterStatusHistory();
+	        statusHistory.setTrainingCenter(trainingCenter);
+	        statusHistory.setCreatedBy(user.getIdUser());
+	        statusHistory.setCreatedDate(LocalDateTime.now());
+	    }
+	    statusHistory.setStatus(ContentStatus.VALIDATED);
+	    statusHistory.setActived(true);
+	    statusHistory.setLastModifiedBy(user.getIdUser());
+	    statusHistory.setLastModifiedDate(LocalDateTime.now());
+	    trainingCenterStatusHistoryRepository.save(statusHistory);
+
+	    try {
+	        User promoter = trainingCenter.getPromoter(); // ou trainingCenter.getUser()
+	        promoter.setEnabled(true);
+	        userRepository.save(promoter);
+	        // 1. Envoyer email de validation simple
+	        emailService.sendTemplateEmail(
+	                promoter.getEmail(),
+	                promoter.fullName(),
+	                trainingCenter.getFullName(),
+	                "trainingcenter-validation", // nom du template
+	                "Votre centre a été validé avec succès"
+	        );
+
+	        // 2. Envoyer email d’activation avec token
+	        //sendValidationEmail(promoter);
+
+	    } catch (MessagingException e) {
+	        throw new RuntimeException("Échec d’envoi d’email", e);
+	    }
+
+	    return "VALIDATED";
+	}
+   
+   public String changeTrainingCenterStatus(String fullName, ContentStatus status, String comment, Authentication connectedUser) {
+	   
+	   User user= (User) connectedUser.getPrincipal();
+	   
+	    TrainingCenter trainingCenter = trainingCenterRepository
+	            .findByFullName(fullName)
+	            .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+
+	    Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
+	    TrainingCenterStatusHistory statusHistory;
+
+	    if (optionalHistory.isPresent()) {
+	        // Mise à jour de l'historique existant
+	        statusHistory = optionalHistory.get();
+	    } else {
+	        // Création d’un nouvel historique s’il n’existe pas encore
+	        statusHistory = new TrainingCenterStatusHistory();
+	        statusHistory.setTrainingCenter(trainingCenter);
+	        statusHistory.setCreatedBy(user.getIdUser());
+	        statusHistory.setCreatedDate(LocalDateTime.now());
+	    }
+	    statusHistory.setStatus(status);
+	    statusHistory.setComment(comment);
+	    statusHistory.setLastModifiedBy(user.getIdUser());
+	    statusHistory.setLastModifiedDate(LocalDateTime.now());
+	    trainingCenterStatusHistoryRepository.save(statusHistory);
+
+	    User promoter = trainingCenter.getPromoter(); // ou getUser()
+
+	    if (status == ContentStatus.REJECTED) {
+	        try {
+	            emailService.sendRejectionEmail(promoter, trainingCenter, comment);
+	        } catch (MessagingException e) {
+	            throw new RuntimeException("Échec d’envoi d’email de rejet", e);
+	        }
+	    }
+
+	    return status.toString();
+	}
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   private void sendValidationEmail(User user) throws MessagingException {
+       var newToken = generateAndSaveActivationToken(user);
+       //send email
+       emailService.sendEmail( //use the service to send the email
+               user.getEmail(),
+               user.getFirstname(),
+               EmailTemplateName.ACTIVATE_ACCOUNT,
+               activationUrl,
+               newToken,
+               "Account activation"
+       );
+
+   }
+   private String generateAndSaveActivationToken(User user) {
+       //generate a token
+       String generatedToken = generateActivationCode(6);//generate a 6 digit code
+       var token = Token.builder()
+               .token(generatedToken)
+               .createdAt(LocalDateTime.now())
+               .expiresAt(LocalDateTime.now().plusMinutes(15))
+               .user(user)
+               .build();
+       tokenRepository.save(token);
+       return generatedToken;
+   }
+   
+   private String generateActivationCode(int length) {
+       String characters = "0123456789";
+       StringBuilder codeBuilder = new StringBuilder();//to transform to string
+       SecureRandom secureRandom = new SecureRandom(); //cryptographically secured
+       for (int i = 0; i < length; i++) {
+           int randomIndex = secureRandom.nextInt(characters.length()); //0..9
+           codeBuilder.append(characters.charAt(randomIndex));//append the caracter sercurily and ramdomly created
+       }
+       return codeBuilder.toString();
+   }
+   
+
+   
+   
+}

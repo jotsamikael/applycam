@@ -12,9 +12,11 @@ public class ApplicationMapper {
 	        .speciality(application.getSpeciality().getName())
 	        .applicationRegion(application.getApplicationRegion())
 	        .applicationYear(application.getApplicationYear())
-	        //.status(application.getStatus())
+	        .status(application.getStatus())
 	        .paymentMethod(application.getPayment().getPaymentMethod())
 	        .amount(application.getPayment().getAmount())
+	        .examType(application.getSession().getExamType())
+	        .examDate(application.getSession().getExamDate())
 	        .build();
 	}
 

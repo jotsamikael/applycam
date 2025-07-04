@@ -129,7 +129,7 @@ public class ApplicationService {
         		.applicationRegion(request.getApplicationRegion())
         		.applicationYear(session.getSessionYear())
         		.payment(payment)
-        		//.status(ContentStatus.PAID)
+        		.status(ContentStatus.PAID)
         		.build();
         
         
@@ -205,6 +205,8 @@ public class ApplicationService {
     	ExamCenter examCenter=candidate.getExamCenter();
     	Session session= application.getSession();
     	application.setActived(true);
+    	application.setStatus(ContentStatus.VALIDATED);
+    	applicationRepository.save(application);
     	
     	sendApplicationValidationEmail(candidate,examCenter,session);
     	
@@ -222,6 +224,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new EntityNotFoundException("No Application found with ID: " + id));
 
         application.setActived(false);
+        application.setStatus(ContentStatus.REJECTED);
         applicationRepository.save(application);
 
         Candidate candidate = application.getCandidate();

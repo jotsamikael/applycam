@@ -90,9 +90,9 @@ public class TrainingCenterController {
        return ResponseEntity.ok(service.updateTrainingCenter(fullname, request,connectedUser));
    }
    
-   @PatchMapping("/status/{fullName}")
+   @PatchMapping("/status/{agreementNumber}")
    public ResponseEntity<String> changeStatus(
-           @PathVariable String fullName,
+           @PathVariable String agreementNumber,
            @RequestParam ContentStatus status,
            @RequestParam(required = false) String comment,
            Authentication connectedUser) {
@@ -100,9 +100,9 @@ public class TrainingCenterController {
        try {
            String result;
            if (status == ContentStatus.VALIDATED) {
-               result = service.validateTrainingCenter(fullName,connectedUser);
+               result = service.validateTrainingCenter(agreementNumber,connectedUser);
            } else {
-               result = service.changeTrainingCenterStatus(fullName, status, comment,connectedUser);
+               result = service.changeTrainingCenterStatus(agreementNumber, status, comment,connectedUser);
            }
            return ResponseEntity.ok(result);
        } catch (EntityNotFoundException e) {

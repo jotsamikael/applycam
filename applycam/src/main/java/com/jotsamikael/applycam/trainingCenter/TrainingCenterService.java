@@ -200,18 +200,27 @@ public class TrainingCenterService {
 	   
    }
    
-   public String validateTrainingCenter(String fullName, Authentication connectedUser) {
+   public String validateTrainingCenter(String agreementNumber, Authentication connectedUser) {
 	   
 	   User user= (User) connectedUser.getPrincipal();
 	   
 	    TrainingCenter trainingCenter = trainingCenterRepository
-	        .findByFullName(fullName)
-	        .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+	        .findByAgreementNumber(agreementNumber)
+	        .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + agreementNumber));
 
-	    TrainingCenterStatusHistory statusHistory = trainingCenterStatusHistoryRepository
-	        .findByTrainingCenter(trainingCenter)
-	        .orElseThrow(() -> new EntityNotFoundException("Status history not found for: " + trainingCenter.getAgreementNumber()));
+	    Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
+	    TrainingCenterStatusHistory statusHistory;
 
+	    if (optionalHistory.isPresent()) {
+	        // Mise à jour de l'historique existant
+	        statusHistory = optionalHistory.get();
+	    } else {
+	        // Création d’un nouvel historique s’il n’existe pas encore
+	        statusHistory = new TrainingCenterStatusHistory();
+	        statusHistory.setTrainingCenter(trainingCenter);
+	        statusHistory.setCreatedBy(user.getIdUser());
+	        statusHistory.setCreatedDate(LocalDateTime.now());
+	    }
 	    statusHistory.setStatus(ContentStatus.VALIDATED);
 	    statusHistory.setActived(true);
 	    statusHistory.setLastModifiedBy(user.getIdUser());
@@ -241,13 +250,13 @@ public class TrainingCenterService {
 	    return "VALIDATED";
 	}
    
-   public String changeTrainingCenterStatus(String fullName, ContentStatus status, String comment, Authentication connectedUser) {
+   public String changeTrainingCenterStatus(String agreementNumber, ContentStatus status, String comment, Authentication connectedUser) {
 	   
 	   User user= (User) connectedUser.getPrincipal();
 	   
 	    TrainingCenter trainingCenter = trainingCenterRepository
-	            .findByFullName(fullName)
-	            .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+	            .findByAgreementNumber(agreementNumber)
+	            .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + agreementNumber));
 
 	    Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
 	    TrainingCenterStatusHistory statusHistory;

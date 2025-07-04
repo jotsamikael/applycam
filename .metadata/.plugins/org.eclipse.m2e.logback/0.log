@@ -2593,3 +2593,40 @@ Caused by: org.codehaus.plexus.util.xml.pull.XmlPullParserException: Duplicated 
 2025-07-04 16:08:33,181 [Worker-2: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
 2025-07-04 16:08:33,209 [Worker-2: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
 2025-07-04 16:08:33,220 [Worker-2: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 16:34:59,358 [Worker-9: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 16:34:59,402 [Worker-9: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 16:34:59,420 [Worker-9: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 18:07:04,726 [Worker-9: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 18:07:04,773 [Worker-9: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 18:07:04,784 [Worker-9: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 18:32:10,299 [Worker-9: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 18:32:10,331 [Worker-9: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 18:32:10,362 [Worker-9: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:18:54,591 [Worker-5: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+2025-07-04 19:19:12,615 [Worker-6: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:19:12,638 [Worker-6: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:19:12,658 [Worker-6: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:20:06,027 [Worker-5: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:20:06,048 [Worker-5: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:20:06,057 [Worker-5: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:25:34,708 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:25:34,754 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:25:34,768 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:32:31,965 [Worker-14: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:32:31,988 [Worker-14: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:32:31,998 [Worker-14: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:34:24,738 [Worker-12: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:34:24,753 [Worker-12: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:34:24,764 [Worker-12: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:54:12,828 [Worker-15: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:54:12,852 [Worker-15: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:54:12,862 [Worker-15: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 19:58:20,481 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 19:58:20,498 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 19:58:20,507 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 20:08:47,483 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 20:08:47,501 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 20:08:47,514 [Worker-1: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
+2025-07-04 20:10:18,846 [Worker-12: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 2 resources from src\main\resources to target\classes
+2025-07-04 20:10:18,861 [Worker-12: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 7 resources from src\main\resources to target\classes
+2025-07-04 20:10:18,867 [Worker-12: Launching applycam - ApplycamApplication] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 0 resource from src\test\resources to target\test-classes
