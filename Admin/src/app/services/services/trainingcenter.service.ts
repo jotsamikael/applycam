@@ -116,7 +116,7 @@ export class TrainingcenterService extends BaseService {
   }
 
   /** Path part for operation `changeStatus()` */
-  static readonly ChangeStatusPath = '/trainingcenter/status/{fullName}';
+  static readonly ChangeStatusPath = '/trainingcenter/status/{agreementNumber}';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
@@ -124,7 +124,9 @@ export class TrainingcenterService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  changeStatus$Response(params: ChangeStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+  changeStatus$Response(params: ChangeStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: boolean;
+}>> {
     return changeStatus(this.http, this.rootUrl, params, context);
   }
 
@@ -134,9 +136,15 @@ export class TrainingcenterService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  changeStatus(params: ChangeStatus$Params, context?: HttpContext): Observable<string> {
+  changeStatus(params: ChangeStatus$Params, context?: HttpContext): Observable<{
+[key: string]: boolean;
+}> {
     return this.changeStatus$Response(params, context).pipe(
-      map((r: StrictHttpResponse<string>): string => r.body)
+      map((r: StrictHttpResponse<{
+[key: string]: boolean;
+}>): {
+[key: string]: boolean;
+} => r.body)
     );
   }
 

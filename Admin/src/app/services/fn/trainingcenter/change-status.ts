@@ -10,15 +10,17 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface ChangeStatus$Params {
-  fullName: string;
+  agreementNumber: string;
   status: 'READYTOPAY' | 'DRAFT' | 'PAID' | 'VALIDATED' | 'INCOMPLETED' | 'REJECTED' | 'PENDING';
   comment?: string;
 }
 
-export function changeStatus(http: HttpClient, rootUrl: string, params: ChangeStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+export function changeStatus(http: HttpClient, rootUrl: string, params: ChangeStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: boolean;
+}>> {
   const rb = new RequestBuilder(rootUrl, changeStatus.PATH, 'patch');
   if (params) {
-    rb.path('fullName', params.fullName, {});
+    rb.path('agreementNumber', params.agreementNumber, {});
     rb.query('status', params.status, {});
     rb.query('comment', params.comment, {});
   }
@@ -28,9 +30,11 @@ export function changeStatus(http: HttpClient, rootUrl: string, params: ChangeSt
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return r as StrictHttpResponse<{
+      [key: string]: boolean;
+      }>;
     })
   );
 }
 
-changeStatus.PATH = '/trainingcenter/status/{fullName}';
+changeStatus.PATH = '/trainingcenter/status/{agreementNumber}';

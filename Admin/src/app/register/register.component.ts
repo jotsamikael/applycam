@@ -2,10 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, AbstractControl, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from '../services/services/authentication.service';
+import { ApplicationService } from '../services/services/application.service';
+import { PaymentService } from '../services/services/payment.service';
+import { ExamCenterControllerService } from '../services/services/exam-center-controller.service';
+import { TrainingcenterService } from '../services/services/trainingcenter.service';
+import { CandidateRegistrationRequest } from '../services/models/candidate-registration-request';
+import { ApplicationRequest } from '../services/models/application-request';
+import { ExamCenterResponse } from '../services/models/exam-center-response';
+import { TrainingCenterResponse } from '../services/models/training-center-response';
+import { forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
-
-
 
 interface PromoterFormData {
   firstName: string;
@@ -83,13 +91,14 @@ interface CandidateFormData {
   motivationLetter: File | null;
   termsAccepted: boolean;
 }
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-   selectedTabIndex = 0;
+  selectedTabIndex = 0;
   currentStepCandidate = 0;
   candidateSteps = ['Compte', 'Informations', 'Examen', 'Documents', 'Paiement'];
   errorMessages: string[] = [];
@@ -97,17 +106,20 @@ export class RegisterComponent implements OnInit {
   currentDate = new Date().toISOString().split('T')[0];
   
   selectedPaymentMethod = 'mtn';
- 
-
   currentYear = new Date().getFullYear();
 
   currentStepPromoter = 0;
   promoterSteps = ['Informations personnelles', 'Informations du centre', 'Documents', 'Confirmation'];
  
-fieldsByExamType = {
+  fieldsByExamType = {
     'CQP': ['Informatique', 'Comptabilité', 'Marketing'],
     'DQP': ['Génie Civil', 'Génie Electrique', 'Gestion']
   };
+
+  // Nouvelles propriétés pour les listes déroulantes
+  examCenters: ExamCenterResponse[] = [];
+  trainingCenters: TrainingCenterResponse[] = [];
+  
   departmentsByRegion: { [key: string]: string[] } = {
     'Adamaoua': ['Djérem', 'Faro-et-Déo', 'Mayo-Banyo', 'Mbéré', 'Vina'],
     'Centre': ['Haute-Sanaga', 'Lekié', 'Mbam-et-Inoubou', 'Mbam-et-Kim', 'Méfou-et-Afamba', 
@@ -121,18 +133,30 @@ fieldsByExamType = {
     'Sud': ['Dja-et-Lobo', 'Mvila', 'Océan', 'Vallée-du-Ntem'],
     'Sud-Ouest': ['Fako', 'Koupé-Manengouba', 'Lebialem', 'Manyu', 'Meme', 'Ndian']
   };
- paymentMethods = [
+
+  paymentMethods = [
     { id: 'mtn', value: 'mtn', label: 'MTN Mobile Money', logo: 'assets/images/mtn.png' },
     { id: 'orange', value: 'orange', label: 'Orange Money', logo: 'assets/images/orange.png' }
   ];
+
   candidateForm: FormGroup;
+
+  nationalities: string[] = [
+    'Camerounaise', 'Sénégalaise', 'Ivoirienne', 'Congolaise', 'Gabonais', 'Nigériane', 'Tchadienne', 'Centrafricaine',
+    'Malienne', 'Burkinabé', 'Guinéenne', 'Marocaine', 'Algérienne', 'Tunisienne', 'Béninoise', 'Togolaise',
+    'Ghanéenne', 'Sierra-Léonaise', 'Libérienne', 'Égyptienne', 'Sud-Africaine', 'Rwandaise', 'Burundaise',
+    'Ougandaise', 'Kenyanne', 'Éthiopienne', 'Erythréenne', 'Espagnole', 'Française', 'Italienne', 'Allemande'
+  ].sort();
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthenticationService,
+    private applicationService: ApplicationService,
+    private paymentService: PaymentService,
+    private examCenterService: ExamCenterControllerService,
+    private trainingCenterService: TrainingcenterService,
     private fb: FormBuilder,
-    
     private datePipe: DatePipe
   ) {
     this.candidateForm = this.createCandidateForm();
@@ -144,9 +168,117 @@ fieldsByExamType = {
       if (!isNaN(tab)) {
         this.selectedTabIndex = tab;
       }
+      this.promoterForm.patchValue({
+        lastName: 'Ekani',
+        firstName: 'Jules',
+        gender: 'M',
+        birthDate: '1979-05-18',
+        nationality: 'Camerounaise',
+        cniNumber: '8765432109',
+        phone: '698112233',
+        email: 'jules.ekani@topskills.cm',
+        profession: 'Consultant',
+        centerName: 'TopSkills Formation',
+        centerAcronym: 'TSF',
+        centerType: 'PRIVE',
+        centerPhone: '650332211',
+        creationDate: '2015-10-05',
+        centerEmail: 'info@topskills.cm',
+        city: 'Yaoundé',
+        approvalNumber: 'AG445566',
+        approvalStart: '2021-06-01',
+        approvalEnd: '2027-06-01',
+        departement: 'Mfoundi',
+        fullAddress: 'Derrière hôtel Jouvence, Odza',
+        residenceCity: 'Yaoundé',
+        region: 'Centre',
+        cniValidUntil: '2029-05-18',
+        isCenterPresentCandidateForCqp: true,
+        isCenterPresentCandidateForDqp: false,
+        password: 'TopSkills789!',
+        confirmPassword: 'TopSkills789!',
+        website: 'https://topskills.cm',
+        termsAccepted: true
+      });
+      
     });
 
+    // Charger les données nécessaires
+    // this.loadExamCenters();
+    // this.loadTrainingCenters();
+
+    this.candidateForm.patchValue({
+      lastName: 'Ndiaye',
+      firstName: 'Fatou',
+      email: 'fatou.ndiaye@example.com',
+      phoneNumber: '699112233',
+      password: 'MotDePasse123',
+      confirmPassword: 'MotDePasse123',
+      preferredLanguage: 'fr',
+      sex: 'F',
+      dateOfBirth: '1998-05-15',
+      birthCity: 'Dakar',
+      birthDepartment: 'Dakar',
+      nationality: 'Sénégalaise',
+      originRegion: 'Dakar',
+      maritalStatus: 'single',
+      childrenCount: 0,
+      teachingLanguage: 'fr',
+      isFirstAttempt: true,
+      examType: 'CQP',
+      desiredField: 'Informatique',
+      examCenter: '1', // ID du centre d'examen
+      examSession: '2025-06',
+      trainingMode: 'presentiel',
+      fundingSource: 'personal',
+      termsAccepted: true
+    });
   }
+
+  // Méthodes pour charger les données
+  // loadExamCenters(): void {
+  //   this.trainingCenterService.getAllTrainingCenters()
+  //     .pipe(
+  //       switchMap(trainingCentersResponse => {
+  //         const divisions = [...new Set(
+  //           (trainingCentersResponse.content || [])
+  //             .map(tc => tc.division)
+  //             .filter((d): d is string => !!d)
+  //         )];
+
+  //         if (divisions.length === 0) {
+  //           return forkJoin([]);
+  //         }
+
+  //         const examCenterRequests = divisions.map(division =>
+  //           this.examCenterService.findByName4({ division })
+  //         );
+
+  //         return forkJoin(examCenterRequests);
+  //       }),
+  //       map(responses => {
+  //         return responses.flatMap(response => response.content || []);
+  //       })
+  //     ).subscribe({
+  //       next: (centers) => {
+  //         this.examCenters = centers;
+  //       },
+  //       error: (err) => {
+  //         console.error('Erreur chargement centres d\'examen:', err);
+  //       }
+  //     });
+  // }
+
+  // loadTrainingCenters(): void {
+  //   this.trainingCenterService.getAllTrainingCenters().subscribe({
+  //     next: (response) => {
+  //       this.trainingCenters = response.content || [];
+  //     },
+  //     error: (err) => {
+  //       console.error('Erreur chargement centres de formation:', err);
+  //     }
+  //   });
+  // }
 
   // CANDIDATE FORM
   createCandidateForm(): FormGroup {
@@ -184,7 +316,7 @@ fieldsByExamType = {
       examType: ['', Validators.required],
       desiredField: ['', Validators.required],
       trainingCenterCode: [''],
-      trainingCenterName: [''],
+      trainingCenterName: ['', Validators.required],
       trainingCenterCity: [''],
       examSession: ['', Validators.required],
       trainingMode: ['', Validators.required],
@@ -320,33 +452,90 @@ fieldsByExamType = {
     }
 
     this.processing = true;
-    setTimeout(() => {
-      this.registerCandidate();
-    }, 2000);
+    this.registerCandidate();
   }
 
   registerCandidate(): void {
     this.processing = true;
     const formValue = this.candidateForm.value;
 
-    // Map formValue to CandidateRegistrationRequest as needed
-    const candidateRequest: any = {
-      ...formValue,
-      // Map/rename fields if necessary to match CandidateRegistrationRequest
-      // Example: firstname: formValue.firstName, lastname: formValue.lastName, etc.
+    // 1. Créer le compte candidat (CandidateRegistrationRequest)
+    const registrationRequest: CandidateRegistrationRequest = {
+      firstname: formValue.firstName,
+      lastname: formValue.lastName,
+      email: formValue.email,
+      phoneNumber: formValue.phoneNumber,
+      password: formValue.password,
+      confirmPassword: formValue.confirmPassword,
+      language: formValue.preferredLanguage,
+      startYear: this.currentYear.toString(),
+      endYear: (this.currentYear + 1).toString(),
+      trainingCenterName: formValue.trainingCenterName
     };
 
-    this.authService.register({ body: candidateRequest }).subscribe({
+    this.authService.register({ body: registrationRequest }).subscribe({
+      next: () => {
+        // 2. Créer la candidature (ApplicationRequest)
+        this.createApplication(formValue);
+      },
+      error: (err) => {
+        this.processing = false;
+        this.handleError(err);
+      }
+    });
+  }
+
+  createApplication(formValue: any): void {
+    const applicationRequest: ApplicationRequest = {
+      academicLevel: formValue.desiredField,
+      amount: this.calculateFees(),
+      applicationRegion: formValue.birthRegion,
+      dateOfBirth: formValue.dateOfBirth,
+      departmentOfOrigin: formValue.birthDepartment,
+      email: formValue.email,
+      examType: formValue.examType,
+      financialRessource: formValue.fundingSource,
+      formationMode: formValue.trainingMode,
+      freeCandidate: false,
+      learningLanguage: formValue.teachingLanguage,
+      matrimonialSituation: formValue.maritalStatus,
+      nationIdNumber: formValue.identityDocument?.name || '',
+      nationality: formValue.nationality,
+      numberOfKid: formValue.childrenCount,
+      paymentMethod: this.selectedPaymentMethod,
+      placeOfBirth: formValue.birthCity,
+      regionOrigins: formValue.originRegion,
+      repeatCandidate: !formValue.isFirstAttempt,
+      secretCode: Math.floor(1000 + Math.random() * 9000), // Code secret aléatoire
+      sessionYear: formValue.examSession,
+      sex: formValue.sex,
+      speciality: formValue.desiredField,
+      trainingCenterAcronym: formValue.trainingCenterCode
+    };
+
+    this.applicationService.candidateAppliance({ body: applicationRequest }).subscribe({
+      next: () => {
+        // 3. Créer le paiement
+        this.createPayment();
+      },
+      error: (err) => {
+        this.processing = false;
+        this.handleError(err);
+      }
+    });
+  }
+
+  createPayment(): void {
+    const paymentData = {
+      amount: this.calculateFees(),
+      paymentMethod: this.selectedPaymentMethod,
+      secretCode: Math.floor(1000 + Math.random() * 9000)
+    };
+
+    this.paymentService.createPayment({ body: paymentData }).subscribe({
       next: () => {
         this.processing = false;
-        Swal.fire({
-          position: 'center',
-          icon: 'success',
-          title: 'Inscription réussie!',
-          text: 'Un email de confirmation a été envoyé',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        this.showSuccess('Candidat');
         this.router.navigate(['/login']);
       },
       error: (err) => {
@@ -356,55 +545,6 @@ fieldsByExamType = {
     });
   }
 
-  prepareCandidateFormData(): FormData {
-    const formData = new FormData();
-    const formValue = this.candidateForm.value;
-
-    // Add all simple fields
-    Object.keys(formValue).forEach(key => {
-      if (!['birthCertificate', 'identityDocument', 'diploma', 
-           'identityPhotos', 'firstAttemptProof', 'motivationLetter'].includes(key)) {
-        const value = formValue[key];
-        if (value instanceof Date) {
-          formData.append(key, this.datePipe.transform(value, 'yyyy-MM-dd') || '');
-        } else if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
-      }
-    });
-
-    // Add files
-    this.addFileToFormData(formData, 'birthCertificate');
-    this.addFileToFormData(formData, 'identityDocument');
-    this.addFileToFormData(formData, 'diploma');
-    this.addFilesToFormData(formData, 'identityPhotos');
-    this.addFileToFormData(formData, 'firstAttemptProof');
-    this.addFileToFormData(formData, 'motivationLetter');
-
-    // Add payment info
-    formData.append('paymentMethod', this.selectedPaymentMethod);
-    formData.append('amount', this.calculateFees().toString());
-
-    return formData;
-  }
-
-  addFileToFormData(formData: FormData, field: string): void {
-    const file = this.candidateForm.get(field)?.value;
-    if (file) {
-      formData.append(field, file, file.name);
-    }
-  }
-
-  addFilesToFormData(formData: FormData, field: string): void {
-    const files = this.candidateForm.get(field)?.value;
-    if (files && files.length) {
-      files.forEach((file: File, index: number) => {
-        formData.append(`${field}_${index}`, file, file.name);
-      });
-    }
-  }
-
- 
   // PROMOTER FORM
   promoterForm = new FormGroup({
     firstName: new FormControl('', [Validators.required]),
@@ -446,20 +586,6 @@ fieldsByExamType = {
     termsAccepted: new FormControl(false, [Validators.requiredTrue])
   }, { validators: this.passwordMatchValidator });
 
-  // private passwordMatchValidator(form: FormGroup): {[key: string]: any} | null {
-  //   const password = form.get('password')?.value;
-  //   const confirmPassword = form.get('confirmPassword')?.value;
-  //   return password === confirmPassword ? null : { passwordMismatch: true };
-  // }
-
-  // onCandidateFileChange(event: Event, controlName: string): void {
-  //   const input = event.target as HTMLInputElement;
-  //   if (input.files?.length) {
-  //     this.candidateForm.get(controlName)?.setValue(input.files[0]);
-  //     this.candidateForm.get(controlName)?.markAsTouched();
-  //   }
-  // }
-
   onFileChange(event: Event, controlName: string): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
@@ -468,45 +594,6 @@ fieldsByExamType = {
     }
   }
 
-  // nextCandidateStep(): void {
-  //   if (this.currentStepCandidate === 0 && !this.validateCandidateStep1()) {
-  //     return;
-  //   }
-  //   if (this.currentStepCandidate === 1 && !this.validateCandidateStep2()) {
-  //     return;
-  //   }
-  //   this.currentStepCandidate++;
-  //   this.errorMessages = [];
-  // }
-
-  private validateCandidateStep1(): boolean {
-    const requiredFields = ['fullName', 'email', 'sex', 'dateOfBirth', 'phoneNumber'];
-    const invalidFields = requiredFields.filter(field => 
-      this.candidateForm.get(field)?.invalid
-    );
-
-    if (invalidFields.length) {
-      this.errorMessages = ['Veuillez remplir tous les champs obligatoires'];
-      this.markFieldsAsTouched(this.candidateForm, requiredFields);
-      return false;
-    }
-    return true;
-  }
-
-  private validateCandidateStep2(): boolean {
-    if (this.candidateForm.invalid) {
-      this.errorMessages = ['Veuillez compléter tous les champs requis'];
-      this.markAllAsTouched(this.candidateForm);
-      return false;
-    }
-    return true;
-  }
-
-//   prevCandidateStep(): void {
-//     this.currentStepCandidate--;
-//     this.errorMessages = [];
-//   }
-// // 
   nextPromoterStep(): void {
     if (this.currentStepPromoter === 0 && !this.validatePromoterStep1()) {
       return;
@@ -572,70 +659,19 @@ fieldsByExamType = {
     this.errorMessages = [];
   }
 
-  calculateCenterAge(): number | null {
-    const creationYear = this.promoterForm.get('creationYear')?.value;
-    if (creationYear) {
-      return this.currentYear - parseInt(creationYear, 10);
+  calculateCenterAge(): string {
+    const creationDate = this.promoterForm.get('creationDate')?.value;
+    if (creationDate) {
+      const year = new Date(creationDate).getFullYear();
+      return (this.currentYear - year).toString();
     }
-    return null;
+    return 'Non renseigné';
   }
 
-  // registerCandidate(): void {
-  //   this.errorMessages = [];
-  //   console.log('[registerCandidate] Début');
-
-  //   if (this.candidateForm.invalid) {
-  //     this.markAllAsTouched(this.candidateForm);
-  //     this.errorMessages = ['Veuillez corriger les erreurs dans le formulaire'];
-  //     console.log('[registerCandidate] Formulaire invalide', this.candidateForm.value);
-  //     return;
-  //   }
-
-  //   this.processing = true;
-
-  //   const formValue = this.candidateForm.value as unknown as CandidateFormData;
-  //   console.log('[registerCandidate] formValue', formValue);
-
-  //   try {
-  //     // Split full name into first and last names
-  //     const nameParts = formValue.fullName.split(' ');
-  //     const firstName = nameParts[0] || '';
-  //     const lastName = nameParts.slice(1).join(' ') || '';
-
-  //     const requestBody: any = {
-  //       firstname: firstName,
-  //       lastname: lastName,
-  //       email: formValue.email || '',
-  //       password: formValue.password || '',
-  //       phoneNumber: formValue.phoneNumber || '',
-  //       sex: formValue.sex || 'M',
-  //       dateOfBirth: formValue.dateOfBirth || '',
-  //     };
-
-  //     console.log('[registerCandidate] requestBody envoyé', requestBody);
-
-  //     this.authService.register({ body: requestBody }).subscribe({
-  //       next: () => {
-  //         console.log('[registerCandidate] Succès');
-  //         this.showSuccess('Candidat');
-  //         this.router.navigate(['activate-account']);
-  //       },
-  //       error: (err) => {
-  //         console.error('[registerCandidate] Erreur', err);
-  //         this.handleError(err);
-  //         this.processing = false;
-  //       },
-  //       complete: () => {
-  //         console.log('[registerCandidate] Complete');
-  //         this.processing = false;
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error('[registerCandidate] Exception', error);
-  //     this.errorMessages = [error instanceof Error ? error.message : 'Erreur inconnue'];
-  //     this.processing = false;
-  //   }
-  // }
+  getExamCenterName(examCenterId: string): string {
+    const center = this.examCenters.find(c => c.id?.toString() === examCenterId);
+    return center ? `${center.name} - ${center.region}` : 'Non spécifié';
+  }
 
   registerPromoter(): void {
     this.errorMessages = [];
@@ -740,7 +776,7 @@ fieldsByExamType = {
       icon: 'success',
       title: 'Succès',
       showConfirmButton: false,
-      timer: 1500,
+      timer: 3500,
       
       html: `<div style='text-align:left'>
       <p>Votre compte promoteur a été créé avec succès.</p>
@@ -773,4 +809,5 @@ fieldsByExamType = {
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
+
 }

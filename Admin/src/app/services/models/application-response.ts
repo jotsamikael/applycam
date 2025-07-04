@@ -11,4 +11,6 @@ export interface ApplicationResponse {
   paymentMethod?: string;
   speciality?: string;
   status?: string;
+  email?: string;
+  examType?: string;
 }

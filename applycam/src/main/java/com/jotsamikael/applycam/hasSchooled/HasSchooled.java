@@ -1,5 +1,6 @@
 package com.jotsamikael.applycam.hasSchooled;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.candidate.Candidate;
 import com.jotsamikael.applycam.common.BaseEntity;
@@ -32,10 +33,12 @@ public class HasSchooled extends BaseEntity {
     //relationship with candidate
     @ManyToOne()
     @JoinColumn(name = "candidate_id")
+    @JsonIgnore
     private Candidate candidate;
 
     //relationship with training center
     @ManyToOne()
     @JoinColumn(name = "training_center_id")
+    @JsonIgnore
     private TrainingCenter trainingCenter;
 }

@@ -132,61 +132,54 @@
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="form-label">Lieu de naissance (Ville) <span class="text-danger">*</span></label>
                       <input formControlName="birthCity" class="form-control" required>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Région</label>
-                    <select formControlName="region" class="form-select">
-                      <option value="">Sélectionner</option>
-                      <option value="Adamaoua">Adamaoua</option>
-                      <option value="Centre">Centre</option>
-                      <option value="Est">Est</option>
-                      <option value="Extrême-Nord">Extrême-Nord</option>
-                      <option value="Littoral">Littoral</option>
-                      <option value="Nord">Nord</option>
-                      <option value="Nord-Ouest">Nord-Ouest</option>
-                      <option value="Ouest">Ouest</option>
-                      <option value="Sud">Sud</option>
-                      <option value="Sud-Ouest">Sud-Ouest</option>
-                    </select>
+                    <div>
+                      <label class="form-label">Département de naissance</label>
+                      <input formControlName="birthDepartment" class="form-control">
+                    </div>
                   </div>
-                  <div>
-                    <label class="form-label">Département</label>
-                    <select formControlName="departement" class="form-select" [disabled]="!promoterForm.value.region">
-                      <option value="">Sélectionnez d'abord une région</option>
-                      <option *ngFor="let dept of departmentsByRegion[candidateForm.value.region]" [value]="dept">
-                        {{dept}}
-                      </option>
-                    </select>
-                  </div>
-                </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Région</label>
+                      <select formControlName="region" class="form-select">
+                        <option value="">Sélectionner</option>
+                        <option value="Adamaoua">Adamaoua</option>
+                        <option value="Centre">Centre</option>
+                        <option value="Est">Est</option>
+                        <option value="Extrême-Nord">Extrême-Nord</option>
+                        <option value="Littoral">Littoral</option>
+                        <option value="Nord">Nord</option>
+                        <option value="Nord-Ouest">Nord-Ouest</option>
+                        <option value="Ouest">Ouest</option>
+                        <option value="Sud">Sud</option>
+                        <option value="Sud-Ouest">Sud-Ouest</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="form-label">Département</label>
+                      <select formControlName="departement" class="form-select" [disabled]="!candidateForm.value.region">
+                        <option value="">Sélectionnez d'abord une région</option>
+                        <option *ngFor="let dept of departmentsByRegion[candidateForm.value.region]" [value]="dept">
+                          {{dept}}
+                        </option>
+                      </select>
+                    </div>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="form-label">Nationalité <span class="text-danger">*</span></label>
-                      <input formControlName="nationality" class="form-control" required>
-                    </div>
-                    <div>
-                      <label class="form-label">Région d'origine <span class="text-danger">*</span></label>
-                      <select formControlName="originRegion" class="form-select" required>
-                      <option value="">Sélectionner</option>
-                      <option value="Adamaoua">Adamaoua</option>
-                      <option value="Centre">Centre</option>
-                      <option value="Est">Est</option>
-                      <option value="Extrême-Nord">Extrême-Nord</option>
-                      <option value="Littoral">Littoral</option>
-                      <option value="Nord">Nord</option>
-                      <option value="Nord-Ouest">Nord-Ouest</option>
-                      <option value="Ouest">Ouest</option>
-                      <option value="Sud">Sud</option>
-                      <option value="Sud-Ouest">Sud-Ouest</option>
+                      <select formControlName="nationality" class="form-select" required>
+                        <option value="">Sélectionner</option>
+                        <option *ngFor="let country of nationalities" [value]="country">{{country}}</option>
                       </select>
                     </div>
+                    
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -248,19 +241,13 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="form-label">Code du centre de formation</label>
-                      <input formControlName="trainingCenterCode" class="form-control">
-                    </div>
-                    <div>
-                      <label class="form-label">Nom du centre</label>
-                      <input formControlName="trainingCenterName" class="form-control" disabled>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Ville du centre</label>
-                      <input formControlName="trainingCenterCity" class="form-control" disabled>
+                      <label class="form-label">Centre d'examen <span class="text-danger">*</span></label>
+                      <select formControlName="examCenter" class="form-select" required>
+                        <option value="">Sélectionner</option>
+                        <option *ngFor="let center of examCenters" [value]="center.id">
+                          {{center.name}} - {{center.region}}
+                        </option>
+                      </select>
                     </div>
                     <div>
                       <label class="form-label">Session d'examen <span class="text-danger">*</span></label>
@@ -374,8 +361,8 @@
                           <div class="font-medium">Filière:</div>
                           <div>{{candidateForm.value.desiredField}}</div>
                           
-                          <div class="font-medium">Centre de formation:</div>
-                          <div>{{candidateForm.value.trainingCenterName || 'Non spécifié'}}</div>
+                          <div class="font-medium">Centre d'examen:</div>
+                          <div>{{getExamCenterName(candidateForm.value.examCenter) || 'Non spécifié'}}</div>
                           
                           <div class="font-medium">Session:</div>
                           <div>{{candidateForm.value.examSession | date:'MM/yyyy'}}</div>
@@ -427,6 +414,13 @@
                           {{method.label}}
                         </label>
                       </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4">
+                    <h4 class="font-semibold">Statut du candidat</h4>
+                    <div class="text-lg font-medium text-blue-600">
+                      {{candidateForm.value.status || 'En attente de validation'}}
                     </div>
                   </div>
                 </div>
@@ -650,13 +644,7 @@
                   </div>
                   <div>
   <label>Âge du centre :</label>
-  <span>
-    {{
-      promoterForm.get('creationDate')?.value
-        ? (currentYear - +promoterForm.get('creationDate')?.value)
-        : 'Non renseigné'
-    }}
-  </span>
+  <span>{{calculateCenterAge()}}</span>
 </div>
                 </div>
 <!-- À placer dans Step 2 du promoteur, juste avant le champ "Site web" -->
@@ -814,7 +802,7 @@
                         <div>{{promoterForm.value.region || 'Non renseigné'}}</div>
                         
                         <div class="font-medium">Département:</div>
-                        <div>{{promoterForm.value.department || 'Non renseigné'}}</div>
+                        <div>{{promoterForm.value.departement || 'Non renseigné'}}</div>
                         
                         <div class="font-medium">Ville/Arrondissement:</div>
                         <div>{{promoterForm.value.city || 'Non renseigné'}}</div>
@@ -832,9 +820,7 @@
                         <div>{{promoterForm.value.approvalEnd | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
                         
                         <div class="font-medium">Années d'existence:</div>
-                        <div>{{promoterForm.value.creationDate
-        ? (currentYear - +promoterForm.value.creationDate)
-        : 'Non renseigné'}}</div>
+                        <div>{{calculateCenterAge()}}</div>
                         
                         <div class="font-medium">Site web:</div>
                         <div>{{promoterForm.value.website || 'Non renseigné'}}</div>

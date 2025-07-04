@@ -15,6 +15,8 @@ import { getCanidateFileByType } from '../fn/file-controller/get-canidate-file-b
 import { GetCanidateFileByType$Params } from '../fn/file-controller/get-canidate-file-by-type';
 import { getPromoterFileByType } from '../fn/file-controller/get-promoter-file-by-type';
 import { GetPromoterFileByType$Params } from '../fn/file-controller/get-promoter-file-by-type';
+import { getTrainingCenterFilesByType } from '../fn/file-controller/get-training-center-files-by-type';
+import { GetTrainingCenterFilesByType$Params } from '../fn/file-controller/get-training-center-files-by-type';
 
 @Injectable({ providedIn: 'root' })
 export class FileControllerService extends BaseService {
@@ -47,6 +49,31 @@ export class FileControllerService extends BaseService {
     );
   }
 
+  /** Path part for operation `getTrainingCenterFilesByType()` */
+  static readonly GetTrainingCenterFilesByTypePath = '/files/centerr-files/{agreementNumber}/{fileType}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getTrainingCenterFilesByType()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getTrainingCenterFilesByType$Response(params: GetTrainingCenterFilesByType$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<string>>> {
+    return getTrainingCenterFilesByType(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getTrainingCenterFilesByType$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getTrainingCenterFilesByType(params: GetTrainingCenterFilesByType$Params, context?: HttpContext): Observable<Array<string>> {
+    return this.getTrainingCenterFilesByType$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
+    );
+  }
+
   /** Path part for operation `getCanidateFileByType()` */
   static readonly GetCanidateFileByTypePath = '/files/candidate-files/{userId}/{fileType}';
 
@@ -72,4 +99,23 @@ export class FileControllerService extends BaseService {
     );
   }
 
+  /**
+   * Generates a direct URL to a promoter file by type.
+   * @param promoterId The ID of the promoter (user).
+   * @param fileType The type/key of the file.
+   * @returns The full URL as a string.
+   */
+  generateFileUrl(promoterId: number | string, fileType: string): string {
+    return `${this.rootUrl}/files/promoter-files/${promoterId}/${fileType}`;
+  }
+
+  /**
+   * Generates a direct URL to a training center file by type.
+   * @param agreementNumber The agreement number of the training center.
+   * @param fileType The type/key of the file.
+   * @returns The full URL as a string.
+   */
+  generateTrainingCenterFileUrl(agreementNumber: string, fileType: string): string {
+    return `${this.rootUrl}/files/centerr-files/${agreementNumber}/${fileType}`;
+  }
 }

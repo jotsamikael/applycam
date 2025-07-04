@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 public class PromoterMapper {
     public PromoterResponse toPromoterResponse(Promoter promoter) {
         return PromoterResponse.builder()
-                .idUser(promoter.getIdUser())
+        		.idUser(promoter.getIdUser())
                 .firstname(promoter.getFirstname())
                 .lastname(promoter.getLastname())
                 .dateOfBirth(promoter.getDateOfBirth())

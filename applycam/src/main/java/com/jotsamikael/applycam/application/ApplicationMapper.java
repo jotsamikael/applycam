@@ -15,6 +15,8 @@ public class ApplicationMapper {
 	        //.status(application.getStatus())
 	        .paymentMethod(application.getPayment().getPaymentMethod())
 	        .amount(application.getPayment().getAmount())
+	        .email(application.getCandidate().getEmail())
+	        .examType(application.getSession().getExamType())
 	        .build();
 	}
 

@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Candidate } from '../../../services/models/candidate';
+import { CandidateResponse } from '../../../services/models/candidate-response';
 
 @Component({
   selector: 'app-my-candidates',
@@ -24,27 +24,13 @@ export class MyCandidatesComponent implements OnInit {
   ];
 
   displayedColumns: string[] = ['name', 'email', 'status', 'actions'];
-  dataSource: MatTableDataSource<Candidate>;
-  candidates: Candidate[] = [
+  dataSource: MatTableDataSource<CandidateResponse>;
+  candidates: CandidateResponse[] = [
     {
-      idUser: 1,
-      firstname: 'Jean',
-      lastname: 'Dupont',
-      email: 'jean.dupont@example.com',
-      phoneNumber: '123456789',
-      contentStatus: 'VALIDATED', // corrigé
-      nationalIdNumber: '1234567890',
-      sex: 'M'
+    
     },
     {
-      idUser: 2,
-      firstname: 'Marie',
-      lastname: 'Kamga',
-      email: 'marie.kamga@example.com',
-      phoneNumber: '987654321',
-      contentStatus: 'DRAFT', // corrigé
-      nationalIdNumber: '0987654321',
-      sex: 'F'
+     
     }
   ];
 
@@ -103,7 +89,7 @@ export class MyCandidatesComponent implements OnInit {
     this.showModal = true;
   }
 
-  edit(candidate: Candidate): void {
+  edit(candidate: any): void {
     this.isEditMode = true;
     this.currentCandidateId = candidate.idUser || null;
     this.candidateForm.patchValue({
@@ -118,42 +104,42 @@ export class MyCandidatesComponent implements OnInit {
     this.showModal = true;
   }
 
-  delete(candidate: Candidate): void {
+  delete(candidate: any): void {
     if (confirm(`Are you sure you want to delete ${candidate.firstname} ${candidate.lastname}?`)) {
-      this.candidates = this.candidates.filter(c => c.idUser !== candidate.idUser);
+      this.candidates = this.candidates.filter((c: any) => c.idUser !== candidate.idUser);
       this.loadCandidates();
       this.showSnackBar('Candidate deleted successfully');
     }
   }
 
-  onSubmit(): void {
-    if (this.candidateForm.invalid) {
-      return;
-    }
+  // onSubmit(): void {
+  //   if (this.candidateForm.invalid) {
+  //     return;
+  //   }
 
-    this.processing = true;
-    const candidateData = this.candidateForm.value;
+  //   this.processing = true;
+  //   const candidateData = this.candidateForm.value;
 
-    setTimeout(() => {
-      if (this.isEditMode && this.currentCandidateId) {
-        // Update
-        const index = this.candidates.findIndex(c => c.idUser === this.currentCandidateId);
-        if (index !== -1) {
-          this.candidates[index] = { ...this.candidates[index], ...candidateData };
-          this.showSnackBar('Candidate updated successfully');
-        }
-      } else {
-        // Create
-        const newId = Math.max(...this.candidates.map(c => c.idUser || 0)) + 1;
-        this.candidates.push({ ...candidateData, idUser: newId });
-        this.showSnackBar('Candidate added successfully');
-      }
+  //   setTimeout(() => {
+  //     if (this.isEditMode && this.currentCandidateId) {
+  //       // Update
+  //       const index = this.candidates.findIndex(c => c.idUser === this.currentCandidateId);
+  //       if (index !== -1) {
+  //         this.candidates[index] = { ...this.candidates[index], ...candidateData };
+  //         this.showSnackBar('Candidate updated successfully');
+  //       }
+  //     } else {
+  //       // Create
+  //       const newId = Math.max(...this.candidates.map(c => c.idUser || 0)) + 1;
+  //       this.candidates.push({ ...candidateData, idUser: newId });
+  //       this.showSnackBar('Candidate added successfully');
+  //     }
 
-      this.closeModal();
-      this.loadCandidates();
-      this.processing = false;
-    }, 1000);
-  }
+  //     this.closeModal();
+  //     this.loadCandidates();
+  //     this.processing = false;
+  //   }, 1000);
+  // }
 
   closeModal(): void {
     this.showModal = false;

@@ -1,5 +1,6 @@
 package com.jotsamikael.applycam.campus;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 import jakarta.persistence.*;
@@ -29,6 +30,7 @@ public class Campus extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "id_training_center")
+    @JsonIgnore
     private TrainingCenter trainingCenter;
 
 

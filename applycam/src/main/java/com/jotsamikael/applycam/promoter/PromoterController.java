@@ -1,5 +1,6 @@
 package com.jotsamikael.applycam.promoter;
 
+import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.staff.CreateStaffRequest;
 import com.jotsamikael.applycam.staff.StaffResponse;
@@ -7,12 +8,14 @@ import com.jotsamikael.applycam.staff.StaffResponse;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -67,6 +70,18 @@ public class PromoterController {
         promoterService.togglePromoter(email, connectedUser);
         return ResponseEntity.ok().build();
     }
+    
+    
+    @PatchMapping("/validate-promoter/{email}")
+    public ResponseEntity<String> changeStatus(
+            @PathVariable String email,
+            Authentication connectedUser) {
+        promoterService.validatePromoter(email,connectedUser);
+            return ResponseEntity.ok().build();
+       
+    }
+    
+    
    // @PostMapping(value="nationalId/{validUntil}", consumes = "multipart/form-data")
    /* public ResponseEntity<?>nationalIdCardFileUpload(
     		 @RequestParam("validUntil") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate validUntil,

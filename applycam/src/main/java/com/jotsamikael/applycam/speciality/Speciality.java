@@ -1,6 +1,7 @@
 package com.jotsamikael.applycam.speciality;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.course.Course;
@@ -43,9 +44,11 @@ public class Speciality extends BaseEntity {
     private Course course;
 
     @OneToMany(mappedBy = "speciality" ,cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonManagedReference
     private List<OffersSpeciality> offersSpecialityList;
 
     @OneToMany(mappedBy = "speciality")
+    @JsonManagedReference
     private List<Application> applicationList;
     
     @ManyToMany

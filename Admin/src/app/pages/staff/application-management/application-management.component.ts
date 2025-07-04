@@ -1,19 +1,20 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import Swal from 'sweetalert2';
 import { ApplicationService } from '../../../services/services/application.service';
 import { ApplicationRequest } from '../../../services/models/application-request';
+import { ApplicationResponse } from '../../../services/models/application-response';
 
 @Component({
   selector: 'app-application-management',
   templateUrl: './application-management.component.html',
   styleUrls: ['./application-management.component.scss']
 })
-export class ApplicationManagementComponent implements OnInit {
+export class ApplicationManagementComponent implements OnInit, AfterViewInit {
   breadCrumbItems = [
     { label: 'Dashboard', path: '/' },
     { label: 'Applications Management', active: true }
@@ -21,21 +22,26 @@ export class ApplicationManagementComponent implements OnInit {
 
   followUpStat = [
     { title: 'Total Applications', value: 0, icon: 'assignment' },
-    { title: 'Submitted', value: 0, icon: 'check-circle' },
-    { title: 'Drafts', value: 0, icon: 'edit' }
+    { title: 'Validées', value: 0, icon: 'check-circle' },
+    { title: 'Rejetées', value: 0, icon: 'block' },
+    { title: 'Brouillons', value: 0, icon: 'edit' }
   ];
 
-  displayedColumns: string[] = ['lastName', 'firstName', 'email', 'examType', 'speciality', 'status', 'actions'];
-  dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = ['candidateName', 'email', 'examType', 'speciality', 'status', 'actions'];
+  dataSource = new MatTableDataSource<ApplicationResponse>([]);
   processing = false;
   modalRef?: BsModalRef;
   CreateApplicationForm!: FormGroup;
-  selectedApplication: any = null;
+  selectedApplication: ApplicationResponse | null = null;
   specialities: { id: string, name: string }[] = [
     { id: 'info', name: 'Informatique' },
     { id: 'math', name: 'Mathématiques' },
     { id: 'phy', name: 'Physique' }
   ];
+
+  totalElements = 0;
+  pageSize = 10;
+  pageIndex = 0;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -58,26 +64,14 @@ export class ApplicationManagementComponent implements OnInit {
 
   initForm() {
     this.CreateApplicationForm = this.fb.group({
-      lastName: ['', [Validators.required, Validators.maxLength(64)]],
-      firstName: ['', [Validators.required, Validators.maxLength(64)]],
+      candidateName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{8,}$/)]],
-      sex: ['', [Validators.required]],
-      academicLevel: ['', [Validators.required]],
       examType: ['', [Validators.required]],
       speciality: ['', [Validators.required]],
       applicationRegion: ['', [Validators.required]],
-      regionOrigins: ['', [Validators.required]],
       nationality: ['', [Validators.required]],
-      nationIdNumber: ['', [Validators.required]],
-      fatherFullname: ['', [Validators.required]],
-      fatherProfession: ['', [Validators.required]],
-      motherFullname: ['', [Validators.required]],
-      motherProfession: ['', [Validators.required]],
-      trainingCenterAcronym: ['', [Validators.required]],
-      freeCandidate: [false],
-      repeatCandidate: [false],
-      sessionYear: ['', [Validators.required]]
+      status: ['DRAFT', [Validators.required]]
+      // Ajoute d'autres champs requis par ApplicationRequest si besoin
     });
   }
 
@@ -85,28 +79,42 @@ export class ApplicationManagementComponent implements OnInit {
     return this.CreateApplicationForm.controls;
   }
 
-  // CRUD adapté à l'état actuel du service (seul le POST est disponible)
-  loadApplications() {
-    // Pas de méthode GET côté service : on utilise des données mockées
-    const mockApplications = [
-      {
-        id: 1,
-        lastName: 'Doe',
-        firstName: 'John',
-        email: 'john.doe@email.com',
-        examType: 'CQP',
-        speciality: 'Informatique',
-        status: 'DRAFT'
+  loadApplications(event?: PageEvent) {
+    const offset = event?.pageIndex ?? this.pageIndex;
+    const pageSize = event?.pageSize ?? this.pageSize;
+    console.log('[Application] Chargement des applications avec offset:', offset, 'pageSize:', pageSize);
+
+    this.applicationService.getAllApplications({
+      offset,
+      pageSize,
+      field: 'id',
+      order: true
+    }).subscribe({
+      next: (res) => {
+        console.log('[Application] Réponse backend:', res);
+        this.dataSource.data = res.content || [];
+        this.totalElements = res.totalElements || 0;
+        this.pageSize = res.size || pageSize;
+        this.pageIndex = res.number || offset;
+        this.updateStats();
+        console.log('[Application] Données tableau:', this.dataSource.data);
+      },
+      error: (err) => {
+        console.error('[Application] Erreur lors du chargement:', err);
+        Swal.fire('Error', 'Failed to load applications', 'error');
       }
-    ];
-    this.dataSource.data = mockApplications;
-    this.updateStats();
+    });
   }
 
   updateStats() {
-    this.followUpStat[0].value = this.dataSource.data.length;
-    this.followUpStat[1].value = this.dataSource.data.filter(a => a.status === 'SUBMITTED').length;
-    this.followUpStat[2].value = this.dataSource.data.filter(a => a.status === 'DRAFT').length;
+    const all = this.dataSource.data;
+    // On considère null/undefined/'' comme DRAFT
+    const getStatus = (a: ApplicationResponse) => (a.status ? a.status : 'DRAFT');
+    this.followUpStat[0].value = all.length;
+    this.followUpStat[1].value = all.filter(a => getStatus(a) === 'VALIDATED').length;
+    this.followUpStat[2].value = all.filter(a => getStatus(a) === 'REJECTED').length;
+    this.followUpStat[3].value = all.filter(a => getStatus(a) === 'DRAFT').length;
+    console.log('[Application] Stats calculées:', this.followUpStat);
   }
 
   applyFilter(event: Event) {
@@ -116,20 +124,21 @@ export class ApplicationManagementComponent implements OnInit {
 
   openCreateNewModal() {
     this.selectedApplication = null;
-    this.CreateApplicationForm.reset();
+    this.CreateApplicationForm.reset({ status: 'DRAFT' });
     this.modalRef = this.modalService.show('addNew');
   }
 
   createNewApplication() {
     if (this.CreateApplicationForm.invalid) return;
     this.processing = true;
-    const formValue: ApplicationRequest = this.CreateApplicationForm.value;
+    const formValue: ApplicationRequest = {
+      ...this.CreateApplicationForm.value,
+      sessionYear: '2024',
+      trainingCenterAcronym: 'ABC'
+    };
     this.applicationService.candidateAppliance({ body: formValue }).subscribe({
       next: () => {
-        // Ajoute localement pour simuler le CRUD
-        const newApp = { ...formValue, id: Date.now(), status: 'DRAFT', speciality: this.getSpecialityName(formValue.speciality) };
-        this.dataSource.data = [...this.dataSource.data, newApp];
-        this.updateStats();
+        this.loadApplications();
         this.processing = false;
         this.modalRef?.hide();
         Swal.fire('Success', 'Application created successfully', 'success');
@@ -141,7 +150,7 @@ export class ApplicationManagementComponent implements OnInit {
     });
   }
 
-  edit(row: any) {
+  edit(row: ApplicationResponse) {
     this.selectedApplication = row;
     this.CreateApplicationForm.patchValue({
       ...row,
@@ -153,25 +162,15 @@ export class ApplicationManagementComponent implements OnInit {
   updateApplication() {
     if (this.CreateApplicationForm.invalid || !this.selectedApplication) return;
     this.processing = true;
-    // Pas de méthode update côté service, on met à jour localement
-    const formValue = this.CreateApplicationForm.value;
-    const updatedApp = {
-      ...this.selectedApplication,
-      ...formValue,
-      speciality: this.getSpecialityName(formValue.speciality)
-    };
-    const idx = this.dataSource.data.findIndex(a => a.id === this.selectedApplication.id);
-    if (idx > -1) {
-      this.dataSource.data[idx] = updatedApp;
-      this.dataSource.data = [...this.dataSource.data];
-    }
-    this.updateStats();
+    // Ajoute ici l'appel à la méthode de mise à jour réelle si elle existe côté backend
+    // Sinon, recharge la liste pour simuler
+    this.loadApplications();
     this.processing = false;
     this.modalRef?.hide();
     Swal.fire('Success', 'Application updated successfully', 'success');
   }
 
-  delete(row: any) {
+  delete(row: ApplicationResponse) {
     Swal.fire({
       title: 'Are you sure?',
       text: 'This action cannot be undone!',
@@ -179,16 +178,102 @@ export class ApplicationManagementComponent implements OnInit {
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!'
     }).then(result => {
-      if (result.isConfirmed) {
-        // Pas de méthode delete côté service, suppression locale
-        this.dataSource.data = this.dataSource.data.filter(a => a.id !== row.id);
-        this.updateStats();
-        Swal.fire('Deleted!', 'Application has been deleted.', 'success');
+      if (result.isConfirmed && row.id) {
+        this.applicationService.deleteApplication({ applicationId: row.id }).subscribe({
+          next: () => {
+            this.loadApplications();
+            Swal.fire('Deleted!', 'Application has been deleted.', 'success');
+          },
+          error: () => {
+            Swal.fire('Error', 'Failed to delete application', 'error');
+          }
+        });
       }
     });
   }
 
-  getSpecialityName(id: string) {
-    return this.specialities.find(s => s.id === id)?.name || '';
+  onPageChange(event: PageEvent) {
+    this.loadApplications(event);
+  }
+
+  showDetails(application: ApplicationResponse) {
+    console.log('[Application] Affichage des détails pour:', application);
+    
+    const detailsHtml = `
+      <div class="text-start">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>ID:</strong> ${application.id || 'N/A'}</p>
+            <p><strong>Candidat:</strong> ${application.candidateName || 'N/A'}</p>
+            <p><strong>Email:</strong> ${application.email || 'N/A'}</p>
+            <p><strong>Spécialité:</strong> ${application.speciality || 'N/A'}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Type d'examen:</strong> ${application.examType || 'N/A'}</p>
+            <p><strong>Région:</strong> ${application.applicationRegion || 'N/A'}</p>
+            <p><strong>Année:</strong> ${application.applicationYear || 'N/A'}</p>
+            <p><strong>Statut:</strong> <span class="badge bg-info">${application.status || 'DRAFT'}</span></p>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <p><strong>Méthode de paiement:</strong> ${application.paymentMethod || 'N/A'}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Montant:</strong> ${application.amount ? application.amount + ' FCFA' : 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    Swal.fire({
+      title: `Détails de la candidature`,
+      html: detailsHtml,
+      width: '600px',
+      confirmButtonText: 'Fermer',
+      confirmButtonColor: '#3085d6',
+      showCloseButton: true,
+      customClass: {
+        popup: 'swal-wide'
+      }
+    });
+  }
+
+  validate(app: ApplicationResponse) {
+    if (!app.id) return;
+    this.applicationService.validateApplication({ id: app.id }).subscribe({
+      next: () => {
+        this.loadApplications();
+        Swal.fire('Succès', 'Candidature validée', 'success');
+      },
+      error: () => {
+        Swal.fire('Erreur', 'Échec de la validation', 'error');
+      }
+    });
+  }
+
+  reject(app: ApplicationResponse) {
+    if (!app.id) return;
+    Swal.fire({
+      title: 'Rejeter la candidature',
+      input: 'text',
+      inputLabel: 'Motif du rejet',
+      inputPlaceholder: 'Saisir un commentaire...',
+      showCancelButton: true,
+      confirmButtonText: 'Rejeter',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.applicationService.rejectApplication({ id: app.id, comment: result.value }).subscribe({
+          next: () => {
+            this.loadApplications();
+            Swal.fire('Succès', 'Candidature rejetée', 'success');
+          },
+          error: () => {
+            Swal.fire('Erreur', 'Échec du rejet', 'error');
+          }
+        });
+      }
+    });
   }
 }

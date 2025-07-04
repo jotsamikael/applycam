@@ -16,6 +16,8 @@ import com.jotsamikael.applycam.candidate.Candidate;
 import com.jotsamikael.applycam.candidate.CandidateRepository;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.promoter.PromoterRepository;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class FileController {
 
     private final CandidateRepository candidateRepository;
     private final PromoterRepository promoterRepository;
+    private final TrainingCenterRepository trainingCenterRepository;
 
     @GetMapping("/candidate-files/{userId}/{fileType}")
     public ResponseEntity<byte[]> getCanidateFileByType(
@@ -87,9 +90,9 @@ public class FileController {
         String filePath = switch (fileType.toUpperCase()) {
             case "CNI" -> promoter.getNationalIdCardUrl();
             case "PHOTO" -> promoter.getPhotoUrl();
-            case "SIGNATURE" -> promoter.getSignatureLetterUrl();
-            case "LOCALISATION" -> promoter.getLocalisationFileUrl();
-            case "REGLEMENT" -> promoter.getInternalRegulationFileUrl();
+           // case "SIGNATURE" -> promoter.getSignatureLetterUrl();
+           // case "LOCALISATION" -> promoter.getLocalisationFileUrl();
+           // case "REGLEMENT" -> promoter.getInternalRegulationFileUrl();
             default -> throw new IllegalArgumentException("Type de fichier non reconnu : " + fileType);
         };
 
@@ -116,6 +119,50 @@ public class FileController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    
+    
+    
+    @GetMapping("/centerr-files/{agreementNumber}/{fileType}")
+    public ResponseEntity<byte[]> getTrainingCenterFilesByType(
+            @PathVariable String agreementNumber,
+            @PathVariable String fileType) {
+
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Training center introuvable avec le numero d'agreement " + agreementNumber));
+
+        String filePath = switch (fileType.toUpperCase()) {
+            
+        case "AGREEMENT" -> trainingCenter.getAgreementFileUrl();
+           case "SIGNATURE" -> trainingCenter.getSignatureLetterUrl();
+           case "LOCALISATION" -> trainingCenter.getLocalisationFileUrl();
+           case "REGLEMENT" -> trainingCenter.getInternalRegulationFileUrl();
+            default -> throw new IllegalArgumentException("Type de fichier non reconnu : " + fileType);
+        };
+
+        if (filePath == null || filePath.isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] fileContent = FileUtils.readFileFromLocation(filePath);
+        if (fileContent == null) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+        try {
+            Path file = Path.of(filePath);
+            String contentType = Files.probeContentType(file);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFileName() + "\"")
+                    .contentType(MediaType.parseMediaType(contentType != null ? contentType : "application/octet-stream"))
+                    .body(fileContent);
+
+        } catch (IOException e) {
+            log.error("Impossible de lire le type MIME du fichier : {}", filePath, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
 
 }
 

@@ -14,5 +14,7 @@ public class ApplicationResponse {
     private String status;
     private String paymentMethod;
     private Double amount;
+    private String email;
+    private String examType;
     
 }

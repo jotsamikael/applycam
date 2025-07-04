@@ -219,9 +219,9 @@ public class PromoterService {
         handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
         handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
         
-        repository.save(promoter);
         trainingCenterRepository.save(trainingCenter);
-     // Env
+        repository.save(promoter);
+     // Envoi d'email
         emailService.sendWaitingForValidationEmail(promoter, trainingCenter);
     }
     
@@ -249,8 +249,8 @@ public class PromoterService {
         handleFileUploads(trainingCenter, promoter, locationPlan, "LOCALISATION");
         handleFileUploads(trainingCenter, promoter, internalRegulation, "REGULATION");
         
-        repository.save(promoter);
         trainingCenterRepository.save(trainingCenter);
+        repository.save(promoter);
     }
 
     private void handleFileUploads(TrainingCenter trainingCenter,Promoter promoter, MultipartFile file,String fileType) {
@@ -260,9 +260,9 @@ public class PromoterService {
             case "CNI" -> promoter.setNationalIdCardUrl(url);
             case "AGREEMENT" -> trainingCenter.setAgreementFileUrl(url);
             case "PHOTO" -> promoter.setPhotoUrl(url);
-            case "SIGNATURE" -> promoter.setSignatureLetterUrl(url);
-            case "LOCALISATION" -> promoter.setLocalisationFileUrl(url);
-            case "REGULATION" -> promoter.setInternalRegulationFileUrl(url);
+            case "SIGNATURE" -> trainingCenter.setSignatureLetterUrl(url);
+            case "LOCALISATION" -> trainingCenter.setLocalisationFileUrl(url);
+            case "REGULATION" -> trainingCenter.setInternalRegulationFileUrl(url);
             default -> throw new IllegalArgumentException("we do not handel this folder.");
         }
            // repository.save(promoter); // met à jour le promoteur
@@ -431,6 +431,49 @@ public class PromoterService {
         
         
     }
+    
+    
+    public String validatePromoter(String email, Authentication connectedUser) {
+ 	   
+ 	   User user= (User) connectedUser.getPrincipal();
+ 	   
+ 	   /* TrainingCenter trainingCenter = trainingCenterRepository
+ 	        .findByFullName(fullName)
+ 	        .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
+
+ 	    TrainingCenterStatusHistory statusHistory = trainingCenterStatusHistoryRepository
+ 	        .findByTrainingCenter(trainingCenter)
+ 	        .orElseThrow(() -> new EntityNotFoundException("Status history not found for: " + trainingCenter.getAgreementNumber()));
+
+ 	    statusHistory.setStatus(ContentStatus.VALIDATED);
+ 	    statusHistory.setActived(true);
+ 	    statusHistory.setLastModifiedBy(user.getIdUser());
+ 	    statusHistory.setLastModifiedDate(LocalDateTime.now());
+ 	    trainingCenterStatusHistoryRepository.save(statusHistory);*/
+
+ 	    try {
+ 	        Promoter promoter = repository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("No promoter found with email: " + email));; // ou trainingCenter.getUser()
+ 	        promoter.setEnabled(true);
+ 	        userRepository.save(promoter);
+ 	        // 1. Envoyer email de validation simple
+ 	        emailService.sendPromoterValidationEmail(
+ 	                promoter.getEmail(),
+ 	                promoter.fullName(),
+ 	      
+ 	                "promoter_validation", // nom du template
+ 	                "Vous avez été validé avec succès"
+ 	        );
+
+ 	        // 2. Envoyer email d’activation avec token
+ 	        //sendValidationEmail(promoter);
+
+ 	    } catch (MessagingException e) {
+ 	        throw new RuntimeException("Échec d’envoi d’email", e);
+ 	    }
+
+ 	    return "VALIDATED";
+ 	}
+    
     
     /*public void nationalIdCardFileUpload(MultipartFile file, Authentication connectedUser,LocalDate validUntil,String nationalIdNumber) {
     	

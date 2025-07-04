@@ -208,6 +208,8 @@ public class ApplicationService {
     	
     	sendApplicationValidationEmail(candidate,examCenter,session);
     	
+    	applicationRepository.save(application);
+    	
     	return "validated";
     }
     

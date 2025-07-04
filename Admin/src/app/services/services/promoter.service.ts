@@ -11,6 +11,8 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { changeStatus1 } from '../fn/promoter/change-status-1';
+import { ChangeStatus1$Params } from '../fn/promoter/change-status-1';
 import { findStaffByEmail1 } from '../fn/promoter/find-staff-by-email-1';
 import { FindStaffByEmail1$Params } from '../fn/promoter/find-staff-by-email-1';
 import { getAllStaffs1 } from '../fn/promoter/get-all-staffs-1';
@@ -28,6 +30,31 @@ import { UpdatePromoter1$Params } from '../fn/promoter/update-promoter-1';
 export class PromoterService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
     super(config, http);
+  }
+
+  /** Path part for operation `changeStatus1()` */
+  static readonly ChangeStatus1Path = '/promoter/validate-promoter/{email}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `changeStatus1()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  changeStatus1$Response(params: ChangeStatus1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return changeStatus1(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `changeStatus1$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  changeStatus1(params: ChangeStatus1$Params, context?: HttpContext): Observable<string> {
+    return this.changeStatus1$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
   }
 
   /** Path part for operation `updatePromoter1()` */

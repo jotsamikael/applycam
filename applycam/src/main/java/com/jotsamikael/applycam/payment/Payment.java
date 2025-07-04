@@ -3,6 +3,7 @@ package com.jotsamikael.applycam.payment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.candidate.Candidate;
 import com.jotsamikael.applycam.common.BaseEntity;
@@ -34,6 +35,7 @@ public class Payment extends BaseEntity{
 	private Long secretCode;
 	
 	@OneToOne(mappedBy="payment")
+	@JsonManagedReference
 	private Application application;
 
 }

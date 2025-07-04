@@ -700,7 +700,7 @@
         }
       }
     },
-    "/trainingcenter/status/{fullName}": {
+    "/trainingcenter/status/{agreementNumber}": {
       "patch": {
         "tags": [
           "trainingcenter"
@@ -708,7 +708,7 @@
         "operationId": "changeStatus",
         "parameters": [
           {
-            "name": "fullName",
+            "name": "agreementNumber",
             "in": "path",
             "required": true,
             "schema": {
@@ -747,7 +747,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  }
                 }
               }
             }
@@ -1050,6 +1053,36 @@
               "application/json": {
                 "schema": {
                   "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/promoter/validate-promoter/{email}": {
+      "patch": {
+        "tags": [
+          "promoter"
+        ],
+        "operationId": "changeStatus_1",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -1700,7 +1733,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": "name"
+              "default": "fullName"
             }
           },
           {
@@ -2566,6 +2599,48 @@
         }
       }
     },
+    "/files/centerr-files/{agreementNumber}/{fileType}": {
+      "get": {
+        "tags": [
+          "file-controller"
+        ],
+        "operationId": "getTrainingCenterFilesByType",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "byte"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/files/candidate-files/{userId}/{fileType}": {
       "get": {
         "tags": [
@@ -2774,7 +2849,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": "name"
+              "default": "firstname"
             }
           },
           {
@@ -2834,7 +2909,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": "name"
+              "default": "firstname"
             }
           },
           {
@@ -3103,6 +3178,66 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/assignment/get-all": {
+      "get": {
+        "tags": [
+          "exam-center-controller"
+        ],
+        "operationId": "getAllExamCenters",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "name"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseExamCenterResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -3911,10 +4046,10 @@
           "fullAddress": {
             "type": "string"
           },
-          "centerPresentCandidateForDqp": {
+          "centerPresentCandidateForCqp": {
             "type": "boolean"
           },
-          "centerPresentCandidateForCqp": {
+          "centerPresentCandidateForDqp": {
             "type": "boolean"
           }
         }
@@ -4280,52 +4415,6 @@
           }
         }
       },
-      "Application": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "applicationYear": {
-            "type": "string"
-          },
-          "candidate": {
-            "$ref": "#/components/schemas/Candidate"
-          },
-          "speciality": {
-            "$ref": "#/components/schemas/Speciality"
-          },
-          "applicationRegion": {
-            "type": "string"
-          },
-          "payment": {
-            "$ref": "#/components/schemas/Payment"
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
       "Campus": {
         "type": "object",
         "properties": {
@@ -4362,9 +4451,6 @@
           "town": {
             "type": "string"
           },
-          "trainingCenter": {
-            "$ref": "#/components/schemas/TrainingCenter"
-          },
           "xcoor": {
             "type": "number",
             "format": "double"
@@ -4372,353 +4458,6 @@
           "ycoor": {
             "type": "number",
             "format": "double"
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Candidate": {
-        "type": "object",
-        "properties": {
-          "idUser": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "firstname": {
-            "type": "string"
-          },
-          "lastname": {
-            "type": "string"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date"
-          },
-          "sex": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "nationalIdNumber": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "accountLocked": {
-            "type": "boolean"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Role"
-            }
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "placeOfBirth": {
-            "type": "string"
-          },
-          "motherFullName": {
-            "type": "string"
-          },
-          "fatherFullName": {
-            "type": "string"
-          },
-          "motherProfession": {
-            "type": "string"
-          },
-          "fatherProfession": {
-            "type": "string"
-          },
-          "highestSchoolLevel": {
-            "type": "string"
-          },
-          "nationality": {
-            "type": "string"
-          },
-          "regionOrigins": {
-            "type": "string"
-          },
-          "freeCandidate": {
-            "type": "boolean"
-          },
-          "repeatCandidate": {
-            "type": "boolean"
-          },
-          "townOfResidence": {
-            "type": "string"
-          },
-          "language": {
-            "type": "string"
-          },
-          "departmentOfOrigin": {
-            "type": "string"
-          },
-          "matrimonialSituation": {
-            "type": "string"
-          },
-          "learningLanguage": {
-            "type": "string"
-          },
-          "formationMode": {
-            "type": "string"
-          },
-          "financialRessource": {
-            "type": "string"
-          },
-          "numberOfKid": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "cvUrl": {
-            "type": "string"
-          },
-          "letterUrl": {
-            "type": "string"
-          },
-          "financialJustificationUrl": {
-            "type": "string"
-          },
-          "stageCertificateUrl": {
-            "type": "string"
-          },
-          "oldApplyanceUrl": {
-            "type": "string"
-          },
-          "profilePictureUrl": {
-            "type": "string"
-          },
-          "birthCertificateUrl": {
-            "type": "string"
-          },
-          "nationalIdCardUrl": {
-            "type": "string"
-          },
-          "highestDiplomatUrl": {
-            "type": "string"
-          },
-          "contentStatus": {
-            "type": "string",
-            "enum": [
-              "READYTOPAY",
-              "DRAFT",
-              "PAID",
-              "VALIDATED",
-              "INCOMPLETED",
-              "REJECTED",
-              "PENDING"
-            ]
-          },
-          "hasSchooledList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HasSchooled"
-            }
-          },
-          "applicationList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Application"
-            }
-          },
-          "examCenter": {
-            "$ref": "#/components/schemas/ExamCenter"
-          },
-          "name": {
-            "type": "string"
-          },
-          "username": {
-            "type": "string"
-          },
-          "authorities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GrantedAuthority"
-            }
-          },
-          "accountNonLocked": {
-            "type": "boolean"
-          },
-          "credentialsNonExpired": {
-            "type": "boolean"
-          },
-          "accountNonExpired": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Course": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "specialityList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Speciality"
-            }
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "ExamCenter": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "candidateList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Candidate"
-            }
-          },
-          "name": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "division": {
-            "type": "string"
-          },
-          "capacity": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "GrantedAuthority": {
-        "type": "object",
-        "properties": {
-          "authority": {
-            "type": "string"
-          }
-        }
-      },
-      "HasSchooled": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "startYear": {
-            "type": "string",
-            "format": "date"
-          },
-          "endYear": {
-            "type": "string",
-            "format": "date"
-          },
-          "candidate": {
-            "$ref": "#/components/schemas/Candidate"
-          },
-          "trainingCenter": {
-            "$ref": "#/components/schemas/TrainingCenter"
           },
           "actived": {
             "type": "boolean"
@@ -4754,296 +4493,6 @@
           "agreement": {
             "type": "string"
           },
-          "speciality": {
-            "$ref": "#/components/schemas/Speciality"
-          },
-          "trainingCenter": {
-            "$ref": "#/components/schemas/TrainingCenter"
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Payment": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "amount": {
-            "type": "number",
-            "format": "double"
-          },
-          "paymentMethod": {
-            "type": "string"
-          },
-          "secretCode": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "application": {
-            "$ref": "#/components/schemas/Application"
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Role": {
-        "type": "object",
-        "properties": {
-          "idRole": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "Speciality": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "examType": {
-            "type": "string"
-          },
-          "course": {
-            "$ref": "#/components/schemas/Course"
-          },
-          "offersSpecialityList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OffersSpeciality"
-            }
-          },
-          "applicationList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Application"
-            }
-          },
-          "subjectList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Subject"
-            }
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Subject": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "specialityList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Speciality"
-            }
-          },
-          "actived": {
-            "type": "boolean"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        }
-      },
-      "TrainingCenter": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "fullName": {
-            "type": "string"
-          },
-          "acronym": {
-            "type": "string"
-          },
-          "agreementNumber": {
-            "type": "string"
-          },
-          "agreementFileUrl": {
-            "type": "string"
-          },
-          "agreementStatus": {
-            "type": "string"
-          },
-          "startDateOfAgreement": {
-            "type": "string",
-            "format": "date"
-          },
-          "endDateOfAgreement": {
-            "type": "string",
-            "format": "date"
-          },
-          "isCenterPresentCandidateForCqp": {
-            "type": "boolean"
-          },
-          "isCenterPresentCandidateForDqp": {
-            "type": "boolean"
-          },
-          "division": {
-            "type": "string"
-          },
-          "fullAddress": {
-            "type": "string"
-          },
-          "centerType": {
-            "type": "string"
-          },
-          "centerPhone": {
-            "type": "string"
-          },
-          "centerEmail": {
-            "type": "string"
-          },
-          "website": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "centerAge": {
-            "type": "number",
-            "format": "double"
-          },
-          "status": {
-            "$ref": "#/components/schemas/TrainingCenterStatusHistory"
-          },
-          "offersSpecialityList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OffersSpeciality"
-            }
-          },
-          "campusList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Campus"
-            }
-          },
-          "hasSchooledList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HasSchooled"
-            }
-          },
           "actived": {
             "type": "boolean"
           },
@@ -5056,6 +4505,9 @@
         "type": "object",
         "properties": {
           "fullName": {
+            "type": "string"
+          },
+          "promoterName": {
             "type": "string"
           },
           "acronym": {
@@ -5097,40 +4549,6 @@
               "$ref": "#/components/schemas/Campus"
             }
           },
-          "centerPresentCandidateForDqp": {
-            "type": "boolean"
-          },
-          "centerPresentCandidateForCqp": {
-            "type": "boolean"
-          }
-        }
-      },
-      "TrainingCenterStatusHistory": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "lastModifiedBy": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "trainingCenter": {
-            "$ref": "#/components/schemas/TrainingCenter"
-          },
           "status": {
             "type": "string",
             "enum": [
@@ -5143,13 +4561,10 @@
               "PENDING"
             ]
           },
-          "comment": {
-            "type": "string"
-          },
-          "actived": {
+          "centerPresentCandidateForCqp": {
             "type": "boolean"
           },
-          "archived": {
+          "centerPresentCandidateForDqp": {
             "type": "boolean"
           }
         }
@@ -5727,6 +5142,212 @@
           "ycoor": {
             "type": "number",
             "format": "double"
+          }
+        }
+      },
+      "HasSchooled": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "startYear": {
+            "type": "string",
+            "format": "date"
+          },
+          "endYear": {
+            "type": "string",
+            "format": "date"
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TrainingCenter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "acronym": {
+            "type": "string"
+          },
+          "agreementNumber": {
+            "type": "string"
+          },
+          "agreementFileUrl": {
+            "type": "string"
+          },
+          "agreementStatus": {
+            "type": "string"
+          },
+          "startDateOfAgreement": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDateOfAgreement": {
+            "type": "string",
+            "format": "date"
+          },
+          "isCenterPresentCandidateForCqp": {
+            "type": "boolean"
+          },
+          "isCenterPresentCandidateForDqp": {
+            "type": "boolean"
+          },
+          "division": {
+            "type": "string"
+          },
+          "fullAddress": {
+            "type": "string"
+          },
+          "centerType": {
+            "type": "string"
+          },
+          "centerPhone": {
+            "type": "string"
+          },
+          "centerEmail": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "centerAge": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrainingCenterStatusHistory"
+          },
+          "offersSpecialityList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OffersSpeciality"
+            }
+          },
+          "campusList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Campus"
+            }
+          },
+          "hasSchooledList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HasSchooled"
+            }
+          },
+          "internalRegulationFileUrl": {
+            "type": "string"
+          },
+          "signatureLetterUrl": {
+            "type": "string"
+          },
+          "localisationFileUrl": {
+            "type": "string"
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TrainingCenterStatusHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trainingCenter": {
+            "$ref": "#/components/schemas/TrainingCenter"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "READYTOPAY",
+              "DRAFT",
+              "PAID",
+              "VALIDATED",
+              "INCOMPLETED",
+              "REJECTED",
+              "PENDING"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
           }
         }
       },

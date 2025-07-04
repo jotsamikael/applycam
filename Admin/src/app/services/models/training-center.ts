@@ -27,12 +27,15 @@ export interface TrainingCenter {
   fullName?: string;
   hasSchooledList?: Array<HasSchooled>;
   id?: number;
+  internalRegulationFileUrl?: string;
   isCenterPresentCandidateForCqp?: boolean;
   isCenterPresentCandidateForDqp?: boolean;
   lastModifiedBy?: number;
   lastModifiedDate?: string;
+  localisationFileUrl?: string;
   offersSpecialityList?: Array<OffersSpeciality>;
   region?: string;
+  signatureLetterUrl?: string;
   startDateOfAgreement?: string;
   status?: TrainingCenterStatusHistory;
   website?: string;

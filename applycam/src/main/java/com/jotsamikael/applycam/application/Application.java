@@ -43,11 +43,13 @@ public class Application extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "candidate_id")
+    @JsonIgnore
     private Candidate candidate;
 
     //relationship between Application and offerSpeciality
     @ManyToOne
     @JoinColumn(name = "speciality")
+    @JsonIgnore
     private Speciality speciality;
     
     @ManyToOne
@@ -63,6 +65,7 @@ public class Application extends BaseEntity {
     
     @OneToOne
     @JoinColumn(name="payment_id")
+    @JsonIgnore
     private Payment payment;
     
     

@@ -23,13 +23,13 @@ export const MENU: MenuItem[] = [
         link: 'training-centers-management',
         roles: ['super_admin', 'STAFF']
     },
-    {
-        id: 5,
-        label: 'Staff Management',
-        icon: 'bx-group',
-        link: 'staff-management',
-        roles: ['super_admin', 'STAFF']
-    },
+    // {
+    //     id: 5,
+    //     label: 'Staff Management',
+    //     icon: 'bx-group',
+    //     link: 'staff-management',
+    //     roles: ['super_admin', 'STAFF']
+    // },
     // Gestion des candidats et applications
     {
         id: 4,

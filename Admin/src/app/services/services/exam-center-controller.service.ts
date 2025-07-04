@@ -19,6 +19,8 @@ import { deleteSession1 } from '../fn/exam-center-controller/delete-session-1';
 import { DeleteSession1$Params } from '../fn/exam-center-controller/delete-session-1';
 import { findByName4 } from '../fn/exam-center-controller/find-by-name-4';
 import { FindByName4$Params } from '../fn/exam-center-controller/find-by-name-4';
+import { getAllExamCenters } from '../fn/exam-center-controller/get-all-exam-centers';
+import { GetAllExamCenters$Params } from '../fn/exam-center-controller/get-all-exam-centers';
 import { PageResponseExamCenterResponse } from '../models/page-response-exam-center-response';
 import { updateExamCenter } from '../fn/exam-center-controller/update-exam-center';
 import { UpdateExamCenter$Params } from '../fn/exam-center-controller/update-exam-center';
@@ -130,6 +132,31 @@ export class ExamCenterControllerService extends BaseService {
       map((r: StrictHttpResponse<{
 }>): {
 } => r.body)
+    );
+  }
+
+  /** Path part for operation `getAllExamCenters()` */
+  static readonly GetAllExamCentersPath = '/assignment/get-all';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAllExamCenters()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllExamCenters$Response(params?: GetAllExamCenters$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseExamCenterResponse>> {
+    return getAllExamCenters(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAllExamCenters$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllExamCenters(params?: GetAllExamCenters$Params, context?: HttpContext): Observable<PageResponseExamCenterResponse> {
+    return this.getAllExamCenters$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseExamCenterResponse>): PageResponseExamCenterResponse => r.body)
     );
   }
 

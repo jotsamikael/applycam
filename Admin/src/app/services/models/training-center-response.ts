@@ -16,5 +16,7 @@ export interface TrainingCenterResponse {
   fullName?: string;
   offersSpecialityList?: Array<OffersSpeciality>;
   promoter?: string;
+  promoterName?: string;
   startDateOfAgreement?: string;
+  status?: 'READYTOPAY' | 'DRAFT' | 'PAID' | 'VALIDATED' | 'INCOMPLETED' | 'REJECTED' | 'PENDING';
 }

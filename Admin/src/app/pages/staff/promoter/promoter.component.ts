@@ -1,13 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { PromoterService } from '../../../services/services/promoter.service';
-import { PromoterResponse } from '../../../services/models/promoter-response';
-import { CreatePromoterRequest } from '../../../services/models/create-promoter-request';
-import { PageResponsePromoterResponse } from '../../../services/models/page-response-promoter-response';
-import { ChangeDetectorRef } from '@angular/core';
 import Swal from 'sweetalert2';
-import { FileControllerService } from '../../../services/services/file-controller.service'; // adapte le chemin
+import { PromoterService } from '../../../services/services/promoter.service';
+import { FileControllerService } from '../../../services/services/file-controller.service';
+import { PromoterResponse } from '../../../services/models/promoter-response';
+import { PageResponsePromoterResponse } from '../../../services/models/page-response-promoter-response';
+
 @Component({
   selector: 'app-promoter',
   templateUrl: './promoter.component.html',
@@ -21,9 +20,10 @@ export class PromoterComponent implements OnInit {
   processing = false;
   promoterForm: FormGroup;
   selectedPromoter: PromoterResponse | null = null;
+
   breadCrumbItems = [
     { label: 'Dashboard', url: '/' },
-    { label: 'Ministers', url: '/staff/promoter' }
+    { label: 'Promoters', url: '/staff/promoter' }
   ];
 
   confirmDialog = {
@@ -32,30 +32,30 @@ export class PromoterComponent implements OnInit {
     onConfirm: () => {},
     onCancel: () => {}
   };
-  detailFiles: { [key: string]: string[] } = {};
-  showDetailModal = false;
-  detailPromoter: PromoterResponse | null = null;
+
+  private readonly fileBaseUrl = 'http://localhost:8080/files/promoter-files'; // ✅ à adapter selon ton backend
 
   constructor(
     private promoterService: PromoterService,
+    private fileControllerService: FileControllerService,
     private fb: FormBuilder,
-    private fileControllerService: FileControllerService, // <-- ajoute ceci
     private cdr: ChangeDetectorRef
   ) {
     this.promoterForm = this.fb.group({
-      firstname: ['', [Validators.required]],
-      lastname: ['', [Validators.required]],
+      firstname: ['', Validators.required],
+      lastname: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required]],
+      phoneNumber: ['', Validators.required],
       dateOfBirth: [''],
       nationalIdNumber: [''],
       accountLocked: [false],
-      enabled: [true],
+      enabled: [true]
     });
   }
 
   ngOnInit(): void {
     this.loadPromoters();
+    (window as any).activatePromoter = (email: string) => this.activatePromoter(email);
   }
 
   get f() { return this.promoterForm.controls; }
@@ -92,218 +92,227 @@ export class PromoterComponent implements OnInit {
     this.promoterForm.reset();
     this.selectedPromoter = null;
   }
-  closeDetailModal() {
-    this.showDetailModal = false;
-    this.detailPromoter = null;
-    this.cdr.detectChanges();
+
+  onSubmit() {
+    if (this.promoterForm.invalid) return;
+    const action = this.isEditMode ? 'modifier' : 'créer';
+
+    Swal.fire({
+      title: 'Confirmation',
+      text: `Voulez-vous vraiment ${action} ce promoteur ?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.processing = true;
+        const formValue = this.promoterForm.value;
+
+        if (this.isEditMode && this.selectedPromoter?.email) {
+          this.promoterService.updatePromoter1({
+            email: this.selectedPromoter.email,
+            body: formValue
+          }).subscribe({
+            next: () => {
+              this.loadPromoters();
+              this.closeModal();
+              this.processing = false;
+              this.showSuccess();
+            },
+            error: () => this.processing = false
+          });
+        } else {
+          // Ajouter ici la logique de création si activée
+          this.processing = false;
+          this.closeModal();
+          this.showSuccess();
+        }
+      }
+    });
   }
 
-  // Succès après création
-// onSubmit() {
-//   if (this.promoterForm.invalid) return;
-//   const action = this.isEditMode ? 'modifier' : 'créer';
-//   Swal.fire({
-//     title: 'Confirmation',
-//     text: `Voulez-vous vraiment ${action} ce promoteur ?`,
-//     icon: 'question',
-//     showCancelButton: true,
-//     confirmButtonText: 'Oui',
-//     cancelButtonText: 'Annuler'
-//   }).then(result => {
-//     if (result.isConfirmed) {
-//       this.processing = true;
-//       const formValue = this.promoterForm.value;
-//       if (this.isEditMode && this.selectedPromoter?.email) {
-//         this.promoterService.updatePromoter1({
-//           email: this.selectedPromoter.email,
-//           body: formValue
-//         }).subscribe({
-//           next: () => {
-//             this.loadPromoters();
-//             this.closeModal();
-//             this.processing = false;
-//             Swal.fire('Succès', 'Promoteur modifié avec succès', 'success');
-//           },
-//           error: () => { this.processing = false; }
-//         });
-//       } else {
-//         // this.promoterService.createPromoterOnly({ body: ... }).subscribe(...)
-//         this.processing = false;
-//         this.closeModal();
-//         Swal.fire('Succès', 'Promoteur créé avec succès', 'success');
-//       }
-//     }
-//   });
-// }
- // Confirmation avant suppression
-delete(promoter: PromoterResponse) {
-  if (!promoter.email) return;
-  Swal.fire({
-    title: 'Confirmation',
-    text: `Voulez-vous vraiment supprimer ou désactiver ce promoteur (${promoter.firstname} ${promoter.lastname}) ?`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Oui, confirmer',
-    cancelButtonText: 'Annuler'
-  }).then(result => {
-    if (result.isConfirmed) {
-      this.processing = true;
-      this.promoterService.togglePromoter({ email: promoter.email }).subscribe({
-        next: () => {
-          this.loadPromoters();
-          this.processing = false;
-          Swal.fire('Succès', 'Action réalisée avec succès', 'success');
-        },
-        error: () => { this.processing = false; }
-      });
-    }
-  });
-}
-
-// Succès après création
-onSubmit() {
-  if (this.promoterForm.invalid) return;
-  const action = this.isEditMode ? 'modifier' : 'créer';
-  Swal.fire({
-    title: 'Confirmation',
-    text: `Voulez-vous vraiment ${action} ce promoteur ?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Oui',
-    cancelButtonText: 'Annuler'
-  }).then(result => {
-    if (result.isConfirmed) {
-      this.processing = true;
-      const formValue = this.promoterForm.value;
-      if (this.isEditMode && this.selectedPromoter?.email) {
-        this.promoterService.updatePromoter1({
-          email: this.selectedPromoter.email,
-          body: formValue
-        }).subscribe({
+  delete(promoter: PromoterResponse) {
+    if (!promoter.email) return;
+    Swal.fire({
+      title: 'Confirmation',
+      text: `Voulez-vous supprimer ou désactiver ce promoteur ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.processing = true;
+        this.promoterService.togglePromoter({ email: promoter.email }).subscribe({
           next: () => {
             this.loadPromoters();
-            this.closeModal();
             this.processing = false;
-            this.showSuccess();
+            Swal.fire('Succès', 'Action réalisée avec succès', 'success');
           },
-          error: () => { this.processing = false; }
+          error: () => this.processing = false
         });
-      } else {
-        // this.promoterService.createPromoterOnly({ body: ... }).subscribe(...)
-        this.processing = false;
-        this.closeModal();
-        this.showSuccess();
       }
-    }
-  });
-}
+    });
+  }
+
   toggleActivation(promoter: PromoterResponse) {
     this.delete(promoter);
   }
+// à placer dans la classe PromoterComponent
 
-  openConfirm(message: string, onConfirm: () => void) {
-    this.confirmDialog = {
-      show: true,
-      message,
-      onConfirm,
-      onCancel: () => { this.confirmDialog.show = false; }
-    };
+isImage(url: string): boolean {
+  if (!url) return false;
+  const ext = url.split('.').pop()?.toLowerCase();
+  return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext || '');
+}
+
+/**
+ * Convertit un chemin de fichier en URL valide pour l'affichage
+ * @param filePath - Chemin du fichier (peut être relatif, absolu ou déjà une URL)
+ * @returns URL complète et valide
+ */
+toValidUrl(filePath: string): string {
+  // 1. Gestion des valeurs vides
+  if (!filePath?.trim()) return '';
+
+  // 2. Si c'est déjà une URL complète (http/https), on la retourne telle quelle
+  if (/^https?:\/\//i.test(filePath)) {
+    return filePath;
   }
 
+  // 3. Nettoyage du chemin
+  let cleanPath = filePath
+    .replace(/\\/g, '/')          // Remplace les antislashs Windows
+    .replace(/^[./]+/, '')       // Supprime ./ ou ../ au début
+    .replace(/\/+/g, '/')        // Supprime les doubles slashes
+    .replace(/^\//, '');         // Supprime le slash initial si présent
+
+  // 4. Construction de l'URL finale
+  const baseUrl = this.fileBaseUrl.endsWith('/') 
+    ? this.fileBaseUrl.slice(0, -1) 
+    : this.fileBaseUrl;
+
+  return `${baseUrl}/${cleanPath}`;
+}
 
 
-openDetailModal(promoter: PromoterResponse) {
-  this.detailPromoter = promoter;
-  this.detailFiles = {};
+ openDetailModal(promoter: PromoterResponse) {
+  this.loadPromoterFiles(promoter).then(files => {
+    const modalContent = this.generateDetailModalContent(promoter, files);
 
-  const fileTypes = [
-    { key: 'CNI', label: 'nationalIdCard' },
-    { key: 'PHOTO', label: 'photo' },
-    { key: 'SIGNATURE', label: 'signatureLetter' },
-    { key: 'LOCALISATION', label: 'localisationFile' },
-    { key: 'REGULATION', label: 'internalRegulationFile' }
-  ];
-
-  let remainingRequests = fileTypes.length;
-
-  fileTypes.forEach(type => {
-    this.fileControllerService.getPromoterFileByType({
-      promoterId: promoter.idUser,
-      fileType: type.key
-    }).subscribe(urls => {
-      this.detailFiles[type.label] = urls;
-      remainingRequests--;
-
-      // Lorsque tous les fichiers sont récupérés
-      if (remainingRequests === 0) {
-        this.showSwalDetail();
+    Swal.fire({
+      title: 'Détails du promoteur',
+      html: modalContent,
+      width: '55%',
+      showCloseButton: true,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'scrollable-swal-popup'
       }
-      this.cdr.detectChanges();
     });
   });
 }
 
-showSwalDetail() {
-  const promoter = this.detailPromoter!;
-  Swal.fire({
-    title: 'Détails du promoteur',
-    html: `
-      <ul class="list-group text-start">
-        <li class="list-group-item"><strong>Prénom :</strong> ${promoter.firstname}</li>
-        <li class="list-group-item"><strong>Nom :</strong> ${promoter.lastname}</li>
-        <li class="list-group-item"><strong>Email :</strong> ${promoter.email}</li>
-        <li class="list-group-item"><strong>Téléphone :</strong> ${promoter.phoneNumber}</li>
-        <li class="list-group-item"><strong>Date de naissance :</strong> ${promoter.dateOfBirth}</li>
-        <li class="list-group-item"><strong>Numéro d'identité :</strong> ${promoter.nationalIdNumber}</li>
-        <li class="list-group-item"><strong>Statut :</strong> ${promoter.enabled ? 'Actif' : 'Inactif'}</li>
-      </ul>
-      <hr/>
-      <h5>Documents</h5>
-      ${this.generateFilePreview('CNI', this.detailFiles['nationalIdCard']?.[0])}
-      ${this.generateFilePreview('Photo', this.detailFiles['photo']?.[0])}
-      ${this.generateFilePreview('Lettre d\'engagement', this.detailFiles['signatureLetter']?.[0])}
-      ${this.generateFilePreview('Plan de localisation', this.detailFiles['localisationFile']?.[0])}
-      ${this.generateFilePreview('Règlement intérieur', this.detailFiles['internalRegulationFile']?.[0])}
-    `,
-    showCloseButton: true,
-    showConfirmButton: false,
-    width: 800,
-  });
-}
+private async loadPromoterFiles(promoter: PromoterResponse): Promise<{ [key: string]: string[] }> {
+  const files: { [key: string]: string[] } = {};
 
-generateFilePreview(label: string, fileUrl?: string): string {
-  if (!fileUrl || typeof fileUrl !== 'string') return '';
+  const fileTypes = [
+    { key: 'CNI', label: 'nationalIdCard' },
+    { key: 'PHOTO', label: 'photo' }
+  ];
 
-  const ext = fileUrl.split('.').pop()?.toLowerCase();
-  const isPdf = ext === 'pdf';
-  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext || '');
+  for (const type of fileTypes) {
+    try {
+      const url = this.fileControllerService.generateFileUrl(promoter.idUser!, type.key);
+      let fullUrl: string;
 
-  if (isPdf) {
-    return `
-      <div class="mb-3">
-        <strong>${label} :</strong><br/>
-        <embed src="${fileUrl}" type="application/pdf" width="100%" height="400px" />
-      </div>
-    `;
-  } else if (isImage) {
-    return `
-      <div class="mb-3">
-        <strong>${label} :</strong><br/>
-        <a href="${fileUrl}" target="_blank">Voir</a><br/>
-        <img src="${fileUrl}" alt="${label}" class="img-thumbnail mt-2" style="max-width: 200px;">
-      </div>
-    `;
-  } else {
-    return `
-      <div class="mb-3">
-        <strong>${label} :</strong> <a href="${fileUrl}" target="_blank">Télécharger</a>
-      </div>
-    `;
+      if (url.startsWith('http')) {
+        fullUrl = url;
+      } else if (url.startsWith('files/promoter-files')) {
+        // Correction : ajoute /api/v1/ devant
+        fullUrl = `http://localhost:8088/api/v1/${url}`;
+      } else {
+        // Sinon on concatène avec fileBaseUrl
+        fullUrl = `${this.fileBaseUrl}/${url}`;
+      }
+
+      files[type.label] = [fullUrl];
+      
+    } catch (error) {
+      console.error(`Erreur chargement fichier ${type.key}:`, error);
+      files[type.label] = [];
+    }
   }
+
+  return files;
 }
 
 
-  
+private generateDetailModalContent(promoter: PromoterResponse, files: { [key: string]: string[] }): string {
+  const formatDate = (date: string | null | undefined): string => {
+    if (!date) return 'Non renseignée';
+    try {
+      return new Date(date).toLocaleDateString('fr-FR');
+    } catch {
+      return 'Date invalide';
+    }
+  };
+
+
+
+  const generateFileSection = (label: string, urls: string[]): string => {
+    if (!urls || urls.length === 0) {
+      return `<div class="mb-3"><strong>${label} :</strong><br/><em>Aucun fichier</em></div>`;
+    }
+
+    let html = `<div class="mb-3"><strong>${label} :</strong><br/>`;
+
+    urls.forEach((url) => {
+      const fullUrl = this.toValidUrl(url);
+      const fileName = fullUrl.split('/').pop() || 'Document';
+
+      html += `
+        <div class="mt-2">
+          <a href="${fullUrl}" target="_blank" class="btn btn-sm btn-outline-primary">Télécharger ${fileName}</a>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+    return html;
+  };
+
+
+  const htmlContent = `
+    <div style="max-height:70vh; overflow-y:auto; text-align:left;">
+      <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+        <div style="flex: 1 1 300px; min-width: 250px; max-width: 400px;">
+          <h5 class="text-primary">Informations personnelles</h5>
+          <p><strong>Nom :</strong> ${promoter.lastname || '-'}</p>
+          <p><strong>Prénom :</strong> ${promoter.firstname || '-'}</p>
+          <p><strong>Email :</strong> ${promoter.email || '-'}</p>
+          <p><strong>Téléphone :</strong> ${promoter.phoneNumber || '-'}</p>
+          <p><strong>Date de naissance :</strong> ${formatDate(promoter.dateOfBirth)}</p>
+          <p><strong>Numéro CNI :</strong> ${promoter.nationalIdNumber || '-'}</p>
+        </div>
+        <div style="flex: 1 1 300px; min-width: 250px; max-width: 500px;">
+          <h5 class="text-primary">Documents</h5>
+          ${generateFileSection('CNI', files['nationalIdCard'])}
+          ${generateFileSection('Photo', files['photo'])}
+         
+        </div>
+      </div>
+    </div>
+  `;
+
+  console.groupEnd(); // 🔚 Fin du groupe de logs
+
+  return htmlContent;
+}
+
+
+
 
   showSuccess() {
     Swal.fire({
@@ -312,10 +321,35 @@ generateFilePreview(label: string, fileUrl?: string): string {
       title: 'Succès',
       html: `<div style='text-align:left'>
         <p>Votre compte promoteur a été créé avec succès.</p>
-        <p>Après vérification de vos documents, vous recevrez un mail de confirmation lorsque votre compte sera activé.</p>
-        <p>Vous pourrez alors vous connecter sur la plateforme.</p>
+        <p>Vous recevrez un mail une fois que le compte est activé.</p>
       </div>`,
       showConfirmButton: true
+    });
+  }
+
+  activatePromoter(email: string) {
+    Swal.fire({
+      title: 'Confirmation',
+      text: `Voulez-vous vraiment activer le compte de ${email} ?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.processing = true;
+        this.promoterService.togglePromoter({ email }).subscribe({
+          next: () => {
+            this.loadPromoters();
+            this.processing = false;
+            Swal.fire('Succès', 'Compte activé avec succès', 'success');
+          },
+          error: () => {
+            this.processing = false;
+            Swal.fire('Erreur', 'Impossible d\'activer le compte', 'error');
+          }
+        });
+      }
     });
   }
 }

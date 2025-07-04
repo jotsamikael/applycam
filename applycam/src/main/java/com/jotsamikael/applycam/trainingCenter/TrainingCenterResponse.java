@@ -2,6 +2,7 @@ package com.jotsamikael.applycam.trainingCenter;
 
 
 import com.jotsamikael.applycam.campus.Campus;
+import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.trainingCenter.division.Division;
@@ -18,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TrainingCenterResponse {
     private String fullName;
+    private String promoterName;
     private String acronym;
     private String agreementNumber;
     private byte[] agreementFile;
@@ -29,6 +31,7 @@ public class TrainingCenterResponse {
     private String promoter;
     private List<OffersSpeciality> offersSpecialityList;
     private List<Campus> campusList;
+    private ContentStatus status;
 
 
 }
