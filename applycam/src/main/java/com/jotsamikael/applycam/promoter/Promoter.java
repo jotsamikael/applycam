@@ -29,9 +29,7 @@ public class Promoter extends User {
     private String SchoolLevel; //Primary, junior secondary, high school, unversity etc
     private String nationalIdCardUrl;
     private String PhotoUrl;
-    private String SignatureLetterUrl;
-    private String LocalisationFileUrl;
-    private String InternalRegulationFileUrl;
+    
     
     @OneToMany(mappedBy = "promoter")
     @JsonManagedReference

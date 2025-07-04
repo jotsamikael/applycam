@@ -2,6 +2,7 @@ package com.jotsamikael.applycam.trainingCenter;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jotsamikael.applycam.campus.Campus;
 import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
 import com.jotsamikael.applycam.common.BaseEntity;
@@ -57,6 +58,9 @@ public class TrainingCenter extends BaseEntity {
     private String website;
     private String city;
     private String region;
+    private String SignatureLetterUrl;
+    private String LocalisationFileUrl;
+    private String InternalRegulationFileUrl;
     private double centerAge;
    
 
@@ -69,12 +73,15 @@ public class TrainingCenter extends BaseEntity {
     private TrainingCenterStatusHistory status;
 
     @OneToMany(mappedBy = "trainingCenter")
+    @JsonManagedReference
     private List<OffersSpeciality> offersSpecialityList;
 
     @OneToMany(mappedBy = "trainingCenter")
+    @JsonManagedReference
     private List<Campus> campusList;
     
     @OneToMany(mappedBy = "trainingCenter")
+    @JsonManagedReference
     private List<HasSchooled> hasSchooledList;
 
 }

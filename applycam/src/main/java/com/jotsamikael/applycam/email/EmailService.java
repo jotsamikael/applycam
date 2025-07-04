@@ -192,6 +192,32 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
+    
+    @Async
+    public void sendPromoterValidationEmail(String to, String fullName, String templateName, String subject) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                mimeMessage,
+                MimeMessageHelper.MULTIPART_MODE_MIXED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("fullName", fullName);
+        
+
+        Context context = new Context();
+        context.setVariables(properties);
+
+        helper.setFrom("jotsamikael@gmail.com");
+        helper.setTo(to);
+        helper.setSubject(subject);
+
+        String htmlContent = templateEngine.process(templateName, context);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(mimeMessage);
+    }
 
     
     

@@ -14,8 +14,11 @@ public enum EmailTemplateName {
 	
 	TRAINING_CENTER_PENDING("trainingcenter-pending"),
 	
+	PROMOTER_VALIDATION("promoter_validation"),
+	
 	REFUSED_APPLICATION("candidate-rejection");
-
+	
+	
 
     private final String name;
 

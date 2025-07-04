@@ -719,3 +719,21 @@ Cette section complète la documentation en couvrant :
 L'on a jouter le check out du prmoter pour vvalider ca doit etre dans le package trainingcenter cherche le contoller status 
 
 Vous pouvez l'ajouter dans la partie **API Endpoints** de votre README, idéalement dans une sous-section **Gestion des Examens** ou **Centres d'Examen**.
+
+
+ce que j'ai ajouter l'on peut valider le promoteur a part et l'on check uniquement ses fichier a lui cn et photo  pour les centrews de formation
+l'on peut aussi checker leur fichier a part plan de localisation et autre lorsquon liste un training center voici ce que ca liste en vrai
+.fullName(trainingCenter.getFullName())
+                .promoterName(trainingCenter.getPromoter().getFirstname())
+                .acronym(trainingCenter.getAcronym())
+                .agreementNumber(trainingCenter.getAgreementNumber())
+                .startDateOfAgreement(trainingCenter.getStartDateOfAgreement())
+                .endDateOfAgreement(trainingCenter.getEndDateOfAgreement())
+                .isCenterPresentCandidateForCqp(trainingCenter.getIsCenterPresentCandidateForCqp())
+                .isCenterPresentCandidateForDqp(trainingCenter.getIsCenterPresentCandidateForDqp())
+                .division(trainingCenter.getDivision())
+                .promoter(trainingCenter.getPromoter().getEmail())
+                .offersSpecialityList(trainingCenter.getOffersSpecialityList())
+                .campusList(trainingCenter.getCampusList())
+donc ca affiche la liste de ses campus avec leur infomation et aussi le specialite que ca offre et aussi son statut  j'ai aussi mis le controller pour check les fichier du trainingCenter
+"/centerr-files/{agreementNumber}/{fileType}"), le endpoint pou valider le promoteru est ("/validate-promoter/{email}")

@@ -44,7 +44,7 @@ public class TrainingCenterStatusHistory extends BaseEntity{
 	 @JoinColumn(name="trainingCenter_id")  
 	private TrainingCenter trainingCenter;
 	 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private ContentStatus status;
 	

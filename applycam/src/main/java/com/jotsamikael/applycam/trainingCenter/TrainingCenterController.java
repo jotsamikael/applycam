@@ -56,7 +56,7 @@ public class TrainingCenterController {
     public ResponseEntity<PageResponse<TrainingCenterResponse>> getAllTrainingCenters(
             @RequestParam(defaultValue = "0", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int pageSize,
-            @RequestParam(defaultValue = "name", required = false) String field,
+            @RequestParam(defaultValue = "fullName", required = false) String field,
             @RequestParam(defaultValue = "true", required = false) boolean order
     ) {
         return ResponseEntity.ok(service.getAllTrainingCenter(offset, pageSize, field, order));

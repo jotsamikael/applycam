@@ -107,7 +107,8 @@ public class JwtFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         // Skip authentication for auth endpoints
-        if (request.getServletPath().contains("/auth/")) {
+        if (request.getServletPath().contains("/auth/") ||
+        		(request.getServletPath().contains("/files/"))) {
             filterChain.doFilter(request, response);
             return;
         }

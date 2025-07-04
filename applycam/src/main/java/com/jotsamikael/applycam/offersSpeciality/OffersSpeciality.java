@@ -1,5 +1,6 @@
 package com.jotsamikael.applycam.offersSpeciality;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.speciality.Speciality;
@@ -31,6 +32,7 @@ public class OffersSpeciality extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "training_center_id")
+    @JsonIgnore
     private TrainingCenter trainingCenter;
 
 
