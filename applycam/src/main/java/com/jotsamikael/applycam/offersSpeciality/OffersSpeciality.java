@@ -28,6 +28,7 @@ public class OffersSpeciality extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "speciality_id")
+    @JsonIgnore
     private Speciality speciality;
 
     @ManyToOne

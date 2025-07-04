@@ -33,6 +33,7 @@ public class HasSchooled extends BaseEntity {
     //relationship with candidate
     @ManyToOne()
     @JoinColumn(name = "candidate_id")
+    @JsonIgnore
     private Candidate candidate;
 
     //relationship with training center

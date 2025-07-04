@@ -132,6 +132,7 @@ public class FileController {
 
         String filePath = switch (fileType.toUpperCase()) {
             
+        case "AGREEMENT" -> trainingCenter.getAgreementFileUrl();
            case "SIGNATURE" -> trainingCenter.getSignatureLetterUrl();
            case "LOCALISATION" -> trainingCenter.getLocalisationFileUrl();
            case "REGLEMENT" -> trainingCenter.getInternalRegulationFileUrl();

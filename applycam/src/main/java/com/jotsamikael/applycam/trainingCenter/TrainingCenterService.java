@@ -34,6 +34,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -248,10 +249,19 @@ public class TrainingCenterService {
 	            .findByFullName(fullName)
 	            .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + fullName));
 
-	    TrainingCenterStatusHistory statusHistory = trainingCenterStatusHistoryRepository
-	            .findByTrainingCenter(trainingCenter)
-	            .orElseThrow(() -> new EntityNotFoundException("Status history not found"));
+	    Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
+	    TrainingCenterStatusHistory statusHistory;
 
+	    if (optionalHistory.isPresent()) {
+	        // Mise à jour de l'historique existant
+	        statusHistory = optionalHistory.get();
+	    } else {
+	        // Création d’un nouvel historique s’il n’existe pas encore
+	        statusHistory = new TrainingCenterStatusHistory();
+	        statusHistory.setTrainingCenter(trainingCenter);
+	        statusHistory.setCreatedBy(user.getIdUser());
+	        statusHistory.setCreatedDate(LocalDateTime.now());
+	    }
 	    statusHistory.setStatus(status);
 	    statusHistory.setComment(comment);
 	    statusHistory.setLastModifiedBy(user.getIdUser());

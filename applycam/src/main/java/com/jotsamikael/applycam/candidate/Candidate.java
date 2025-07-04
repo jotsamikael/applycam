@@ -1,5 +1,6 @@
 package com.jotsamikael.applycam.candidate;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.common.ContentStatus;
@@ -69,6 +70,7 @@ public class Candidate extends User {
 
     //relationship with has_schooled
     @OneToMany(mappedBy = "candidate")
+    @JsonManagedReference
     private List<HasSchooled> hasSchooledList;
 
     @OneToMany(mappedBy = "candidate")
