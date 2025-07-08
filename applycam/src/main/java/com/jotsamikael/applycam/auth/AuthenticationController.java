@@ -1,9 +1,12 @@
 package com.jotsamikael.applycam.auth;
 
+import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.promoter.CreatePromoterAndCenterRequest;
 import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
 import com.jotsamikael.applycam.promoter.PromoterService;
 import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +33,7 @@ public class AuthenticationController {
 
     private final AuthenticationService service;
     private final PromoterService promoterService;
+    private final TrainingCenterService trainingCenterService;
 
 
     @PostMapping(value="/candidate-register")
@@ -87,5 +91,17 @@ public class AuthenticationController {
     ) throws MessagingException {
         service.activateAccount(token);
     }
+    
+  //This endpoint gets all training centers for admin
+    @GetMapping("get-all")
+    public ResponseEntity<PageResponse<TrainingCenterResponse>> getAllTrainingCenters(
+            @RequestParam(defaultValue = "0", required = false) int offset,
+            @RequestParam(defaultValue = "10", required = false) int pageSize,
+            @RequestParam(defaultValue = "fullName", required = false) String field,
+            @RequestParam(defaultValue = "true", required = false) boolean order
+    ) {
+        return ResponseEntity.ok(trainingCenterService.getAllTrainingCenter(offset, pageSize, field, order));
+    }
+    
 
 }

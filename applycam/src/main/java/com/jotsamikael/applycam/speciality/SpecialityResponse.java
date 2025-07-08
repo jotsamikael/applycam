@@ -12,4 +12,5 @@ public class SpecialityResponse {
     private String code;
     private String description;
     private String examType;
+    private Double paymentAmount;
 }

@@ -21,6 +21,8 @@ import com.jotsamikael.applycam.course.CourseRequest;
 import com.jotsamikael.applycam.course.CourseResponse;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpecialityRepository;
+import com.jotsamikael.applycam.payment.Payment;
+import com.jotsamikael.applycam.payment.PaymentRepository;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
 import com.jotsamikael.applycam.user.User;
@@ -36,6 +38,7 @@ public class SpecialityService {
     private final TrainingCenterRepository trainingCenterRepository;
     private final CourseRepository courseRepository;
     private final OffersSpecialityRepository offersSpecialityRepository;
+    private final PaymentRepository paymentRepository;
 
     public String addSpecialitybyTrainingCenterId(SpecialityRequest specialityRequest) {
 
@@ -96,12 +99,22 @@ public class SpecialityService {
     	
     	User user = ((User) connectedUser.getPrincipal());
     	
+    	var payment= Payment.builder()
+    			.amount(createSpecialityRequest.getAmount())
+    			.createdBy(user.getIdUser())
+    			.createdDate(LocalDateTime.now())
+    			.isActived(true)
+    	        .isArchived(false).build();
+    	
+    	paymentRepository.save(payment);
+    	
         var speciality = Speciality.builder()
         .name(createSpecialityRequest.getName())
         .description(createSpecialityRequest.getDescription())
         .examType(createSpecialityRequest.getExamType())
         .createdBy(user.getIdUser())
 	    .createdDate(LocalDateTime.now())
+	    .payment(payment)
 	    .isActived(true)
         .isArchived(false)
         .build();
@@ -113,14 +126,22 @@ public class SpecialityService {
         Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
         Page<Speciality> specialities = specialityRepository.findAll(PageRequest.of(offset, pageSize, sort));
         
+       
         List<SpecialityResponse> specialityResponses = specialities.getContent().stream()
-            .map(speciality -> SpecialityResponse.builder()
-                .id(speciality.getId())
-                .name(speciality.getName())
-                .description(speciality.getDescription())
-                .examType(speciality.getExamType())
-                .build())
-            .toList();
+                .map(speciality -> {
+                    Double amount = 25000.0; // valeur par défaut
+                    if (speciality.getPayment() != null ) {
+                        amount = speciality.getPayment().getAmount();
+                    }
+                    return SpecialityResponse.builder()
+                        .id(speciality.getId())
+                        .name(speciality.getName())
+                        .description(speciality.getDescription())
+                        .examType(speciality.getExamType())
+                        .paymentAmount(amount)
+                        .build();
+                })
+                .toList();
 
         return new PageResponse<>(
             specialityResponses,
@@ -224,7 +245,17 @@ public class SpecialityService {
        speciality.setExamType(updateSpecialityRequest.getExamType());
        speciality.setLastModifiedBy(user.getIdUser());
        speciality.setLastModifiedDate(LocalDateTime.now());
-
+       if (speciality.getPayment() == null) {
+           Payment newPayment = new Payment();
+           newPayment.setCreatedBy(user.getIdUser());
+           newPayment.setCreatedDate(LocalDateTime.now());
+           newPayment.setAmount(updateSpecialityRequest.getAmount());
+           speciality.setPayment(newPayment);
+           paymentRepository.save(newPayment);
+           
+       } else {
+           speciality.getPayment().setAmount(updateSpecialityRequest.getAmount());
+       }
        specialityRepository.save(speciality);
        return speciality.getName();
    }
@@ -256,12 +287,20 @@ public class SpecialityService {
     	
     	Page<Speciality> list = specialityRepository.findAllByExamType(examType, PageRequest.of(offset, pageSize, sort));
     	
-    	List<SpecialityResponse> specialityResponses = list.getContent().stream().map(speciality->SpecialityResponse.builder()
-		        .id(speciality.getId())
-		        .name(speciality.getName())
-		        .description(speciality.getDescription())
-		        .examType(speciality.getExamType())
-		        .build()).toList();
+    	List<SpecialityResponse> specialityResponses = list.getContent().stream().map(speciality->{
+            Double amount = 25000.0; // valeur par défaut
+            if (speciality.getPayment() != null ) {
+                amount = speciality.getPayment().getAmount();
+            }
+            return SpecialityResponse.builder()
+                .id(speciality.getId())
+                .name(speciality.getName())
+                .description(speciality.getDescription())
+                .examType(speciality.getExamType())
+                .paymentAmount(amount)
+                .build();
+        })
+        .toList();
     	
     	return new PageResponse<>(
 	            specialityResponses,
