@@ -4,6 +4,8 @@ import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.promoter.CreatePromoterAndCenterRequest;
 import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
 import com.jotsamikael.applycam.promoter.PromoterService;
+import com.jotsamikael.applycam.speciality.CreateSpecialityRequest;
+import com.jotsamikael.applycam.speciality.SpecialityService;
 import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterService;
@@ -14,6 +16,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +39,7 @@ public class AuthenticationController {
     private final AuthenticationService service;
     private final PromoterService promoterService;
     private final TrainingCenterService trainingCenterService;
+    private final SpecialityService specialityService;
 
 
     @PostMapping(value="/candidate-register")
@@ -103,5 +109,23 @@ public class AuthenticationController {
         return ResponseEntity.ok(trainingCenterService.getAllTrainingCenter(offset, pageSize, field, order));
     }
     
+    @PostMapping("/create-and-link")
+    public ResponseEntity<String> createAndLinkSpecialityToTrainingCenter(
+            @RequestBody @Valid CreateSpecialityRequest request,
+            @RequestParam String agreementNumber,
+            Authentication authentication
+    ) {
+        String result = specialityService.createAndLinkSpecialityToTrainingCenter(request, authentication, agreementNumber);
+        return ResponseEntity.ok(result);
+    }
+    
+    @PatchMapping("/link-to-center")
+    public ResponseEntity<String> addSpecialitiesToTrainingCenter(
+            @RequestParam String agreementNumber,
+            @RequestBody List<Long> specialityIds
+    ) {
+        String result = specialityService.addSpecialitiesToTrainingCenter(agreementNumber, specialityIds);
+        return ResponseEntity.ok(result);
+    }
 
 }

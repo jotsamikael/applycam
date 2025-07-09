@@ -1,5 +1,7 @@
 package com.jotsamikael.applycam.speciality;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,11 +30,13 @@ public class SpecialityController {
 
     private final SpecialityService specialityService;
 
-    @PatchMapping("/add-speciality-totrainingCenter")
-    public ResponseEntity<String> addSpeciality(@RequestBody @Valid SpecialityRequest specialityRequest) {
-
-        return ResponseEntity.ok(specialityService.addSpecialitybyTrainingCenterId(specialityRequest));
-
+    @PatchMapping("/link-to-center")
+    public ResponseEntity<String> addSpecialitiesToTrainingCenter(
+            @RequestParam String agreementNumber,
+            @RequestBody List<Long> specialityIds
+    ) {
+        String result = specialityService.addSpecialitiesToTrainingCenter(agreementNumber, specialityIds);
+        return ResponseEntity.ok(result);
     }
     
     @GetMapping("/get-by-trainingcenter")
@@ -123,6 +127,15 @@ public class SpecialityController {
 
     return ResponseEntity.ok(specialityService.findAllByExamType(examType,offset,pageSize, field,order));
     }
+    @PatchMapping("/activate")
+    public ResponseEntity<String> activateSpeciality(
+            @RequestBody @Valid ActivateSpecialityRequest request,
+            Authentication authentication
+    ) {
+        specialityService.activateAndAssignSpecialityToSession(request, authentication);
+        return ResponseEntity.ok("Speciality activated and assigned to session successfully.");
+    }
+    
 
 
 }

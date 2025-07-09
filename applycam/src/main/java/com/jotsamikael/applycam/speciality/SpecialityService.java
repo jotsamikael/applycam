@@ -23,6 +23,8 @@ import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpecialityRepository;
 import com.jotsamikael.applycam.payment.Payment;
 import com.jotsamikael.applycam.payment.PaymentRepository;
+import com.jotsamikael.applycam.session.Session;
+import com.jotsamikael.applycam.session.SessionRepository;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
 import com.jotsamikael.applycam.user.User;
@@ -39,42 +41,44 @@ public class SpecialityService {
     private final CourseRepository courseRepository;
     private final OffersSpecialityRepository offersSpecialityRepository;
     private final PaymentRepository paymentRepository;
+    private final SessionRepository sessionRepository;
 
-    public String addSpecialitybyTrainingCenterId(SpecialityRequest specialityRequest) {
+    public String addSpecialitiesToTrainingCenter(String agreementNumber, List<Long> specialityIds) {
 
-        TrainingCenter trainingCenter = trainingCenterRepository.findById(specialityRequest.getTrainingCenterId())
-        .orElseThrow(() -> new EntityNotFoundException("Training center not found"));
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Training center not found"));
 
-        Speciality speciality = specialityRepository.findByName(specialityRequest.getName())
-        .orElseThrow(() -> new EntityNotFoundException("Speciality not found"));
-        
-        if (!speciality.isActived() ) {
-           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be added to the training Center it has been disabled.");
-           }
-        
-        
-        boolean alreadyLinked = trainingCenter.getOffersSpecialityList().stream()
-                .anyMatch(os -> os.getSpeciality().equals(speciality));
+        StringBuilder result = new StringBuilder();
+
+        for (Long specialityId : specialityIds) {
+            Speciality speciality = specialityRepository.findById(specialityId)
+                    .orElseThrow(() -> new EntityNotFoundException("Speciality not found with ID: " + specialityId));
+
+           
+
+            boolean alreadyLinked = trainingCenter.getOffersSpecialityList().stream()
+                    .anyMatch(os -> os.getSpeciality().equals(speciality));
 
             if (alreadyLinked) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Speciality already linked.");
+                result.append("Speciality ").append(speciality.getName()).append(" is already linked.\n");
+                continue;
             }
 
             OffersSpeciality offer = new OffersSpeciality();
             offer.setTrainingCenter(trainingCenter);
             offer.setSpeciality(speciality);
-
             offersSpecialityRepository.save(offer);
 
-            return "Speciality " + speciality.getName() + " linked to training center.";
-        
-      
+            result.append("Speciality ").append(speciality.getName()).append(" linked successfully.\n");
+        }
+
+        return result.toString().trim();
     }
 
     public PageResponse<SpecialityResponse> getallSpecialityOfTrainingCenter(Long trainingCenterId,int offset, int pageSize, String field, boolean order) {
         Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
 
-        Page<Speciality> list = specialityRepository.findAllByTrainingCenterId(trainingCenterId, PageRequest.of(offset, pageSize, sort));
+        Page<Speciality> list = specialityRepository.findAllByTrainingCenterIdAndIsActivedTrue(trainingCenterId, PageRequest.of(offset, pageSize, sort));
 
         List<SpecialityResponse> specialityResponses = list.getContent().stream().map(speciality->SpecialityResponse.builder()
         .id(speciality.getId())
@@ -99,24 +103,14 @@ public class SpecialityService {
     	
     	User user = ((User) connectedUser.getPrincipal());
     	
-    	var payment= Payment.builder()
-    			.amount(createSpecialityRequest.getAmount())
-    			.createdBy(user.getIdUser())
-    			.createdDate(LocalDateTime.now())
-    			.isActived(true)
-    	        .isArchived(false).build();
-    	
-    	paymentRepository.save(payment);
-    	
         var speciality = Speciality.builder()
         .name(createSpecialityRequest.getName())
         .description(createSpecialityRequest.getDescription())
         .examType(createSpecialityRequest.getExamType())
         .createdBy(user.getIdUser())
 	    .createdDate(LocalDateTime.now())
-	    .payment(payment)
-	    .isActived(true)
-        .isArchived(false)
+	    .isActived(false)
+        .isArchived(true)
         .build();
         specialityRepository.save(speciality);
         return speciality.getName();
@@ -245,17 +239,10 @@ public class SpecialityService {
        speciality.setExamType(updateSpecialityRequest.getExamType());
        speciality.setLastModifiedBy(user.getIdUser());
        speciality.setLastModifiedDate(LocalDateTime.now());
-       if (speciality.getPayment() == null) {
-           Payment newPayment = new Payment();
-           newPayment.setCreatedBy(user.getIdUser());
-           newPayment.setCreatedDate(LocalDateTime.now());
-           newPayment.setAmount(updateSpecialityRequest.getAmount());
-           speciality.setPayment(newPayment);
-           paymentRepository.save(newPayment);
-           
-       } else {
-           speciality.getPayment().setAmount(updateSpecialityRequest.getAmount());
-       }
+       
+       speciality.setDqpPrice(updateSpecialityRequest.getAmount());
+          
+          
        specialityRepository.save(speciality);
        return speciality.getName();
    }
@@ -313,5 +300,58 @@ public class SpecialityService {
 	        );
     	
     }
+    
+    public void activateAndAssignSpecialityToSession(ActivateSpecialityRequest request,Authentication connectedUser) {
+    	
+    	 User user = ((User) connectedUser.getPrincipal());
+        Speciality speciality = specialityRepository.findByName(request.getSpecialityName())
+            .orElseThrow(() -> new EntityNotFoundException("Speciality not found with name " ));
+
+        Session session = sessionRepository.findByexamTypeAndExamDate(request.getExamType(),request.getExamDate())
+            .orElseThrow(() -> new EntityNotFoundException("Session not found with  " ));
+
+        // Activer la spécialité et lui assigner une session
+        speciality.setDqpPrice(request.getDqpPrice());
+        speciality.setActived(true);
+        speciality.setSession(session);
+        speciality.setLastModifiedBy(user.getIdUser());
+        speciality.setLastModifiedDate(LocalDateTime.now());
+
+        // Sauvegarder les changements
+        specialityRepository.save(speciality);
+    }
+    
+    public String createAndLinkSpecialityToTrainingCenter(CreateSpecialityRequest request, Authentication connectedUser,String agreementNumber) {
+        
+       // User user = ((User) connectedUser.getPrincipal());
+
+        // Étape 1 : Créer la spécialité
+        Speciality speciality = Speciality.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .examType(request.getExamType())
+                .isActived(false)
+                .isArchived(true)
+                .createdBy(1)
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        specialityRepository.save(speciality);
+
+        // Étape 2 : Récupérer le TrainingCenter
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Training center not found  " ));
+
+        // Étape 3 : Créer le lien
+        OffersSpeciality offer = new OffersSpeciality();
+        offer.setTrainingCenter(trainingCenter);
+        offer.setSpeciality(speciality);
+
+        offersSpecialityRepository.save(offer);
+
+        return "Speciality '" + speciality.getName() + "' created and linked to training center successfully.";
+    }
+
+    
 }
 

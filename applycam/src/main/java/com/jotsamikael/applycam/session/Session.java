@@ -8,7 +8,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jotsamikael.applycam.application.Application;
 import com.jotsamikael.applycam.common.BaseEntity;
-
+import com.jotsamikael.applycam.course.Course;
+import com.jotsamikael.applycam.speciality.Speciality;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -37,6 +38,14 @@ public class Session extends BaseEntity{
 	@OneToMany(mappedBy="session")
 	@JsonManagedReference
 	private List<Application> applicationList; 
+	
+	@OneToMany(mappedBy="session")
+	@JsonManagedReference
+	private List<Speciality> speciality;
+	
+	@OneToMany(mappedBy="session")
+	@JsonManagedReference
+	private List<Course> course;
 	
 	
 
