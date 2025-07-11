@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.course.CourseResponse;
+import com.jotsamikael.applycam.speciality.SpecialityResponse;
 import com.jotsamikael.applycam.user.User;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -170,5 +172,30 @@ public class SessionService {
             list.isLast()
         );
     }
+    public SessionDetailsListResponse getSessionDetailsAsList(Long sessionId) {
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+
+        List<SpecialityResponse> specialityResponses = session.getSpeciality().stream()
+                .map(spec -> new SpecialityResponse(
+                        spec.getId(),
+                        spec.getName(),
+                        spec.getCode(),
+                        spec.getDescription(),
+                        spec.getExamType(),
+                        spec.getDqpPrice()
+                )).toList();
+
+        List<CourseResponse> courseResponses = session.getCourse().stream()
+                .map(course -> new CourseResponse(
+                        course.getName(),
+                        course.getCode(),
+                        course.getDescription(),
+                        course.getPriceForCqp()
+                )).toList();
+
+        return new SessionDetailsListResponse(specialityResponses, courseResponses);
+    }
+    
 
 }

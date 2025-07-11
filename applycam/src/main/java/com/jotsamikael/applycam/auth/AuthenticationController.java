@@ -112,13 +112,14 @@ public class AuthenticationController {
         return ResponseEntity.ok(trainingCenterService.getAllTrainingCenter(offset, pageSize, field, order));
     }
     
-    @PostMapping("/create-and-link")
+    @PostMapping("/create-and-link/{courseName}")
     public ResponseEntity<String> createAndLinkSpecialityToTrainingCenter(
+    		@PathVariable String courseName,
             @RequestBody @Valid CreateSpecialityRequest request,
             @RequestParam String agreementNumber,
             Authentication authentication
     ) {
-        String result = specialityService.createAndLinkSpecialityToTrainingCenter(request, authentication, agreementNumber);
+        String result = specialityService.createAndLinkSpecialityToTrainingCenter(request, authentication, agreementNumber,courseName);
         return ResponseEntity.ok(result);
     }
     

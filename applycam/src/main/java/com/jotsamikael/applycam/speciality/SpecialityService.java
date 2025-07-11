@@ -324,7 +324,7 @@ public class SpecialityService {
         specialityRepository.save(speciality);
     }
     
-    public String createAndLinkSpecialityToTrainingCenter(CreateSpecialityRequest request, Authentication connectedUser,String agreementNumber) {
+    public String createAndLinkSpecialityToTrainingCenter(CreateSpecialityRequest request, Authentication connectedUser,String agreementNumber,String courseName) {
         
        // User user = ((User) connectedUser.getPrincipal());
 
@@ -351,9 +351,34 @@ public class SpecialityService {
         offer.setSpeciality(speciality);
 
         offersSpecialityRepository.save(offer);
+        
+        Course course = courseRepository.findByName(courseName)
+                .orElseThrow(() -> new EntityNotFoundException("Course not listed"));
+
+        // Récupération de la spécialité existante
+        
+
+        // Vérifier si la liste des spécialités est null, sinon ajouter
+        if (course.getSpecialityList() == null) {
+            course.setSpecialityList(new ArrayList<>());
+        }
+
+        // Éviter les doublons
+        if (course.getSpecialityList().contains(speciality)) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Speciality cannot be added it was already added.");
+            
+        }
+        
+        course.getSpecialityList().add(speciality);
+
+        // Sauvegarder le cours mis à jour
+        courseRepository.save(course);
+        speciality.setCourse(course);
+        specialityRepository.save(speciality);
 
         return "Speciality '" + speciality.getName() + "' created and linked to training center successfully.";
     }
+    
     
     public String addSpecialitiesToSession(Long sessionId, List<Long> specialityIds) {
     	
