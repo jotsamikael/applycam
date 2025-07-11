@@ -6,6 +6,6 @@ README.md
 *.iml
 *.log
 *.md
-.mvn/
+# .mvn/
 .idea/
 .vscode/ 
