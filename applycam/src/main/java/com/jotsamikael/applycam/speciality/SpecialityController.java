@@ -73,7 +73,7 @@ public class SpecialityController {
     
 
     @GetMapping("/get-all")
-    public ResponseEntity<PageResponse<SpecialityResponse>> getall( 
+    public ResponseEntity<PageResponse<SpecialityResponse>> getallSpeciality( 
         @RequestParam(name = "offset", defaultValue = "0", required = false) int offset,
         @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize,
         @RequestParam(name = "field", defaultValue = "name", required = false) String field,

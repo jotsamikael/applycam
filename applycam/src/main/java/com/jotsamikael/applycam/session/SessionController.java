@@ -86,6 +86,11 @@ public class SessionController {
 	        
 	        return ResponseEntity.ok(sessionService.updateSession(updateSessionRequest,  connectedUser));
 	 }
+	     
+	     @GetMapping("/list-details/{id}")
+	     public ResponseEntity<SessionDetailsListResponse> getSessionDetailsList(@PathVariable Long id) {
+	         return ResponseEntity.ok(sessionService.getSessionDetailsAsList(id));
+	     }
 
 	
 
