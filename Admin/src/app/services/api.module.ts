@@ -17,6 +17,7 @@ import { CampusService } from './services/campus.service';
 import { AuthenticationService } from './services/authentication.service';
 import { ExamCenterControllerService } from './services/exam-center-controller.service';
 import { ApplicationService } from './services/application.service';
+import { ActivitySectorService } from './services/activity-sector.service';
 import { PromoterService } from './services/promoter.service';
 import { CandidateService } from './services/candidate.service';
 import { UserControllerService } from './services/user-controller.service';
@@ -42,6 +43,7 @@ import { DivisionService } from './services/division.service';
     AuthenticationService,
     ExamCenterControllerService,
     ApplicationService,
+    ActivitySectorService,
     PromoterService,
     CandidateService,
     UserControllerService,

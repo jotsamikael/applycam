@@ -7,10 +7,10 @@ export interface ApplicationResponse {
   applicationRegion?: string;
   applicationYear?: string;
   candidateName?: string;
+  examDate?: string;
+  examType?: string;
   id?: number;
   paymentMethod?: string;
   speciality?: string;
-  status?: string;
-  email?: string;
-  examType?: string;
+  status?: 'READYTOPAY' | 'DRAFT' | 'PAID' | 'VALIDATED' | 'INCOMPLETED' | 'REJECTED' | 'PENDING';
 }

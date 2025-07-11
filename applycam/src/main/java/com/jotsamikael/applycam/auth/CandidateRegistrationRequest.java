@@ -49,6 +49,15 @@ public class CandidateRegistrationRequest {
     @NotNull(message = "the language Spoken   can not be blank")
     private String language;
     
+    @NotNull(message = "Sex is mandatory")
+    private String sex;
+    
+    @NotNull(message = "Date of birth is mandatory")
+    private String dateOfBirth;
+    
+    @NotNull(message = "Place of birth is mandatory")
+    private String placeOfBirth;
+    
     @NotNull(message = "the Start year cannot be blank")
     private String startYear;
     @NotNull(message = "the End year cannot be blank")

@@ -6,9 +6,11 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jotsamikael.applycam.campus.Campus;
 import com.jotsamikael.applycam.centerStatus.TrainingCenterStatusHistory;
 import com.jotsamikael.applycam.common.BaseEntity;
+import com.jotsamikael.applycam.course.Course;
 import com.jotsamikael.applycam.hasSchooled.HasSchooled;
 import com.jotsamikael.applycam.offersSpeciality.OffersSpeciality;
 import com.jotsamikael.applycam.promoter.Promoter;
+import com.jotsamikael.applycam.subject.Subject;
 import com.jotsamikael.applycam.trainingCenter.division.Division;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -71,6 +73,13 @@ public class TrainingCenter extends BaseEntity {
     
     @OneToOne(mappedBy="trainingCenter")
     private TrainingCenterStatusHistory status;
+    
+    @ManyToMany
+    @JoinTable(name = "center_course",
+            joinColumns = @JoinColumn(name = "traininCenter_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private List<Course> courseList;
+    
 
     @OneToMany(mappedBy = "trainingCenter")
     @JsonManagedReference

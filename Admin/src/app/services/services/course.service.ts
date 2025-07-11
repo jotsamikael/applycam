@@ -11,7 +11,11 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { addCourses } from '../fn/course/add-courses';
+import { AddCourses$Params } from '../fn/course/add-courses';
 import { CourseResponse } from '../models/course-response';
+import { createAndAssignCourseToActivitySector } from '../fn/course/create-and-assign-course-to-activity-sector';
+import { CreateAndAssignCourseToActivitySector$Params } from '../fn/course/create-and-assign-course-to-activity-sector';
 import { createCourse } from '../fn/course/create-course';
 import { CreateCourse$Params } from '../fn/course/create-course';
 import { findByName3 } from '../fn/course/find-by-name-3';
@@ -19,6 +23,8 @@ import { FindByName3$Params } from '../fn/course/find-by-name-3';
 import { getCourses } from '../fn/course/get-courses';
 import { GetCourses$Params } from '../fn/course/get-courses';
 import { PageResponseCourseResponse } from '../models/page-response-course-response';
+import { removeCoursesFromTrainingCenter } from '../fn/course/remove-courses-from-training-center';
+import { RemoveCoursesFromTrainingCenter$Params } from '../fn/course/remove-courses-from-training-center';
 import { toogleCourse2 } from '../fn/course/toogle-course-2';
 import { ToogleCourse2$Params } from '../fn/course/toogle-course-2';
 import { updateCourse1 } from '../fn/course/update-course-1';
@@ -28,6 +34,31 @@ import { UpdateCourse1$Params } from '../fn/course/update-course-1';
 export class CourseService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
     super(config, http);
+  }
+
+  /** Path part for operation `addCourses()` */
+  static readonly AddCoursesPath = '/course-management/{sessionId}/add-courses';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `addCourses()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addCourses$Response(params: AddCourses$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return addCourses(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `addCourses$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addCourses(params: AddCourses$Params, context?: HttpContext): Observable<string> {
+    return this.addCourses$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
   }
 
   /** Path part for operation `createCourse()` */
@@ -51,6 +82,31 @@ export class CourseService extends BaseService {
    */
   createCourse(params: CreateCourse$Params, context?: HttpContext): Observable<string> {
     return this.createCourse$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `createAndAssignCourseToActivitySector()` */
+  static readonly CreateAndAssignCourseToActivitySectorPath = '/course-management/create-and-assign';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `createAndAssignCourseToActivitySector()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  createAndAssignCourseToActivitySector$Response(params: CreateAndAssignCourseToActivitySector$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return createAndAssignCourseToActivitySector(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `createAndAssignCourseToActivitySector$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  createAndAssignCourseToActivitySector(params: CreateAndAssignCourseToActivitySector$Params, context?: HttpContext): Observable<string> {
+    return this.createAndAssignCourseToActivitySector$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
@@ -156,6 +212,31 @@ export class CourseService extends BaseService {
   findByName3(params: FindByName3$Params, context?: HttpContext): Observable<CourseResponse> {
     return this.findByName3$Response(params, context).pipe(
       map((r: StrictHttpResponse<CourseResponse>): CourseResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `removeCoursesFromTrainingCenter()` */
+  static readonly RemoveCoursesFromTrainingCenterPath = '/course-management/courses/{agreementNumber}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `removeCoursesFromTrainingCenter()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  removeCoursesFromTrainingCenter$Response(params: RemoveCoursesFromTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return removeCoursesFromTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `removeCoursesFromTrainingCenter$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  removeCoursesFromTrainingCenter(params: RemoveCoursesFromTrainingCenter$Params, context?: HttpContext): Observable<string> {
+    return this.removeCoursesFromTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
 

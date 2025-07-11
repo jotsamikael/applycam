@@ -143,7 +143,8 @@ export class CourseListComponent implements OnInit {
       code: this.f.code.value,
       name: this.f.name.value,
       description: this.f.description.value,
-      specialityiId: this.f.specialityiId.value
+      specialityiId: this.f.specialityiId.value,
+      priceForCqp: 25000 // Valeur par défaut pour CQP
     };
 
     this.courseService.createCourse({ body: courseData }).subscribe({

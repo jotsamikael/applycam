@@ -1,1 +1,57 @@
-<p>payment-gateways works!</p>
+<div class="container-fluid">
+  <app-page-title title="Gestion des paiements" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+  <div class="row justify-content-end mb-3">
+    <div class="col-md-4 text-end">
+      <button class="btn btn-soft-primary waves-effect waves-light mx-2" (click)="openCreateModal()">
+        Créer un paiement
+      </button>
+    </div>
+  </div>
+
+  <div class="row justify-content-end">
+    <div class="col-md-3">
+      <mat-form-field>
+        <mat-label>Filtrer</mat-label>
+        <input matInput (keyup)="applyFilter($event)" #input>
+      </mat-form-field>
+    </div>
+    <div class="mat-elevation-z8 w-100">
+      <table mat-table [dataSource]="dataSource" matSort>
+        <!-- Montant -->
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Montant</th>
+          <td mat-cell *matCellDef="let payment">{{payment.amount}}</td>
+        </ng-container>
+        <!-- Méthode de paiement -->
+        <ng-container matColumnDef="paymentMethod">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Méthode</th>
+          <td mat-cell *matCellDef="let payment">{{payment.paymentMethod}}</td>
+        </ng-container>
+        <!-- Actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Actions</th>
+          <td mat-cell *matCellDef="let payment">
+            <button mat-icon-button color="primary" (click)="openEditModal(payment)" matTooltip="Modifier">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="confirmDelete(payment)" matTooltip="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell text-center py-4" colspan="3">
+            <div class="d-flex flex-column align-items-center">
+              <mat-icon class="mb-2" style="font-size: 48px;">search_off</mat-icon>
+              <h4 class="text-muted">Aucun paiement trouvé</h4>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
+    </div>
+  </div>
+</div>

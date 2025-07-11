@@ -37,9 +37,10 @@ public class ApplicationRequest {
     @NotNull(message = "date of Birth  can not be blank")
     private String dateOfBirth;
 
-    @NotEmpty(message = "Speciliaty is mandatory")
-    @NotNull(message = "Speciliaty is mandatory")
+    
     private String Speciality;
+    
+    private String courseName;
     
     @NotEmpty(message = "Exam Type is mandatory")
     @NotNull(message = "Exam Type is mandatory")
@@ -71,6 +72,8 @@ public class ApplicationRequest {
    
     @NotNull(message = " Are you a New Candidate is mandatory")
     private Boolean freeCandidate;
+    
+    
     
     
     @NotNull(message = " Are you repeat Candidate is mandatory")

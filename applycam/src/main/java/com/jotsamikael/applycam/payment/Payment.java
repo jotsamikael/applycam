@@ -37,5 +37,8 @@ public class Payment extends BaseEntity{
 	@OneToOne(mappedBy="payment")
 	@JsonManagedReference
 	private Application application;
-
+	
+	@OneToOne(mappedBy="payment")
+	@JsonManagedReference
+	private Speciality speciality;
 }

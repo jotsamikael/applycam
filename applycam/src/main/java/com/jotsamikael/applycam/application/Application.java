@@ -59,9 +59,9 @@ public class Application extends BaseEntity {
     
     private String applicationRegion;
     
-    /*@Column(nullable = false)
+    @Column(nullable = false,length=20)
     @Enumerated(EnumType.STRING)
-    private ContentStatus status;*/
+    private ContentStatus status;
     
     @OneToOne
     @JoinColumn(name="payment_id")

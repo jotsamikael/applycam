@@ -1,18 +1,18 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
-import { TrainingCenterResponse, Campus } from 'src/app/services/models';
+import { TrainingCenterResponse } from 'src/app/services/models';
 
 @Component({
   selector: 'app-training-center-details',
   templateUrl: './training-center-details.component.html',
   styleUrls: ['./training-center-details.component.scss']
 })
-export class TrainingCenterDetailsComponent implements OnInit {
+export class TrainingCenterDetailsComponent {
   displayedColumnsCampus: string[] = ['name', 'capacity', 'town', 'actions'];
-  dataSourceCampus: MatTableDataSource<Campus>;
+  dataSourceCampus: MatTableDataSource<any>;
 
   @ViewChild(MatPaginator) paginatorCampus: MatPaginator;
   @ViewChild(MatSort) sortCampus: MatSort;
@@ -23,95 +23,77 @@ export class TrainingCenterDetailsComponent implements OnInit {
   @ViewChild(MatPaginator) paginatorSpeciality: MatPaginator;
   @ViewChild(MatSort) sortSpeciality: MatSort;
 
+
   singleTrainingCenterStat = [
     {
-      title: "Nombre de campus",
-      value: "0",
-      icon: "bx-building"
+      title:"Total activities",
+      value :"13",
+      icon:"bx-user-plus"
     },
     {
-      title: "Spécialités offertes",
-      value: "0",
-      icon: "bxs-graduation"
+      title:"Total meetings",
+      value :"2",
+      icon:"bxs-hot"
     },
     {
-      title: "Fin d'agrément",
-      value: "",
-      icon: "bx-calendar"
+      title:"Interactions/mo",
+      value :"4",
+      icon:"bx-wind"
     }
-  ];
+  ]
 
-  trainingCenter: TrainingCenterResponse;
 
-  constructor(private router: Router) {
-    this.dataSourceCampus = new MatTableDataSource();
-    this.dataSourceSpeciality = new MatTableDataSource();
+  trainingCenter:TrainingCenterResponse
+  constructor(private router: Router){
+
   }
 
   ngOnInit(): void {
-    this.getTrainingCenterItemFromLocalStorage();
+    //get followup form localstorage
+    this.getTrainingCenterItemFromLocalStrotage()
   }
 
-  getTrainingCenterItemFromLocalStorage() {
-    this.trainingCenter = JSON.parse(localStorage.getItem('trainingCenter'));
-    
-    if (this.trainingCenter) {
-      // Mettre à jour les stats
-      this.singleTrainingCenterStat[0].value = this.trainingCenter.campusList?.length.toString() || "0";
-      this.singleTrainingCenterStat[1].value = this.trainingCenter.offersSpecialityList?.length.toString() || "0";
-      this.singleTrainingCenterStat[2].value = this.trainingCenter.endDateOfAgreement || "Non défini";
 
-      // Initialiser les données des campus
-      if (this.trainingCenter.campusList) {
-        this.dataSourceCampus = new MatTableDataSource(this.trainingCenter.campusList);
-        this.dataSourceCampus.paginator = this.paginatorCampus;
-        this.dataSourceCampus.sort = this.sortCampus;
-      }
+  getTrainingCenterItemFromLocalStrotage(){
+    this.trainingCenter = JSON.parse(localStorage.getItem('trainingCenter'))
+    console.log(this.trainingCenter)
+  }
 
-      // Initialiser les données des spécialités (si disponible)
-      if (this.trainingCenter.offersSpecialityList) {
-        this.dataSourceSpeciality = new MatTableDataSource(this.trainingCenter.offersSpecialityList);
-        this.dataSourceSpeciality.paginator = this.paginatorSpeciality;
-        this.dataSourceSpeciality.sort = this.sortSpeciality;
-      }
+
+  openCreateNewModalCampus(_t23: any) {
+    throw new Error('Method not implemented.');
     }
-  }
 
-  openCreateNewModalCampus(template: any) {
-    // Implémentez la logique pour ouvrir le modal de création de campus
-  }
 
-  gotoMyTrainingCenter() {
-    this.router.navigate(['backend/training-center-management']);
-  }
+    gotoMyTrainingCenter() {
+    this.router.navigate(['backend/training-center-management'])
+    }
 
-  ngAfterViewInit() {
-    if (this.dataSourceCampus) {
+    ngAfterViewInit() {
       this.dataSourceCampus.paginator = this.paginatorCampus;
       this.dataSourceCampus.sort = this.sortCampus;
-    }
 
-    if (this.dataSourceSpeciality) {
       this.dataSourceSpeciality.paginator = this.paginatorSpeciality;
       this.dataSourceSpeciality.sort = this.sortSpeciality;
     }
-  }
-
-  applyFilterCampus(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSourceCampus.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSourceCampus.paginator) {
-      this.dataSourceCampus.paginator.firstPage();
+  
+    applyFilterCampus(event: Event) {
+      const filterValue = (event.target as HTMLInputElement).value;
+      this.dataSourceCampus.filter = filterValue.trim().toLowerCase();
+  
+      if (this.dataSourceCampus.paginator) {
+        this.dataSourceCampus.paginator.firstPage();
+      }
     }
-  }
 
-  applyFilterSpecialty(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSourceSpeciality.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSourceSpeciality.paginator) {
-      this.dataSourceSpeciality.paginator.firstPage();
+    applyFilterSpecialty(event: Event) {
+      const filterValue = (event.target as HTMLInputElement).value;
+      this.dataSourceSpeciality.filter = filterValue.trim().toLowerCase();
+  
+      if (this.dataSourceSpeciality.paginator) {
+        this.dataSourceSpeciality.paginator.firstPage();
+      }
     }
-  }
+  
+
 }

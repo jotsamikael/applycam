@@ -23,9 +23,33 @@ export class LoginComponent {
 
   errorMsgRegister: Array<string> = [];
 
+  // Méthode pour effacer les erreurs
+  clearErrors() {
+    this.errorMsg = [];
+  }
+
+  // Méthode pour formater les messages d'erreur
+  private formatErrorMessage(error: any): string[] {
+    if (error.error?.validationErrors) {
+      return error.error.validationErrors.map((err: string) => {
+        // Nettoyer et formater les messages d'erreur
+        return err.replace(/^[^:]+:\s*/, '').trim();
+      });
+    } else if (error.error?.error) {
+      return [error.error.error];
+    } else if (error.status === 401) {
+      return ['Email ou mot de passe incorrect'];
+    } else if (error.status === 0) {
+      return ['Impossible de se connecter au serveur. Vérifiez votre connexion internet.'];
+    } else {
+      return ['Une erreur inattendue s\'est produite. Veuillez réessayer.'];
+    }
+  }
+
   loginFun() {
     this.isProcessing = true;
     this.errorMsg = []; //reset error msgs to empty array
+    
     this.authService
       .authenticate({
         body: this.authRequest,
@@ -58,14 +82,8 @@ export class LoginComponent {
         },
         error: (err) => {
           //stop isprocessing
-
           this.isProcessing = false;
-
-          if (err.error.validationErrors) {
-            this.errorMsg = err.error.validationErrors;
-          } else {
-            this.errorMsg.push(err.error.error);
-          }
+          this.errorMsg = this.formatErrorMessage(err);
         },
       });
   }

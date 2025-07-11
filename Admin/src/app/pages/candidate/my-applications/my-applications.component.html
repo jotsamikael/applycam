@@ -31,12 +31,12 @@
                 <input matInput 
                       (keyup)="applyFilter($event)" 
                       #input
-                      placeholder="Search by course or session">
+                      placeholder="Search by speciality or year">
                 <mat-icon matSuffix>search</mat-icon>
               </mat-form-field>
             </div>
             <div class="col-md-2 text-end">
-              <button mat-icon-button matTooltip="Refresh list" (click)="loadApplications()">
+              <button mat-icon-button matTooltip="Refresh list" (click)="loadApplications()" [disabled]="processing">
                 <mat-icon>refresh</mat-icon>
               </button>
             </div>
@@ -44,32 +44,28 @@
 
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="w-100">
-              <!-- Course Column -->
-              <ng-container matColumnDef="course">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Course </th>
+              <!-- Speciality Column -->
+              <ng-container matColumnDef="speciality">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Spécialité </th>
                 <td mat-cell *matCellDef="let application"> 
-                  <span class="fw-semibold">{{application.course}}</span>
+                  <span class="fw-semibold">{{application.speciality || 'N/A'}}</span>
                 </td>
               </ng-container>
 
-              <!-- Session Column -->
-              <ng-container matColumnDef="session">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Session </th>
+              <!-- Application Year Column -->
+              <ng-container matColumnDef="applicationYear">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Année </th>
                 <td mat-cell *matCellDef="let application"> 
-                  {{application.session}}
+                  {{application.applicationYear || 'N/A'}}
                 </td>
               </ng-container>
 
               <!-- Status Column -->
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Statut </th>
                 <td mat-cell *matCellDef="let application"> 
-                  <span class="badge" [ngClass]="{
-                    'bg-success': application.status === 'APPROVED',
-                    'bg-warning': application.status === 'PENDING_REVIEW',
-                    'bg-secondary': application.status === 'DRAFT'
-                  }">
-                    {{application.status}}
+                  <span class="badge" [ngClass]="getStatusBadgeClass(application.status)">
+                    {{getStatusDisplayText(application.status)}}
                   </span>
                 </td>
               </ng-container>
@@ -87,13 +83,13 @@
                     <button mat-icon-button color="accent"
                             matTooltip="Edit"
                             (click)="openEditModal(application)"
-                            [disabled]="application.status === 'APPROVED'">
+                            [disabled]="application.status === 'VALIDATED' || application.status === 'PAID'">
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button mat-icon-button color="warn"
                             matTooltip="Delete"
                             (click)="deleteApplication(application)"
-                            [disabled]="processing || application.status === 'APPROVED'">
+                            [disabled]="processing || application.status === 'VALIDATED' || application.status === 'PAID'">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
@@ -108,15 +104,15 @@
                 <td class="mat-cell text-center py-4" colspan="4">
                   <div class="d-flex flex-column align-items-center">
                     <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">search_off</mat-icon>
-                    <h4 class="text-muted">No applications found</h4>
+                    <h4 class="text-muted">Aucune application trouvée</h4>
                     <p *ngIf="input.value" class="text-muted">
-                      No matching results for "{{input.value}}"
+                      Aucun résultat pour "{{input.value}}"
                     </p>
                     <button mat-raised-button color="primary" 
                             class="mt-2"
                             (click)="openCreateModal()"
                             *ngIf="!input.value">
-                      Create your first application
+                      Créer votre première application
                     </button>
                   </div>
                 </td>
@@ -135,65 +131,8 @@
   </div>
 
   <!-- Create/Edit Modal -->
-  <div class="modal fade show" [ngClass]="{'d-block': showModal}" tabindex="-1" role="dialog" *ngIf="showModal">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{isEditMode ? 'Edit' : 'Create'}} Application</h5>
-          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
-        </div>
-        <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
-          <div class="modal-body">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">Course</label>
-                  <select class="form-select" formControlName="courseId">
-                    <option value="">Select a course</option>
-                    <!-- Populate with courses from service -->
-                    <option value="1">Web Development</option>
-                    <option value="2">Data Science</option>
-                  </select>
-                  <div *ngIf="f.courseId.touched && f.courseId.invalid" class="text-danger">
-                    <small *ngIf="f.courseId.errors.required">Course is required</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">Session</label>
-                  <select class="form-select" formControlName="sessionId">
-                    <option value="">Select a session</option>
-                    <!-- Populate with sessions from service -->
-                    <option value="1">2023 Fall</option>
-                    <option value="2">2023 Winter</option>
-                  </select>
-                  <div *ngIf="f.sessionId.touched && f.sessionId.invalid" class="text-danger">
-                    <small *ngIf="f.sessionId.errors.required">Session is required</small>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <!-- SUPPRIMÉ : tout le bloc modal de création/édition -->
 
-            <div class="mb-3">
-              <label class="form-label">Motivation Letter</label>
-              <textarea class="form-control" formControlName="motivationLetter" rows="5"></textarea>
-              <div *ngIf="f.motivationLetter.touched && f.motivationLetter.invalid" class="text-danger">
-                <small *ngIf="f.motivationLetter.errors.required">Motivation letter is required</small>
-                <small *ngIf="f.motivationLetter.errors.maxlength">Max 500 characters</small>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
-            <button type="submit" class="btn btn-primary" [disabled]="applicationForm.invalid || processing">
-              <span *ngIf="!processing">{{isEditMode ? 'Update' : 'Create'}}</span>
-              <span *ngIf="processing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" *ngIf="showModal"></div>
+  <!-- Détail Application Modal -->
+  <!-- SUPPRIMÉ : tout le bloc modal de détail -->
 </div>

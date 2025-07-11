@@ -205,7 +205,7 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
           <div class="col-md-6">
             <p><strong>ID:</strong> ${application.id || 'N/A'}</p>
             <p><strong>Candidat:</strong> ${application.candidateName || 'N/A'}</p>
-            <p><strong>Email:</strong> ${application.email || 'N/A'}</p>
+            
             <p><strong>Spécialité:</strong> ${application.speciality || 'N/A'}</p>
           </div>
           <div class="col-md-6">

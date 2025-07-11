@@ -7,4 +7,5 @@ export interface CourseRequest {
   description?: string;
   id: number;
   name: string;
+  priceForCqp: number;
 }

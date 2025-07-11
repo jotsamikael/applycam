@@ -11,10 +11,15 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
-import { addSpeciality } from '../fn/speciality/add-speciality';
-import { AddSpeciality$Params } from '../fn/speciality/add-speciality';
+import { activateSpeciality } from '../fn/speciality/activate-speciality';
+import { ActivateSpeciality$Params } from '../fn/speciality/activate-speciality';
+import { addSpecialities } from '../fn/speciality/add-specialities';
+import { AddSpecialities$Params } from '../fn/speciality/add-specialities';
+import { addSpecialitiesToTrainingCenter } from '../fn/speciality/add-specialities-to-training-center';
+import { AddSpecialitiesToTrainingCenter$Params } from '../fn/speciality/add-specialities-to-training-center';
 import { addSpecialityToCourse } from '../fn/speciality/add-speciality-to-course';
 import { AddSpecialityToCourse$Params } from '../fn/speciality/add-speciality-to-course';
+import { CourseWithSpecialitiesResponse } from '../models/course-with-specialities-response';
 import { createSpeciality } from '../fn/speciality/create-speciality';
 import { CreateSpeciality$Params } from '../fn/speciality/create-speciality';
 import { findByName1 } from '../fn/speciality/find-by-name-1';
@@ -27,7 +32,13 @@ import { getAllSpecialityOfCourse } from '../fn/speciality/get-all-speciality-of
 import { GetAllSpecialityOfCourse$Params } from '../fn/speciality/get-all-speciality-of-course';
 import { getAllSpecialityOfCourse1 } from '../fn/speciality/get-all-speciality-of-course-1';
 import { GetAllSpecialityOfCourse1$Params } from '../fn/speciality/get-all-speciality-of-course-1';
+import { getCoursesAndSpecialitiesForCenter } from '../fn/speciality/get-courses-and-specialities-for-center';
+import { GetCoursesAndSpecialitiesForCenter$Params } from '../fn/speciality/get-courses-and-specialities-for-center';
 import { PageResponseSpecialityResponse } from '../models/page-response-speciality-response';
+import { removeSpecialities } from '../fn/speciality/remove-specialities';
+import { RemoveSpecialities$Params } from '../fn/speciality/remove-specialities';
+import { removeSpecialitiesFromTrainingCenter } from '../fn/speciality/remove-specialities-from-training-center';
+import { RemoveSpecialitiesFromTrainingCenter$Params } from '../fn/speciality/remove-specialities-from-training-center';
 import { SpecialityResponse } from '../models/speciality-response';
 import { toogleCourse1 } from '../fn/speciality/toogle-course-1';
 import { ToogleCourse1$Params } from '../fn/speciality/toogle-course-1';
@@ -61,6 +72,31 @@ export class SpecialityService extends BaseService {
    */
   createSpeciality(params: CreateSpeciality$Params, context?: HttpContext): Observable<string> {
     return this.createSpeciality$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `addSpecialities()` */
+  static readonly AddSpecialitiesPath = '/specialities/add-specialities/{sessionId}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `addSpecialities()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addSpecialities$Response(params: AddSpecialities$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return addSpecialities(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `addSpecialities$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addSpecialities(params: AddSpecialities$Params, context?: HttpContext): Observable<string> {
+    return this.addSpecialities$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
@@ -119,27 +155,27 @@ export class SpecialityService extends BaseService {
     );
   }
 
-  /** Path part for operation `addSpeciality()` */
-  static readonly AddSpecialityPath = '/specialities/add-speciality-totrainingCenter';
+  /** Path part for operation `addSpecialitiesToTrainingCenter()` */
+  static readonly AddSpecialitiesToTrainingCenterPath = '/specialities/link-to-center';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `addSpeciality()` instead.
+   * To access only the response body, use `addSpecialitiesToTrainingCenter()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  addSpeciality$Response(params: AddSpeciality$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-    return addSpeciality(this.http, this.rootUrl, params, context);
+  addSpecialitiesToTrainingCenter$Response(params: AddSpecialitiesToTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return addSpecialitiesToTrainingCenter(this.http, this.rootUrl, params, context);
   }
 
   /**
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `addSpeciality$Response()` instead.
+   * To access the full response (for headers, for example), `addSpecialitiesToTrainingCenter$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  addSpeciality(params: AddSpeciality$Params, context?: HttpContext): Observable<string> {
-    return this.addSpeciality$Response(params, context).pipe(
+  addSpecialitiesToTrainingCenter(params: AddSpecialitiesToTrainingCenter$Params, context?: HttpContext): Observable<string> {
+    return this.addSpecialitiesToTrainingCenter$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
@@ -166,6 +202,56 @@ export class SpecialityService extends BaseService {
   addSpecialityToCourse(params: AddSpecialityToCourse$Params, context?: HttpContext): Observable<string> {
     return this.addSpecialityToCourse$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `activateSpeciality()` */
+  static readonly ActivateSpecialityPath = '/specialities/activate';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `activateSpeciality()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  activateSpeciality$Response(params: ActivateSpeciality$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return activateSpeciality(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `activateSpeciality$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  activateSpeciality(params: ActivateSpeciality$Params, context?: HttpContext): Observable<string> {
+    return this.activateSpeciality$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `getCoursesAndSpecialitiesForCenter()` */
+  static readonly GetCoursesAndSpecialitiesForCenterPath = '/specialities/training-center/offered-specialities-by-course/{agreementNumber}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getCoursesAndSpecialitiesForCenter()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCoursesAndSpecialitiesForCenter$Response(params: GetCoursesAndSpecialitiesForCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CourseWithSpecialitiesResponse>>> {
+    return getCoursesAndSpecialitiesForCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getCoursesAndSpecialitiesForCenter$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCoursesAndSpecialitiesForCenter(params: GetCoursesAndSpecialitiesForCenter$Params, context?: HttpContext): Observable<Array<CourseWithSpecialitiesResponse>> {
+    return this.getCoursesAndSpecialitiesForCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<CourseWithSpecialitiesResponse>>): Array<CourseWithSpecialitiesResponse> => r.body)
     );
   }
 
@@ -291,6 +377,56 @@ export class SpecialityService extends BaseService {
   findByName1(params: FindByName1$Params, context?: HttpContext): Observable<SpecialityResponse> {
     return this.findByName1$Response(params, context).pipe(
       map((r: StrictHttpResponse<SpecialityResponse>): SpecialityResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `removeSpecialities()` */
+  static readonly RemoveSpecialitiesPath = '/specialities/{agreementNumber}/remove-specialities';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `removeSpecialities()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  removeSpecialities$Response(params: RemoveSpecialities$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return removeSpecialities(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `removeSpecialities$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  removeSpecialities(params: RemoveSpecialities$Params, context?: HttpContext): Observable<string> {
+    return this.removeSpecialities$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `removeSpecialitiesFromTrainingCenter()` */
+  static readonly RemoveSpecialitiesFromTrainingCenterPath = '/specialities/specialities/{agreementNumber}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `removeSpecialitiesFromTrainingCenter()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  removeSpecialitiesFromTrainingCenter$Response(params: RemoveSpecialitiesFromTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return removeSpecialitiesFromTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `removeSpecialitiesFromTrainingCenter$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  removeSpecialitiesFromTrainingCenter(params: RemoveSpecialitiesFromTrainingCenter$Params, context?: HttpContext): Observable<string> {
+    return this.removeSpecialitiesFromTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
 

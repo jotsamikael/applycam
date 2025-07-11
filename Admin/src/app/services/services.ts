@@ -13,6 +13,7 @@ export { CampusService } from './services/campus.service';
 export { AuthenticationService } from './services/authentication.service';
 export { ExamCenterControllerService } from './services/exam-center-controller.service';
 export { ApplicationService } from './services/application.service';
+export { ActivitySectorService } from './services/activity-sector.service';
 export { PromoterService } from './services/promoter.service';
 export { CandidateService } from './services/candidate.service';
 export { UserControllerService } from './services/user-controller.service';

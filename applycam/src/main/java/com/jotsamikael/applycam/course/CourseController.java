@@ -1,10 +1,12 @@
 package com.jotsamikael.applycam.course;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.session.SessionService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,6 +31,7 @@ public class CourseController {
 	
 
 	private final CourseService courseService;
+	private final SessionService sessionService;
 	
 
 	@PostMapping("/create-course")
@@ -70,6 +75,33 @@ public class CourseController {
 		 
 		 return ResponseEntity.ok().build();
 	 }
+	 
+	 @PostMapping("/create-and-assign")
+	    public ResponseEntity<String> createAndAssignCourseToActivitySector(
+	            @RequestBody @Valid CreateCourseAndAssignRequest request,
+	            Authentication authentication) {
+
+	        String response = courseService.createCourseAndAssignToActivitySector(request, authentication);
+	        return ResponseEntity.ok(response);
+	    }
+	 
+	 @PostMapping("/{sessionId}/add-courses")
+	    public ResponseEntity<String> addCourses(@PathVariable Long sessionId, @RequestBody List<Long> courseIds) {
+	        return ResponseEntity.ok(courseService.addCoursesToSession(sessionId, courseIds));
+	    }
+	 
+	 
+	    /**
+	     * Supprimer une ou plusieurs filières (courses) d’un centre de formation
+	     */
+	    @DeleteMapping("/courses/{agreementNumber}")
+	    public ResponseEntity<String> removeCoursesFromTrainingCenter(
+	            @PathVariable String agreementNumber,
+	            @RequestBody List<Long> courseIds
+	    ) {
+	        String result = courseService.removeCoursesFromTrainingCenter(agreementNumber, courseIds);
+	        return ResponseEntity.ok(result);
+	    }
 	 
 	 
     

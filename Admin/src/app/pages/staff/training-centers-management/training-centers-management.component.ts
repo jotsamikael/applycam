@@ -267,11 +267,17 @@ export class TrainingCentersManagementComponent implements OnInit {
             <p><strong>Statut :</strong> <span class="badge bg-info">${center.status || 'DRAFT'}</span></p>
           </div>
           <div class="col-md-6">
-            <p><strong>Liste des spécialités :</strong> ${
-              (center.offersSpecialityList && center.offersSpecialityList.length > 0)
-                ? center.offersSpecialityList.map(s => (s && (s as any).name ? (s as any).name : '-')).join(', ')
-                : '-'
-            }</p>
+            <p><strong>Liste des spécialités :</strong></p>
+            <ul>
+              ${
+                (center.offersSpecialityList && center.offersSpecialityList.length > 0)
+                  ? center.offersSpecialityList.map(s => {
+                      const nom = (s as any).speciality?.name || (s as any).name;
+                      return nom ? `<li>${nom}</li>` : '';
+                    }).filter(Boolean).join('')
+                  : '<li>-</li>'
+              }
+            </ul>
             <p><strong>Liste des campus :</strong> ${
               (center.campusList && center.campusList.length > 0)
                 ? center.campusList.map(c => (c && (c as any).name ? (c as any).name : '-')).join(', ')

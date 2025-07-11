@@ -19,6 +19,8 @@ import com.jotsamikael.applycam.candidate.CandidateRepository;
 import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.FileStorageService;
 import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.course.Course;
+import com.jotsamikael.applycam.course.CourseRepository;
 import com.jotsamikael.applycam.email.EmailService;
 import com.jotsamikael.applycam.email.EmailTemplateName;
 import com.jotsamikael.applycam.examCenter.ExamCenter;
@@ -56,6 +58,7 @@ public class ApplicationService {
     private final EmailService emailService;
     private final ExamService examService;
     private final ApplicationMapper mapper;
+    private final CourseRepository courseRepository;
 
     public void applyPersonalInfo(ApplicationRequest request, Authentication connectedUser) {
         User user = ((User) connectedUser.getPrincipal());
@@ -93,6 +96,18 @@ public class ApplicationService {
         		candidate.setHighestSchoolLevel(request.getAcademicLevel());
         		
         candidateRepository.save(candidate);
+        
+        Speciality speciality = null;
+        Course course = null;
+        
+        String currentYear = String.valueOf(LocalDate.now().getYear());
+        if (!request.getSessionYear().equals(currentYear)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only register for the current year's session");
+        }
+        
+        double expectedPrice;
+        
+        
         Session session= sessionRepository.findBySessionYearAndExamType(request.getSessionYear(),request.getExamType())
         		.orElseThrow(() -> new EntityNotFoundException(" Not Session Found for this Year "));
         
@@ -107,9 +122,47 @@ public class ApplicationService {
             throw new RuntimeException("You are note candidate ok this center");
         }
 
-        //get exam information from the request
-        Speciality speciality = specialityRepository.findByName(request.getSpeciality())
-            .orElseThrow(() -> new EntityNotFoundException("Speciality not found"));
+     // Si DQP → spécialité obligatoire
+        if ("DQP".equalsIgnoreCase(request.getExamType())) {
+            if (request.getSpeciality() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Speciality is required for DQP.");
+            }
+
+           speciality = specialityRepository.findByName(request.getSpeciality())
+                    .orElseThrow(() -> new EntityNotFoundException("Speciality not found"));
+
+            if (!speciality.getSession().getSessionYear().equals(currentYear)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Speciality does not belong to the current session.");
+            }
+
+            expectedPrice = speciality.getDqpPrice();
+        }
+
+        // Si CQP → cours obligatoire
+        else if ("CQP".equalsIgnoreCase(request.getExamType())) {
+            if (request.getCourseName() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is required for CQP.");
+            }
+
+             course = courseRepository.findByName(request.getCourseName())
+                    .orElseThrow(() -> new EntityNotFoundException("Course not found"));
+
+            if (!course.getSession().getSessionYear().equals(currentYear)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Course does not belong to the current session.");
+            }
+
+            expectedPrice = course.getPriceForCqp();
+        }
+
+        else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid exam type. Must be either DQP or CQP.");
+        }
+
+        // Vérification du prix
+        if (Double.compare(expectedPrice, request.getAmount()) != 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Incorrect amount. Expected: " + expectedPrice);
+        }
 
         var payment=Payment.builder()
 				.amount(request.getAmount())
@@ -129,7 +182,7 @@ public class ApplicationService {
         		.applicationRegion(request.getApplicationRegion())
         		.applicationYear(session.getSessionYear())
         		.payment(payment)
-        		//.status(ContentStatus.PAID)
+        		.status(ContentStatus.PAID)
         		.build();
         
         
@@ -205,10 +258,10 @@ public class ApplicationService {
     	ExamCenter examCenter=candidate.getExamCenter();
     	Session session= application.getSession();
     	application.setActived(true);
+    	application.setStatus(ContentStatus.VALIDATED);
+    	applicationRepository.save(application);
     	
     	sendApplicationValidationEmail(candidate,examCenter,session);
-    	
-    	applicationRepository.save(application);
     	
     	return "validated";
     }
@@ -224,6 +277,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new EntityNotFoundException("No Application found with ID: " + id));
 
         application.setActived(false);
+        application.setStatus(ContentStatus.REJECTED);
         applicationRepository.save(application);
 
         Candidate candidate = application.getCandidate();

@@ -8,4 +8,5 @@ export interface SpecialityResponse {
   examType?: string;
   id?: number;
   name?: string;
+  paymentAmount?: number;
 }

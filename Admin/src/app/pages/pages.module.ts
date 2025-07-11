@@ -76,6 +76,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTreeModule } from '@angular/material/tree';
+import { MatFormFieldModule } from '@angular/material/form-field';
+
+
 import { CardManagementComponent } from './card-management/card-management.component';
 import { OverviewStaffComponent } from './staff/overview-staff/overview-staff.component';
 import { TrainingCentersManagementComponent } from './staff/training-centers-management/training-centers-management.component';
@@ -89,7 +92,7 @@ import { MyNotificationsComponent } from './promoter/my-notifications/my-notific
 import { MyCandidatesComponent } from './promoter/my-candidates/my-candidates.component';
 import { CampusManagementComponent } from './promoter/campus-management/campus-management.component';
 import { MyApplicationsComponent } from './candidate/my-applications/my-applications.component';
-import { TrainingCenterDetailsComponent } from './promoter/training-center-management/training-center-details/training-center-details.component';
+ import { TrainingCenterDetailsComponent } from './promoter/training-center-management/training-center-details/training-center-details.component';
 import { CourseListComponent } from './promoter/course-management/course-list/course-list.component';
 import { SpecialtyListComponent } from './promoter/specialty-management/specialty-list/specialty-list.component';
 import { ResultatsComponent } from './promoter/resultats/resultats.component';
@@ -166,6 +169,11 @@ import { PromoterComponent } from './staff/promoter/promoter.component';
     MyPaymentsComponent,
     PaymentGatewaysComponent,
     PromoterComponent,
+    
+  ],
+  exports: [
+    
+    
   ],
   imports: [
     MatAutocompleteModule,
@@ -184,6 +192,7 @@ import { PromoterComponent } from './staff/promoter/promoter.component';
     MatGridListModule,
     MatIconModule,
     MatInputModule,
+    MatFormFieldModule,
     MatListModule,
     MatMenuModule,
     MatNativeDateModule,

@@ -6,4 +6,5 @@ export interface CreateCourseRequest {
   code: string;
   description?: string;
   name: string;
+  priceForCqp: number;
 }

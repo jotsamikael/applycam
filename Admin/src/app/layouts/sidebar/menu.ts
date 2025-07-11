@@ -63,8 +63,15 @@ export const MENU: MenuItem[] = [
     {
         id: 34,
         label: 'Exam Sessions',
-        link: 'exam-session-management',
+        link: 'session-management',
         icon: 'bx-calendar-event',
+        roles: ['super_admin', 'STAFF'],
+    },
+    {
+        id: 36,
+        label: 'Specialities',
+        link: 'specialities-management',
+        icon: 'bxs-award',
         roles: ['super_admin', 'STAFF'],
     },
     {
@@ -134,6 +141,20 @@ export const MENU: MenuItem[] = [
         label: 'Training Centers',
         icon: 'bxs-school',
         link: 'training-center-management',
+        roles: ['PROMOTER']
+    },
+    {
+        id: 2001,
+        label: 'Courses Management',
+        icon: 'bxs-book',
+        link: 'courses-management',
+        roles: ['PROMOTER']
+    },
+    {
+        id: 2002,
+        label: 'Campus Management',
+        icon: 'bxs-building',
+        link: 'campus-management',
         roles: ['PROMOTER']
     },
     {

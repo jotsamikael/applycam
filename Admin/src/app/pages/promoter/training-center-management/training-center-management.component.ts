@@ -1,375 +1,168 @@
-import { Component, OnInit, TemplateRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, ViewChild } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { Router } from '@angular/router';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { Subject, takeUntil } from 'rxjs';
-import Swal from 'sweetalert2';
-import { 
-  TrainingCenterResponse,
-  CreateTainingCenterRequest,
-  UpdateTrainingCenterRequest
-} from '../../../services/models';
-import { TrainingcenterService } from '../../../services/services/trainingcenter.service';
-import { TokenService } from '../../../services/token/token.service';
+import { User } from 'src/app/core/models/auth.models';
+import { GetDivisionByRegion$Params } from 'src/app/services/fn/division/get-division-by-region';
+import { CreateTainingCenterRequest, Division, TrainingCenterResponse } from 'src/app/services/models';
+import { DivisionService, TrainingcenterService } from 'src/app/services/services';
+import { TokenService } from 'src/app/services/token/token.service';
 
 @Component({
   selector: 'app-training-center-management',
   templateUrl: './training-center-management.component.html',
   styleUrls: ['./training-center-management.component.scss']
 })
-export class TrainingCenterManagementComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild('createModal') createModal!: TemplateRef<any>;
-  @ViewChild('detailsModal') detailsModal!: TemplateRef<any>;
-  @ViewChild('editModal') editModal!: TemplateRef<any>;
+export class TrainingCenterManagementComponent {
 
-  private destroy$ = new Subject<void>();
-  
-  modalRef?: BsModalRef;
-  processing = false;
-  errorMessages: string[] = [];
-
+  breadCrumbItems: Array<{}>;
   displayedColumns: string[] = [
-    'fullName', 'acronym', 'agreementNumber', 
-    'centerPresentCandidateForCqp', 'centerPresentCandidateForDqp', 
-    'division', 'actions'
+    "fullName", "acronym", "agreementNumber",
+    "centerPresentCandidateForCqp", "centerPresentCandidateForDqp", "division", "actions"
   ];
-  dataSource = new MatTableDataSource<TrainingCenterResponse>();
-  
-  createForm!: FormGroup;
-  editForm!: FormGroup;
-  selectedCenter: TrainingCenterResponse | null = null;
-  currentUser = this.tokenService.getUsername();
-
-  stats = [
-    { title: 'Total Centers', value: 0, icon: 'school' },
-    { title: 'CQP Centers', value: 0, icon: 'verified' },
-    { title: 'DQP Centers', value: 0, icon: 'verified_user' }
-  ];
-
+  dataSource: MatTableDataSource<TrainingCenterResponse>;
+  errorMsg: Array<string> = [];
   regions: string[] = [
-    'Adamaoua', 'Centre', 'Est', 'Extrême-Nord', 'Littoral', 
-    'Nord', 'Nord-Ouest', 'Ouest', 'Sud', 'Sud-Ouest'
+    'Center', 'Littoral', 'West', 'Adamawa', 'East',
+    'South', 'North', 'North-West', 'South-West', 'Far-North'
   ];
-  divisions: any[] = [];
+  divisions: Division[] = [];
 
-  breadCrumbItems = [
-    { label: 'Dashboard', path: '/' },
-    { label: 'My Training Centers', active: true }
+  user: User;
+  trainingcenters: TrainingCenterResponse[];
+  followUpStat = [
+    { title: "Total Campus", value: "4", icon: "bx-building" },
+    { title: "Total Candidates", value: "97", icon: "bxs-graduation" },
+    { title: "Agreement Exp", value: "2025-05-26", icon: "bx-wind" }
   ];
 
-  agreementFile: File | null = null;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
+
+  modalRef?: BsModalRef;
+  processing: boolean = false;
 
   constructor(
-    private fb: FormBuilder,
+    private tokenService: TokenService,
+    private trainingcenterService: TrainingcenterService,
     private modalService: BsModalService,
-    private trainingCenterService: TrainingcenterService,
-    private tokenService: TokenService
+    private divisionService: DivisionService,
+    private router: Router,
+    public dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.initForms();
-    this.loadTrainingCenters();
-    this.setupRegionListeners();
-  }
+    this.breadCrumbItems = [{ label: 'Promoter' }, { label: 'Training Centers', active: true }];
+    this.getTrainingCentersOfLoggedInUser();
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private initForms(): void {
-    this.createForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.maxLength(100)]],
-      acronym: ['', [Validators.required, Validators.maxLength(20)]],
-      agreementNumber: ['', [Validators.required, Validators.maxLength(50)]],
-      startDateOfAgreement: ['', Validators.required],
-      endDateOfAgreement: ['', Validators.required],
-      isCenterPresentCandidateForCqp: [false],
-      isCenterPresentCandidateForDqp: [false],
-      region: ['', Validators.required],
-      division: ['', Validators.required],
-      fullAddress: ['', [Validators.required, Validators.maxLength(200)]]
-    });
-
-    this.editForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.maxLength(100)]],
-      acronym: ['', [Validators.required, Validators.maxLength(20)]],
-      agreementNumber: ['', [Validators.required, Validators.maxLength(50)]],
-      startDateOfAgreement: ['', Validators.required],
-      endDateOfAgreement: ['', Validators.required],
-      centerPresentCandidateForCqp: [false],
-      centerPresentCandidateForDqp: [false],
-      division: ['', Validators.required],
-      fullAddress: ['', [Validators.required, Validators.maxLength(200)]]
+    this.CreateTrainingCenterForm.get('region')?.valueChanges.subscribe(selectedRegion => {
+      if (selectedRegion) {
+        const params: GetDivisionByRegion$Params = { region: selectedRegion };
+        this.getDivisionsList(params);
+      } else {
+        this.divisions = [];
+        this.CreateTrainingCenterForm.get('division')?.reset();
+      }
     });
   }
 
-  private setupRegionListeners(): void {
-    this.createForm.get('region')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(region => this.updateDivisions(region));
+  ngAfterViewInit() {
+    if (this.dataSource) {
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+    }
   }
 
-  private updateDivisions(region: string): void {
-    const departmentsByRegion: Record<string, any[]> = {
-      'Adamaoua': [{ department: 'Djérem' }, { department: 'Faro-et-Déo' }],
-      'Centre': [{ department: 'Haute-Sanaga' }, { department: 'Lekié' }],
-      'Est': [{ department: 'Boumba-et-Ngoko' }, { department: 'Haut-Nyong' }],
-      'Extrême-Nord': [{ department: 'Diamaré' }, { department: 'Mayo-Danay' }],
-      'Littoral': [{ department: 'Moungo' }, { department: 'Nkam' }],
-      'Nord': [{ department: 'Bénoué' }, { department: 'Mayo-Louti' }],
-      'Nord-Ouest': [{ department: 'Boyo' }, { department: 'Menchum' }],
-      'Ouest': [{ department: 'Bamboutos' }, { department: 'Hauts-Plateaux' }],
-      'Sud': [{ department: 'Mvila' }, { department: 'Océan' }],
-      'Sud-Ouest': [{ department: 'Fako' }, { department: 'Meme' }]
-    };
-    
-    this.divisions = departmentsByRegion[region] || [];
-    this.createForm.get('division')?.reset();
+  CreateTrainingCenterForm = new FormGroup({
+    fullName: new FormControl('', [Validators.required]),
+    acronym: new FormControl('', [Validators.required]),
+    agreementNumber: new FormControl('', [Validators.required]),
+    startDateOfAgreement: new FormControl('', [Validators.required]),
+    endDateOfAgreement: new FormControl('', [Validators.required]),
+    isCenterPresentCandidateForCqp: new FormControl('No'),
+    isCenterPresentCandidateForDqp: new FormControl('No'),
+    region: new FormControl('', [Validators.required]),
+    division: new FormControl('', [Validators.required]),
+    fullAddress: new FormControl('', [Validators.required])  // ✅ Ajouté
+  });
+
+  disableForm() {
+    Object.keys(this.CreateTrainingCenterForm.controls).forEach(control => {
+      this.CreateTrainingCenterForm.controls[control].disable();
+    });
   }
 
- private loadTrainingCenters(): void {
-  this.processing = true;
-  console.log('Début du chargement des centres...'); // Debug
-  
-  this.trainingCenterService.getTrainingCenterOfConnectedPromoter()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (centers) => {
-        console.log('Centres reçus:', centers); // Debug
-        this.dataSource.data = centers;
-        this.updateStatistics(centers);
-        this.processing = false;
+  enableForm() {
+    Object.keys(this.CreateTrainingCenterForm.controls).forEach(control => {
+      this.CreateTrainingCenterForm.controls[control].enable();
+    });
+  }
+
+  get f() {
+    return this.CreateTrainingCenterForm.controls;
+  }
+
+  getDivisionsList(region: GetDivisionByRegion$Params) {
+    this.divisionService.getDivisionByRegion(region).subscribe((divisions: Division[]) => {
+      this.divisions = divisions;
+      this.CreateTrainingCenterForm.get('division')?.reset();
+    });
+  }
+
+  getTrainingCentersOfLoggedInUser() {
+    this.trainingcenterService.getTrainingCenterOfConnectedPromoter().subscribe({
+      next: (res) => {
+        this.dataSource = new MatTableDataSource(res);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
       },
       error: (err) => {
-        console.error('Erreur lors du chargement:', err); // Debug
-        this.handleError(err, 'Failed to load training centers');
         this.processing = false;
-      },
-      complete: () => console.log('Chargement terminé') // Debug
+        this.errorMsg = err.error.validationErrors ?? [err.error.error];
+      }
     });
-}
-
-  private updateStatistics(centers: TrainingCenterResponse[]): void {
-    const cqpCount = centers.filter(c => c.centerPresentCandidateForCqp).length;
-    const dqpCount = centers.filter(c => c.centerPresentCandidateForDqp).length;
-    
-    this.stats = [
-      { title: 'Total Centers', value: centers.length, icon: 'school' },
-      { title: 'CQP Centers', value: cqpCount, icon: 'verified' },
-      { title: 'DQP Centers', value: dqpCount, icon: 'verified_user' }
-    ];
   }
 
-  private handleError(error: any, defaultMessage: string): void {
-    this.errorMessages = error.error?.validationErrors || 
-                        [error.error?.businessErrorDescription || defaultMessage];
-    console.error('Error:', error);
-  }
-
-  applyFilter(event: Event): void {
+  applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
-
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
   }
 
-  openCreateModal(): void {
-    this.createForm.reset({
-      fullName: 'Centre Test',
-      acronym: 'CTEST',
-      agreementNumber: 'AGR-12345',
-      startDateOfAgreement: '2024-01-01',
-      endDateOfAgreement: '2025-01-01',
-      isCenterPresentCandidateForCqp: true,
-      isCenterPresentCandidateForDqp: false,
-      region: 'Centre',
-      division: 'Mfoundi',
-      fullAddress: 'Yaoundé, Quartier Test'
-    });
-    this.errorMessages = [];
-    this.modalRef = this.modalService.show(this.createModal, {
-      class: 'modal-dialog-centered modal-lg',
-      backdrop: 'static',
-      keyboard: false
-    });
+  goToTrainingCenterDetails(trainingCenterItem: TrainingCenterResponse) {
+    localStorage.setItem('trainingCenter', JSON.stringify(trainingCenterItem));
+    this.router.navigate(['backend/training-center-details']);
   }
 
-  createTrainingCenter(): void {
-    if (this.createForm.invalid) {
-      this.createForm.markAllAsTouched();
-      this.errorMessages = ['Please fill all required fields correctly'];
-      return;
-    }
+  openCreateNewModal(addNew: any) {
+    this.modalRef = this.modalService.show(addNew, { class: 'modal-lg' });
+  }
 
-    this.processing = true;
-    const formValue = this.createForm.value;
-
-    const request: CreateTainingCenterRequest = {
-      fullName: formValue.fullName,
-      acronym: formValue.acronym,
-      agreementNumber: formValue.agreementNumber,
-      startDateOfAgreement: formValue.startDateOfAgreement,
-      endDateOfAgreement: formValue.endDateOfAgreement,
-      isCenterPresentCandidateForCqp: formValue.isCenterPresentCandidateForCqp,
-      isCenterPresentCandidateForDqp: formValue.isCenterPresentCandidateForDqp,
-      division: formValue.division,
-      fullAddress: formValue.fullAddress
+  createNewTrainingCenter() {
+    const createNewTrainingCenterRequest: CreateTainingCenterRequest = {
+      acronym: this.f['acronym'].value,
+      agreementNumber: this.f['agreementNumber'].value,
+      isCenterPresentCandidateForCqp: this.getTrueOrFalse(this.f['isCenterPresentCandidateForCqp'].value),
+      isCenterPresentCandidateForDqp: this.getTrueOrFalse(this.f['isCenterPresentCandidateForDqp'].value),
+      division: this.f['division'].value,
+      endDateOfAgreement: this.f['endDateOfAgreement'].value,
+      fullName: this.f['fullName'].value,
+      startDateOfAgreement: this.f['startDateOfAgreement'].value,
+      fullAddress: this.f['fullAddress'].value  // ✅ Inclus dans l'objet
     };
 
-    this.trainingCenterService.createTrainingCenter({ body: request })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          // Upload du fichier d’agrément si présent
-          if (this.agreementFile) {
-            this.uploadAgreementFile(formValue.agreementNumber);
-          }
-          Swal.fire({
-            title: 'Success!',
-            text: 'Training center created successfully',
-            icon: 'success',
-            confirmButtonText: 'OK'
-          });
-          this.modalRef?.hide();
-          this.loadTrainingCenters();
-          this.processing = false;
-        },
-        error: (err) => {
-          this.errorMessages = err.error?.validationErrors || 
-                             [err.error?.businessErrorDescription || 'Failed to create training center'];
-          this.processing = false;
-        }
-      });
+    console.log(createNewTrainingCenterRequest);
+
+    // TODO: appel à l'API pour envoyer la requête
   }
 
-  viewCenterDetails(center: TrainingCenterResponse): void {
-    this.selectedCenter = center;
-    this.modalRef = this.modalService.show(this.detailsModal, { class: 'modal-lg' });
-  }
-
-  openEditModal(center: TrainingCenterResponse): void {
-    this.selectedCenter = center;
-    this.editForm.patchValue({
-      fullName: center.fullName,
-      acronym: center.acronym,
-      agreementNumber: center.agreementNumber,
-      startDateOfAgreement: center.startDateOfAgreement,
-      endDateOfAgreement: center.endDateOfAgreement,
-      centerPresentCandidateForCqp: center.centerPresentCandidateForCqp,
-      centerPresentCandidateForDqp: center.centerPresentCandidateForDqp,
-      division: center.division || '',
-      
-    });
-
-    this.errorMessages = [];
-    this.modalRef = this.modalService.show(this.editModal, { 
-      class: 'modal-lg',
-      ignoreBackdropClick: true
-    });
-  }
-
-  updateTrainingCenter(): void {
-    if (this.editForm.invalid) {
-      this.editForm.markAllAsTouched();
-      this.errorMessages = ['Please fill all required fields correctly'];
-      return;
-    }
-
-    this.processing = true;
-    const formValue = this.editForm.value;
-
-    const request: UpdateTrainingCenterRequest = {
-      fullName: formValue.fullName,
-      acronym: formValue.acronym,
-      agreementNumber: formValue.agreementNumber,
-      startDateOfAgreement: formValue.startDateOfAgreement,
-      endDateOfAgreement: formValue.endDateOfAgreement,
-      centerPresentCandidateForCqp: formValue.centerPresentCandidateForCqp,
-      centerPresentCandidateForDqp: formValue.centerPresentCandidateForDqp,
-      division: formValue.division,
-      fullAddress: formValue.fullAddress
-    };
-
-    this.trainingCenterService.updatePromoter({
-      fullname: this.selectedCenter?.fullName || '',
-      body: request
-    })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: () => {
-        Swal.fire('Success', 'Training center updated successfully', 'success');
-        this.modalRef?.hide();
-        this.loadTrainingCenters();
-      },
-      error: (err) => {
-        this.handleError(err, 'Failed to update training center');
-        this.processing = false;
-      }
-    });
-  }
-
-  confirmDelete(center: TrainingCenterResponse): void {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `Delete ${center.fullName}? This action cannot be undone.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire('Info', 'Delete functionality not implemented in API', 'info');
-      }
-    });
-  }
-
-  onAgreementFileChange(event: any) {
-    const file = event.target.files[0];
-    this.agreementFile = file ? file : null;
-  }
-
- uploadAgreementFile(agreementNumber: string) {
-  if (!this.agreementFile) return;
-
-  // Déduire le type de fichier ou le fixer à 'pdf'
-  const fileType = this.agreementFile.type || 'pdf';
-
-  this.trainingCenterService.uploadAgreementFile({
-    'agreement-number': agreementNumber,
-    fileType: fileType,
-    body: {
-      file: this.agreementFile
-    }
-  }).subscribe({
-    next: () => {
-      Swal.fire('Succès', 'Fichier d’agrément uploadé avec succès', 'success');
-      this.agreementFile = null;
-    },
-    error: (err) => {
-      Swal.fire('Erreur', 'Erreur lors de l’upload du fichier d’agrément', 'error');
-      this.agreementFile = null;
-    }
-  });
-}
-
-  get createFormControls() {
-    return this.createForm.controls;
-  }
-
-  get editFormControls() {
-    return this.editForm.controls;
+  getTrueOrFalse(value: string): boolean {
+    return value === 'Yes';
   }
 }

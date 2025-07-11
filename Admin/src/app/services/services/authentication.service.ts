@@ -11,13 +11,28 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { addCoursesToTrainingCenter } from '../fn/authentication/add-courses-to-training-center';
+import { AddCoursesToTrainingCenter$Params } from '../fn/authentication/add-courses-to-training-center';
+import { addSpecialitiesToTrainingCenter1 } from '../fn/authentication/add-specialities-to-training-center-1';
+import { AddSpecialitiesToTrainingCenter1$Params } from '../fn/authentication/add-specialities-to-training-center-1';
 import { authenticate } from '../fn/authentication/authenticate';
 import { Authenticate$Params } from '../fn/authentication/authenticate';
 import { AuthenticationResponse } from '../models/authentication-response';
 import { confirm } from '../fn/authentication/confirm';
 import { Confirm$Params } from '../fn/authentication/confirm';
+import { createAndLinkSpecialityToTrainingCenter } from '../fn/authentication/create-and-link-speciality-to-training-center';
+import { CreateAndLinkSpecialityToTrainingCenter$Params } from '../fn/authentication/create-and-link-speciality-to-training-center';
 import { createPromoter } from '../fn/authentication/create-promoter';
 import { CreatePromoter$Params } from '../fn/authentication/create-promoter';
+import { getall2 } from '../fn/authentication/getall-2';
+import { Getall2$Params } from '../fn/authentication/getall-2';
+import { getAllCoursesWithSpecialitiesPaged } from '../fn/authentication/get-all-courses-with-specialities-paged';
+import { GetAllCoursesWithSpecialitiesPaged$Params } from '../fn/authentication/get-all-courses-with-specialities-paged';
+import { getAllTrainingCenters1 } from '../fn/authentication/get-all-training-centers-1';
+import { GetAllTrainingCenters1$Params } from '../fn/authentication/get-all-training-centers-1';
+import { PageResponseCourseWithSpecialitiesResponse } from '../models/page-response-course-with-specialities-response';
+import { PageResponseSpecialityResponse } from '../models/page-response-speciality-response';
+import { PageResponseTrainingCenterResponse } from '../models/page-response-training-center-response';
 import { register } from '../fn/authentication/register';
 import { Register$Params } from '../fn/authentication/register';
 import { uploadPromoterFile } from '../fn/authentication/upload-promoter-file';
@@ -87,6 +102,56 @@ export class AuthenticationService extends BaseService {
     );
   }
 
+  /** Path part for operation `createAndLinkSpecialityToTrainingCenter()` */
+  static readonly CreateAndLinkSpecialityToTrainingCenterPath = '/auth/create-and-link';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `createAndLinkSpecialityToTrainingCenter()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  createAndLinkSpecialityToTrainingCenter$Response(params: CreateAndLinkSpecialityToTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return createAndLinkSpecialityToTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `createAndLinkSpecialityToTrainingCenter$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  createAndLinkSpecialityToTrainingCenter(params: CreateAndLinkSpecialityToTrainingCenter$Params, context?: HttpContext): Observable<string> {
+    return this.createAndLinkSpecialityToTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `addCoursesToTrainingCenter()` */
+  static readonly AddCoursesToTrainingCenterPath = '/auth/courses/{agreementNumber}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `addCoursesToTrainingCenter()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addCoursesToTrainingCenter$Response(params: AddCoursesToTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return addCoursesToTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `addCoursesToTrainingCenter$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addCoursesToTrainingCenter(params: AddCoursesToTrainingCenter$Params, context?: HttpContext): Observable<string> {
+    return this.addCoursesToTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
   /** Path part for operation `register()` */
   static readonly RegisterPath = '/auth/candidate-register';
 
@@ -138,6 +203,106 @@ export class AuthenticationService extends BaseService {
   authenticate(params: Authenticate$Params, context?: HttpContext): Observable<AuthenticationResponse> {
     return this.authenticate$Response(params, context).pipe(
       map((r: StrictHttpResponse<AuthenticationResponse>): AuthenticationResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `addSpecialitiesToTrainingCenter1()` */
+  static readonly AddSpecialitiesToTrainingCenter1Path = '/auth/link-to-center';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `addSpecialitiesToTrainingCenter1()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addSpecialitiesToTrainingCenter1$Response(params: AddSpecialitiesToTrainingCenter1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return addSpecialitiesToTrainingCenter1(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `addSpecialitiesToTrainingCenter1$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  addSpecialitiesToTrainingCenter1(params: AddSpecialitiesToTrainingCenter1$Params, context?: HttpContext): Observable<string> {
+    return this.addSpecialitiesToTrainingCenter1$Response(params, context).pipe(
+      map((r: StrictHttpResponse<string>): string => r.body)
+    );
+  }
+
+  /** Path part for operation `getAllTrainingCenters1()` */
+  static readonly GetAllTrainingCenters1Path = '/auth/get-all-trainingCenter';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAllTrainingCenters1()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllTrainingCenters1$Response(params?: GetAllTrainingCenters1$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseTrainingCenterResponse>> {
+    return getAllTrainingCenters1(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAllTrainingCenters1$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllTrainingCenters1(params?: GetAllTrainingCenters1$Params, context?: HttpContext): Observable<PageResponseTrainingCenterResponse> {
+    return this.getAllTrainingCenters1$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseTrainingCenterResponse>): PageResponseTrainingCenterResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getall2()` */
+  static readonly Getall2Path = '/auth/get-all-speciality';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getall2()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getall2$Response(params?: Getall2$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
+    return getall2(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getall2$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getall2(params?: Getall2$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
+    return this.getall2$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseSpecialityResponse>): PageResponseSpecialityResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getAllCoursesWithSpecialitiesPaged()` */
+  static readonly GetAllCoursesWithSpecialitiesPagedPath = '/auth/courses-with-specialities';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAllCoursesWithSpecialitiesPaged()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllCoursesWithSpecialitiesPaged$Response(params?: GetAllCoursesWithSpecialitiesPaged$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseCourseWithSpecialitiesResponse>> {
+    return getAllCoursesWithSpecialitiesPaged(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAllCoursesWithSpecialitiesPaged$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllCoursesWithSpecialitiesPaged(params?: GetAllCoursesWithSpecialitiesPaged$Params, context?: HttpContext): Observable<PageResponseCourseWithSpecialitiesResponse> {
+    return this.getAllCoursesWithSpecialitiesPaged$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseCourseWithSpecialitiesResponse>): PageResponseCourseWithSpecialitiesResponse => r.body)
     );
   }
 

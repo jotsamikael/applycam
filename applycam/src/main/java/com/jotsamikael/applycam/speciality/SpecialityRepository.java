@@ -17,7 +17,7 @@ public interface SpecialityRepository extends JpaRepository<Speciality, Long> {
 		    JOIN s.offersSpecialityList os
 		    WHERE os.trainingCenter.id = :trainingCenterId
 		""")
-		Page<Speciality> findAllByTrainingCenterId(@Param("trainingCenterId") Long trainingCenterId, Pageable pageable);
+		Page<Speciality> findAllByTrainingCenterIdAndIsActivedTrue(@Param("trainingCenterId") Long trainingCenterId, Pageable pageable);
 	
 	
 	Page<Speciality> findAllByCourseId( Long courseId,Pageable pageable);

@@ -9,10 +9,18 @@
                     <div class="col-md-6">
                         <h5 class="text-center">Login</h5>
                        
-        
-                        <div type="danger" class="alert alert-danger" *ngIf="this.errorMsg.length">
-                            
-                            <p *ngFor="let msg of this.errorMsg">{{msg}}</p>
+                        <!-- Messages d'erreur améliorés -->
+                        <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMsg.length > 0" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="bx bx-error-circle me-2" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong>Erreur de connexion</strong>
+                                    <ul class="mb-0 mt-1 ps-3">
+                                        <li *ngFor="let msg of errorMsg" class="small">{{ msg }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" (click)="clearErrors()" aria-label="Close"></button>
                         </div>
         
                         <div class="mb-3">
@@ -37,10 +45,14 @@
                             </label>
                         </div> -->
         
-                        <button (click)="loginFun()" type="button" class="btn btn-primary btn-lg mb-3">Login</button>
-                        <div class="spinner-grow text-info m-1" role="status" *ngIf="isProcessing">
-                            <span class="sr-only">Loading...</span>
-                        </div> &nbsp;
+                        <button (click)="loginFun()" type="button" class="btn btn-primary btn-lg mb-3" [disabled]="isProcessing">
+                            <span *ngIf="!isProcessing">Login</span>
+                            <span *ngIf="isProcessing">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Connexion en cours...
+                            </span>
+                        </button>
+                        
                         <p>Don't have an account <span class="text-primary pointable" [routerLink]="['/register']" [queryParams]="{ tab: 0 }">Signup as Candidate</span> or <span class="text-primary pointable" [routerLink]="['/register']" [queryParams]="{ tab: 1 }">Signup as Promoter</span> Account</p>
                     </div>
                 </div>

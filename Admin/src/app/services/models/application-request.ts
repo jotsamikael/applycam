@@ -6,6 +6,7 @@ export interface ApplicationRequest {
   academicLevel: string;
   amount: number;
   applicationRegion: string;
+  courseName?: string;
   dateOfBirth: string;
   departmentOfOrigin: string;
   email: string;

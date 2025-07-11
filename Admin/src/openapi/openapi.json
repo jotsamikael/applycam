@@ -238,6 +238,51 @@
         }
       }
     },
+    "/specialities/add-specialities/{sessionId}": {
+      "post": {
+        "tags": [
+          "speciality"
+        ],
+        "operationId": "addSpecialities",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/session/create": {
       "post": {
         "tags": [
@@ -298,6 +343,51 @@
         }
       }
     },
+    "/course-management/{sessionId}/add-courses": {
+      "post": {
+        "tags": [
+          "course"
+        ],
+        "operationId": "addCourses",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/course-management/create-course": {
       "post": {
         "tags": [
@@ -309,6 +399,36 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateCourseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/course-management/create-and-assign": {
+      "post": {
+        "tags": [
+          "course"
+        ],
+        "operationId": "createAndAssignCourseToActivitySector",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCourseAndAssignRequest"
               }
             }
           },
@@ -470,6 +590,90 @@
               "application/json": {
                 "schema": {
                   "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/create-and-link": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "createAndLinkSpecialityToTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSpecialityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/courses/{agreementNumber}": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "addCoursesToTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -653,6 +857,80 @@
               "application/json": {
                 "schema": {
                   "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activitySector-management/{activitySectorName}/add-courses": {
+      "post": {
+        "tags": [
+          "activity-sector"
+        ],
+        "operationId": "addMultipleCoursesToActivitySector",
+        "parameters": [
+          {
+            "name": "activitySectorName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activitySector-management/create": {
+      "post": {
+        "tags": [
+          "activity-sector"
+        ],
+        "operationId": "createActivitySector",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateActivitySectorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -938,17 +1216,31 @@
         }
       }
     },
-    "/specialities/add-speciality-totrainingCenter": {
+    "/specialities/link-to-center": {
       "patch": {
         "tags": [
           "speciality"
         ],
-        "operationId": "addSpeciality",
+        "operationId": "addSpecialitiesToTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SpecialityRequest"
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
               }
             }
           },
@@ -979,6 +1271,36 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AddSpecialityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/specialities/activate": {
+      "patch": {
+        "tags": [
+          "speciality"
+        ],
+        "operationId": "activateSpeciality",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateSpecialityRequest"
               }
             }
           },
@@ -1407,6 +1729,50 @@
         }
       }
     },
+    "/auth/link-to-center": {
+      "patch": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "addSpecialitiesToTrainingCenter_1",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/assignment/update-Center": {
       "patch": {
         "tags": [
@@ -1593,6 +1959,69 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/activitySector-management/update/{name}": {
+      "patch": {
+        "tags": [
+          "activity-sector"
+        ],
+        "operationId": "updateActivitySector",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateActivitySectorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activitySector-management/toggle/{name}": {
+      "patch": {
+        "tags": [
+          "activity-sector"
+        ],
+        "operationId": "toggleActivitySector",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1941,6 +2370,39 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StaffResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/specialities/training-center/offered-specialities-by-course/{agreementNumber}": {
+      "get": {
+        "tags": [
+          "speciality"
+        ],
+        "operationId": "getCoursesAndSpecialitiesForCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CourseWithSpecialitiesResponse"
+                  }
                 }
               }
             }
@@ -3159,6 +3621,186 @@
         }
       }
     },
+    "/auth/get-all-trainingCenter": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "getAllTrainingCenters_1",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "fullName"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTrainingCenterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/get-all-speciality": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "getall_2",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "name"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseSpecialityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/courses-with-specialities": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "getAllCoursesWithSpecialitiesPaged",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "name"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseCourseWithSpecialitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/activate-account": {
       "get": {
         "tags": [
@@ -3426,12 +4068,228 @@
         }
       }
     },
+    "/activitySector-management/all": {
+      "get": {
+        "tags": [
+          "activity-sector"
+        ],
+        "operationId": "findAllActivitySectors",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "createdDate"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseActivitySectorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/specialities/{agreementNumber}/remove-specialities": {
+      "delete": {
+        "tags": [
+          "speciality"
+        ],
+        "operationId": "removeSpecialities",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/specialities/specialities/{agreementNumber}": {
+      "delete": {
+        "tags": [
+          "speciality"
+        ],
+        "operationId": "removeSpecialitiesFromTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/payment/delete/{id}": {
       "delete": {
         "tags": [
           "payment"
         ],
         "operationId": "deletePayment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/course-management/courses/{agreementNumber}": {
+      "delete": {
+        "tags": [
+          "course"
+        ],
+        "operationId": "removeCoursesFromTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activitySector-management/delete/{id}": {
+      "delete": {
+        "tags": [
+          "activity-sector"
+        ],
+        "operationId": "delete",
         "parameters": [
           {
             "name": "id",
@@ -3631,7 +4489,8 @@
       "CreateCourseRequest": {
         "required": [
           "code",
-          "name"
+          "name",
+          "priceForCqp"
         ],
         "type": "object",
         "properties": {
@@ -3644,6 +4503,38 @@
           "description": {
             "maxLength": 500,
             "minLength": 0,
+            "type": "string"
+          },
+          "priceForCqp": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "CreateCourseAndAssignRequest": {
+        "required": [
+          "activitySectorName",
+          "code",
+          "description",
+          "name",
+          "priceForCqp"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "priceForCqp": {
+            "type": "number",
+            "format": "double"
+          },
+          "activitySectorName": {
             "type": "string"
           }
         }
@@ -3674,11 +4565,11 @@
           "trainingCenterAgr": {
             "type": "string"
           },
-          "xcoor": {
+          "ycoor": {
             "type": "number",
             "format": "double"
           },
-          "ycoor": {
+          "xcoor": {
             "type": "number",
             "format": "double"
           }
@@ -3950,6 +4841,9 @@
           "dateOfBirth": {
             "type": "string"
           },
+          "courseName": {
+            "type": "string"
+          },
           "examType": {
             "type": "string"
           },
@@ -4004,10 +4898,30 @@
             "type": "integer",
             "format": "int32"
           },
-          "sessionYear": {
+          "speciality": {
             "type": "string"
           },
-          "speciality": {
+          "sessionYear": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateActivitySectorRequest": {
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 500,
+            "minLength": 0,
             "type": "string"
           }
         }
@@ -4046,10 +4960,10 @@
           "fullAddress": {
             "type": "string"
           },
-          "centerPresentCandidateForCqp": {
+          "centerPresentCandidateForDqp": {
             "type": "boolean"
           },
-          "centerPresentCandidateForDqp": {
+          "centerPresentCandidateForCqp": {
             "type": "boolean"
           }
         }
@@ -4081,6 +4995,7 @@
       },
       "UpdateSpecialityRequest": {
         "required": [
+          "amount",
           "code",
           "description",
           "examType",
@@ -4104,26 +5019,10 @@
           },
           "examType": {
             "type": "string"
-          }
-        }
-      },
-      "SpecialityRequest": {
-        "required": [
-          "code",
-          "name",
-          "trainingCenterId"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
           },
-          "code": {
-            "type": "string"
-          },
-          "trainingCenterId": {
-            "type": "integer",
-            "format": "int64"
+          "amount": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -4139,6 +5038,25 @@
           },
           "specialityName": {
             "type": "string"
+          }
+        }
+      },
+      "ActivateSpecialityRequest": {
+        "type": "object",
+        "properties": {
+          "dqpPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "specialityName": {
+            "type": "string"
+          },
+          "examType": {
+            "type": "string"
+          },
+          "examDate": {
+            "type": "string",
+            "format": "date"
           }
         }
       },
@@ -4223,7 +5141,8 @@
         "required": [
           "code",
           "id",
-          "name"
+          "name",
+          "priceForCqp"
         ],
         "type": "object",
         "properties": {
@@ -4236,6 +5155,10 @@
           },
           "code": {
             "type": "string"
+          },
+          "priceForCqp": {
+            "type": "number",
+            "format": "double"
           },
           "description": {
             "maxLength": 500,
@@ -4345,11 +5268,11 @@
           "town": {
             "type": "string"
           },
-          "xcoor": {
+          "ycoor": {
             "type": "number",
             "format": "double"
           },
-          "ycoor": {
+          "xcoor": {
             "type": "number",
             "format": "double"
           }
@@ -4451,11 +5374,11 @@
           "town": {
             "type": "string"
           },
-          "xcoor": {
+          "ycoor": {
             "type": "number",
             "format": "double"
           },
-          "ycoor": {
+          "xcoor": {
             "type": "number",
             "format": "double"
           },
@@ -4561,10 +5484,10 @@
               "PENDING"
             ]
           },
-          "centerPresentCandidateForCqp": {
+          "centerPresentCandidateForDqp": {
             "type": "boolean"
           },
-          "centerPresentCandidateForDqp": {
+          "centerPresentCandidateForCqp": {
             "type": "boolean"
           }
         }
@@ -4728,6 +5651,49 @@
           }
         }
       },
+      "CourseWithSpecialitiesResponse": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "courseName": {
+            "type": "string"
+          },
+          "specialities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecialityResponse"
+            }
+          }
+        }
+      },
+      "SpecialityResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "examType": {
+            "type": "string"
+          },
+          "paymentAmount": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "PageResponseSpecialityResponse": {
         "type": "object",
         "properties": {
@@ -4758,27 +5724,6 @@
           },
           "last": {
             "type": "boolean"
-          }
-        }
-      },
-      "SpecialityResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "examType": {
-            "type": "string"
           }
         }
       },
@@ -5116,6 +6061,55 @@
           }
         }
       },
+      "Application": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "applicationYear": {
+            "type": "string"
+          },
+          "applicationRegion": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "READYTOPAY",
+              "DRAFT",
+              "PAID",
+              "VALIDATED",
+              "INCOMPLETED",
+              "REJECTED",
+              "PENDING"
+            ]
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
       "CampusResponse": {
         "type": "object",
         "properties": {
@@ -5135,13 +6129,69 @@
           "trainingCenterCampus": {
             "$ref": "#/components/schemas/TrainingCenter"
           },
-          "xcoor": {
-            "type": "number",
-            "format": "double"
-          },
           "ycoor": {
             "type": "number",
             "format": "double"
+          },
+          "xcoor": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "priceForCqp": {
+            "type": "number",
+            "format": "double"
+          },
+          "specialityList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Speciality"
+            }
+          },
+          "trainingCenterList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrainingCenter"
+            }
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
           }
         }
       },
@@ -5175,6 +6225,120 @@
           "endYear": {
             "type": "string",
             "format": "date"
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Speciality": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "examType": {
+            "type": "string"
+          },
+          "dqpPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "course": {
+            "$ref": "#/components/schemas/Course"
+          },
+          "offersSpecialityList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OffersSpeciality"
+            }
+          },
+          "applicationList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Application"
+            }
+          },
+          "subjectList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Subject"
+            }
+          },
+          "actived": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Subject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastModifiedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "specialityList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Speciality"
+            }
           },
           "actived": {
             "type": "boolean"
@@ -5267,6 +6431,12 @@
           "status": {
             "$ref": "#/components/schemas/TrainingCenterStatusHistory"
           },
+          "courseList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Course"
+            }
+          },
           "offersSpecialityList": {
             "type": "array",
             "items": {
@@ -5288,10 +6458,10 @@
           "internalRegulationFileUrl": {
             "type": "string"
           },
-          "signatureLetterUrl": {
+          "localisationFileUrl": {
             "type": "string"
           },
-          "localisationFileUrl": {
+          "signatureLetterUrl": {
             "type": "string"
           },
           "actived": {
@@ -5358,6 +6528,39 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CampusResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageResponseCourseWithSpecialitiesResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseWithSpecialitiesResponse"
             }
           },
           "number": {
@@ -5459,7 +6662,16 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "READYTOPAY",
+              "DRAFT",
+              "PAID",
+              "VALIDATED",
+              "INCOMPLETED",
+              "REJECTED",
+              "PENDING"
+            ]
           },
           "paymentMethod": {
             "type": "string"
@@ -5467,6 +6679,13 @@
           "amount": {
             "type": "number",
             "format": "double"
+          },
+          "examType": {
+            "type": "string"
+          },
+          "examDate": {
+            "type": "string",
+            "format": "date"
           }
         }
       },
@@ -5477,6 +6696,57 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ApplicationResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ActivitySectorResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseActivitySectorResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivitySectorResponse"
             }
           },
           "number": {

@@ -51,12 +51,14 @@ public class CandidateService {
     }
 
     public String updateProfile(String email, CandidateRequest request, Authentication connectedUser) {
+        //start by getting the candidate by email or throw an exception
         Candidate candidate = candidateRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No candidate with found email"+ email));
         
-        if (!candidate.isActived()) {
+        if (!candidate.isActived() ) {
         	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Candidate cannot be updated.");
         }
 
+        //modify the candidate object using the request data
         candidate.setFirstname(request.firstname());
         candidate.setLastname(request.lastname());
         candidate.setDateOfBirth(request.dateOfBirth());
@@ -73,12 +75,15 @@ public class CandidateService {
         candidate.setNationality(request.nationality());
         candidate.setTownOfResidence(request.townOfResidence());
 
+        //get connected user and date time for audit purpose
         User user = ((User) connectedUser.getPrincipal());
         candidate.setLastModifiedDate(LocalDateTime.now());
         candidate.setLastModifiedBy(user.getIdUser());
 
+        //save the modified candidate object
         candidateRepository.save(candidate);
 
+        //return
         return email;
     }
     public PageResponse<CandidateResponse> getCandidatesOfConnectedPromoter(Authentication connectedUser, int year, int offset, int pageSize, String field, boolean order) {

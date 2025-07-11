@@ -208,19 +208,19 @@ public class TrainingCenterService {
 	        .findByAgreementNumber(agreementNumber)
 	        .orElseThrow(() -> new EntityNotFoundException("Training center not found: " + agreementNumber));
 
-            Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
-            TrainingCenterStatusHistory statusHistory;
-    
-            if (optionalHistory.isPresent()) {
-                // Mise à jour de l'historique existant
-                statusHistory = optionalHistory.get();
-            } else {
-                // Création d’un nouvel historique s’il n’existe pas encore
-                statusHistory = new TrainingCenterStatusHistory();
-                statusHistory.setTrainingCenter(trainingCenter);
-                statusHistory.setCreatedBy(user.getIdUser());
-                statusHistory.setCreatedDate(LocalDateTime.now());
-            }
+	    Optional<TrainingCenterStatusHistory> optionalHistory = trainingCenterStatusHistoryRepository.findByTrainingCenter(trainingCenter);
+	    TrainingCenterStatusHistory statusHistory;
+
+	    if (optionalHistory.isPresent()) {
+	        // Mise à jour de l'historique existant
+	        statusHistory = optionalHistory.get();
+	    } else {
+	        // Création d’un nouvel historique s’il n’existe pas encore
+	        statusHistory = new TrainingCenterStatusHistory();
+	        statusHistory.setTrainingCenter(trainingCenter);
+	        statusHistory.setCreatedBy(user.getIdUser());
+	        statusHistory.setCreatedDate(LocalDateTime.now());
+	    }
 	    statusHistory.setStatus(ContentStatus.VALIDATED);
 	    statusHistory.setActived(true);
 	    statusHistory.setLastModifiedBy(user.getIdUser());

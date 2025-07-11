@@ -17,6 +17,10 @@ import { StatComponent } from './stat/stat.component';
     UIModule,
     WidgetModule
   ],
+  exports: [  // ✅ Ajoute ceci
+    PageTitleComponent,
+    StatComponent
+  ]
 })
 
 export class SharedModule { }

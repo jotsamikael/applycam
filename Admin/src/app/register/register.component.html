@@ -3,892 +3,865 @@
   <img src="../../assets/images/candidate-register.jpg" alt="Image animée" />
 </div> -->
 
-  <div class="container-fluid">
+<div class="container-fluid">
     
-    <div class="container pt-4">  
-    <mat-tab-group dynamicHeight [(selectedIndex)]="selectedTabIndex">
-      <!-- Candidate Tab -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <i class="bx bxs-graduation"></i>
-          Candidat
-        </ng-template>
+  <div class="container pt-4">  
+  <mat-tab-group dynamicHeight [(selectedIndex)]="selectedTabIndex">
+    <!-- Candidate Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <i class="bx bxs-graduation"></i>
+        Candidat
+      </ng-template>
 
-        <div class="row align-items-center mt-5">
-          <div class="col-md-7 order-1 order-md-2">
-            <div *ngIf="errorMessages.length" class="alert alert-danger">
-              <p *ngFor="let msg of errorMessages">{{msg}}</p>
-            </div>
-
-            <div class="card p-4">
-              <h2 class="text-2xl font-bold mb-2">Inscription Candidat</h2>
-              <p class="text-gray-600 mb-4">Complétez les étapes pour votre inscription</p>
-
-              <!-- Step Indicator -->
-             <div class="step-indicator">
-  <div *ngFor="let step of candidateSteps; let i = index" class="step-container">
-    <div class="step" [class.active]="currentStepCandidate === i" [class.completed]="currentStepCandidate > i">
-      <div class="step-number">{{i + 1}}</div>
-      <div class="step-label">{{step}}</div>
-    </div>
-    <div *ngIf="i < candidateSteps.length - 1" class="step-connector"></div>
-  </div>
-</div>
-
-              <!-- Form -->
-              <form [formGroup]="candidateForm" (ngSubmit)="registerCandidate()">
-                <!-- Step 1: Account Creation -->
-                <div *ngIf="currentStepCandidate === 0" class="space-y-4 mt-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Nom <span class="text-danger">*</span></label>
-                      <input formControlName="lastName" class="form-control" required>
-                      <small *ngIf="candidateForm.get('lastName')?.touched && candidateForm.get('lastName')?.invalid" 
-                             class="text-danger">
-                        Le nom est requis
-                      </small>
-                    </div>
-                    <div>
-                      <label class="form-label">Prénoms <span class="text-danger">*</span></label>
-                      <input formControlName="firstName" class="form-control" required>
-                      <small *ngIf="candidateForm.get('firstName')?.touched && candidateForm.get('firstName')?.invalid" 
-                             class="text-danger">
-                        Les prénoms sont requis
-                      </small>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Email <span class="text-danger">*</span></label>
-                      <input formControlName="email" type="email" class="form-control" required>
-                      <small *ngIf="candidateForm.get('email')?.touched && candidateForm.get('email')?.invalid" 
-                             class="text-danger">
-                        Email invalide
-                      </small>
-                    </div>
-                    <div>
-                      <label class="form-label">Téléphone <span class="text-danger">*</span></label>
-                      <input formControlName="phoneNumber" class="form-control" required>
-                      <small *ngIf="candidateForm.get('phoneNumber')?.touched && candidateForm.get('phoneNumber')?.invalid" 
-                             class="text-danger">
-                        Numéro de téléphone invalide
-                      </small>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Mot de passe <span class="text-danger">*</span></label>
-                      <input formControlName="password" type="password" class="form-control" required>
-                      <small *ngIf="candidateForm.get('password')?.touched && candidateForm.get('password')?.invalid" 
-                             class="text-danger">
-                        <div *ngIf="candidateForm.get('password')?.errors?.required">Mot de passe requis</div>
-                        <div *ngIf="candidateForm.get('password')?.errors?.minlength">Minimum 8 caractères</div>
-                        <div *ngIf="candidateForm.get('password')?.errors?.pattern">
-                          Doit contenir au moins une majuscule, une minuscule et un chiffre
-                        </div>
-                      </small>
-                    </div>
-                    <div>
-                      <label class="form-label">Confirmation <span class="text-danger">*</span></label>
-                      <input formControlName="confirmPassword" type="password" class="form-control" required>
-                      <small *ngIf="candidateForm.get('confirmPassword')?.touched && 
-                                  candidateForm.get('confirmPassword')?.invalid" 
-                             class="text-danger">
-                        <div *ngIf="candidateForm.get('confirmPassword')?.errors?.required">
-                          Confirmation requise
-                        </div>
-                        <div *ngIf="candidateForm.get('confirmPassword')?.errors?.passwordMismatch">
-                          Les mots de passe ne correspondent pas
-                        </div>
-                      </small>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="form-label">Langue préférée</label>
-                    <select formControlName="preferredLanguage" class="form-select">
-                      <option value="fr">Français</option>
-                      <option value="en">Anglais</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Step 2: Personal Information -->
-                <div *ngIf="currentStepCandidate === 1" class="space-y-4 mt-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Sexe <span class="text-danger">*</span></label>
-                      <select formControlName="sex" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option value="M">Masculin</option>
-                        <option value="F">Féminin</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
-                      <input formControlName="dateOfBirth" type="date" class="form-control" required>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Lieu de naissance (Ville) <span class="text-danger">*</span></label>
-                      <input formControlName="birthCity" class="form-control" required>
-                    </div>
-                    <div>
-                      <label class="form-label">Département de naissance</label>
-                      <input formControlName="birthDepartment" class="form-control">
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Région</label>
-                      <select formControlName="region" class="form-select">
-                        <option value="">Sélectionner</option>
-                        <option value="Adamaoua">Adamaoua</option>
-                        <option value="Centre">Centre</option>
-                        <option value="Est">Est</option>
-                        <option value="Extrême-Nord">Extrême-Nord</option>
-                        <option value="Littoral">Littoral</option>
-                        <option value="Nord">Nord</option>
-                        <option value="Nord-Ouest">Nord-Ouest</option>
-                        <option value="Ouest">Ouest</option>
-                        <option value="Sud">Sud</option>
-                        <option value="Sud-Ouest">Sud-Ouest</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Département</label>
-                      <select formControlName="departement" class="form-select" [disabled]="!candidateForm.value.region">
-                        <option value="">Sélectionnez d'abord une région</option>
-                        <option *ngFor="let dept of departmentsByRegion[candidateForm.value.region]" [value]="dept">
-                          {{dept}}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Nationalité <span class="text-danger">*</span></label>
-                      <select formControlName="nationality" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option *ngFor="let country of nationalities" [value]="country">{{country}}</option>
-                      </select>
-                    </div>
-                    
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Situation matrimoniale</label>
-                      <select formControlName="maritalStatus" class="form-select">
-                        <option value="">Sélectionner</option>
-                        <option value="single">Célibataire</option>
-                        <option value="married">Marié(e)</option>
-                        <option value="divorced">Divorcé(e)</option>
-                        <option value="widowed">Veuf/Veuve</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Nombre d'enfants</label>
-                      <input formControlName="childrenCount" type="number" min="0" class="form-control">
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="form-label">Langue d'enseignement <span class="text-danger">*</span></label>
-                    <select formControlName="teachingLanguage" class="form-select" required>
-                      <option value="fr">Français</option>
-                      <option value="en">Anglais</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Step 3: Exam Information -->
-                <div *ngIf="currentStepCandidate === 2" class="space-y-4 mt-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Première candidature ? <span class="text-danger">*</span></label>
-                      <select formControlName="isFirstAttempt" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option value="true">Oui</option>
-                        <option value="false">Non</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Type d'examen <span class="text-danger">*</span></label>
-                      <select formControlName="examType" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option value="CQP">CQP</option>
-                        <option value="DQP">DQP</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="form-label">Filière souhaitée <span class="text-danger">*</span></label>
-                    <select formControlName="desiredField" class="form-select" required>
-                      <option value="">Sélectionner</option>
-                      <option *ngFor="let field of fieldsByExamType[candidateForm.value.examType]" [value]="field">
-                        {{field}}
-                      </option>
-                    </select>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Centre d'examen <span class="text-danger">*</span></label>
-                      <select formControlName="examCenter" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option *ngFor="let center of examCenters" [value]="center.id">
-                          {{center.name}} - {{center.region}}
-                        </option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Session d'examen <span class="text-danger">*</span></label>
-                      <input formControlName="examSession" type="month" class="form-control" required>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="form-label">Mode de formation <span class="text-danger">*</span></label>
-                      <select formControlName="trainingMode" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option value="presentiel">Présentiel</option>
-                        <option value="alternance">Alternance</option>
-                        <option value="continue">Formation Continue</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="form-label">Source de financement <span class="text-danger">*</span></label>
-                      <select formControlName="fundingSource" class="form-select" required>
-                        <option value="">Sélectionner</option>
-                        <option value="personal">Personnel</option>
-                        <option value="fne">FNE</option>
-                        <option value="company">Entreprise</option>
-                        <option value="other">Autre</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Step 4: Documents Upload -->
-                <div *ngIf="currentStepCandidate === 3" class="space-y-4 mt-4">
-                  <div class="border rounded p-4">
-                    <label class="form-label">Acte de naissance (PDF/Image) <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control mt-2" 
-                           (change)="onCandidateFileChange($event, 'birthCertificate')"
-                           accept=".pdf,.jpg,.jpeg,.png" required>
-                    <small class="text-muted">Taille maximale : 5 Mo</small>
-                  </div>
-
-                  <div class="border rounded p-4">
-                    <label class="form-label">Pièce d'identité (CNI/Passeport) <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control mt-2" 
-                           (change)="onCandidateFileChange($event, 'identityDocument')"
-                           accept=".pdf,.jpg,.jpeg,.png" required>
-                  </div>
-
-                  <div class="border rounded p-4">
-                    <label class="form-label">Diplôme/Attestation <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control mt-2" 
-                           (change)="onCandidateFileChange($event, 'diploma')"
-                           accept=".pdf,.jpg,.jpeg,.png" required>
-                  </div>
-
-                  <div class="border rounded p-4">
-                    <label class="form-label">Photos d'identité 4x4 (2 photos) <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control mt-2" 
-                           (change)="onCandidateFileChange($event, 'identityPhotos')"
-                           accept=".jpg,.jpeg,.png" multiple required>
-                  </div>
-
-                  <div class="border rounded p-4">
-                    <label class="form-label">Justificatif première candidature</label>
-                    <input type="file" class="form-control mt-2" 
-                           (change)="onCandidateFileChange($event, 'firstAttemptProof')"
-                           accept=".pdf,.jpg,.jpeg,.png">
-                  </div>
-
-                  <div class="border rounded p-4">
-                    <label class="form-label">Lettre de motivation (facultative)</label>
-                    <input type="file" class="form-control mt-2" 
-                           (change)="onCandidateFileChange($event, 'motivationLetter')"
-                           accept=".pdf">
-                  </div>
-                </div>
-
-                <!-- Step 5: Verification and Payment -->
-                <div *ngIf="currentStepCandidate === 4" class="space-y-4 mt-4">
-                  <div class="bg-blue-50 p-4 rounded">
-                    <h3 class="font-medium text-blue-800">Vérification des informations</h3>
-                    
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <!-- Personal Info -->
-                      <div class="space-y-2">
-                        <h4 class="font-semibold text-blue-700 border-b pb-1">Informations personnelles</h4>
-                        <div class="grid grid-cols-2 gap-2">
-                          <div class="font-medium">Nom complet:</div>
-                          <div>{{candidateForm.value.lastName}} {{candidateForm.value.firstName}}</div>
-                          
-                          <div class="font-medium">Email:</div>
-                          <div>{{candidateForm.value.email}}</div>
-                          
-                          <div class="font-medium">Téléphone:</div>
-                          <div>{{candidateForm.value.phoneNumber}}</div>
-                          
-                          <div class="font-medium">Date de naissance:</div>
-                          <div>{{candidateForm.value.dateOfBirth | date:'dd/MM/yyyy'}}</div>
-                          
-                          <div class="font-medium">Lieu de naissance:</div>
-                          <div>{{candidateForm.value.birthCity}}, {{candidateForm.value.birthDepartment}}</div>
-                        </div>
-                      </div>
-
-                      <!-- Exam Info -->
-                      <div class="space-y-2">
-                        <h4 class="font-semibold text-blue-700 border-b pb-1">Informations d'examen</h4>
-                        <div class="grid grid-cols-2 gap-2">
-                          <div class="font-medium">Type d'examen:</div>
-                          <div>{{candidateForm.value.examType}}</div>
-                          
-                          <div class="font-medium">Filière:</div>
-                          <div>{{candidateForm.value.desiredField}}</div>
-                          
-                          <div class="font-medium">Centre d'examen:</div>
-                          <div>{{getExamCenterName(candidateForm.value.examCenter) || 'Non spécifié'}}</div>
-                          
-                          <div class="font-medium">Session:</div>
-                          <div>{{candidateForm.value.examSession | date:'MM/yyyy'}}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Documents -->
-                    <div class="mt-4">
-                      <h4 class="font-semibold text-blue-700 border-b pb-1">Documents</h4>
-                      <div class="grid grid-cols-2 gap-2">
-                        <div class="font-medium">Acte de naissance:</div>
-                        <div>{{candidateForm.value.birthCertificate ? '✓' : '✗'}}</div>
-                        
-                        <div class="font-medium">Pièce d'identité:</div>
-                        <div>{{candidateForm.value.identityDocument ? '✓' : '✗'}}</div>
-                        
-                        <div class="font-medium">Diplôme/Attestation:</div>
-                        <div>{{candidateForm.value.diploma ? '✓' : '✗'}}</div>
-                        
-                        <div class="font-medium">Photos d'identité:</div>
-                        <div>{{candidateForm.value.identityPhotos ? '✓' : '✗'}}</div>
-                      </div>
-                    </div>
-
-                    <!-- Payment -->
-                    <div class="mt-4">
-                      <h4 class="font-semibold text-blue-700">Frais d'inscription</h4>
-                      <div class="text-xl font-bold mt-2">
-                        Montant total: {{calculateFees() | currency:'XAF':'symbol':'1.0-0'}}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-4">
-                    <mat-checkbox formControlName="termsAccepted" required>
-                      J'accepte les conditions d'utilisation
-                    </mat-checkbox>
-                  </div>
-
-                  <div class="mt-4">
-                    <h4 class="font-semibold">Méthode de paiement</h4>
-                    <div class="flex flex-wrap gap-4 mt-2">
-                      <div *ngFor="let method of paymentMethods" class="flex items-center">
-                        <input type="radio" [id]="method.id" name="paymentMethod" 
-                               [value]="method.value" [(ngModel)]="selectedPaymentMethod">
-                        <label [for]="method.id" class="flex items-center cursor-pointer">
-                          <img [src]="method.logo" [alt]="method.label" class="h-6 mr-2">
-                          {{method.label}}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-4">
-                    <h4 class="font-semibold">Statut du candidat</h4>
-                    <div class="text-lg font-medium text-blue-600">
-                      {{candidateForm.value.status || 'En attente de validation'}}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Navigation -->
-                <div class="flex justify-between mt-6">
-                  <button *ngIf="currentStepCandidate > 0" type="button" 
-                    class="btn btn-outline-primary" (click)="prevCandidateStep()">
-                    Précédent
-                  </button>
-                  <div *ngIf="currentStepCandidate === 0"></div>
-
-                  <button *ngIf="currentStepCandidate < candidateSteps.length - 1" type="button"
-                    class="btn btn-primary" (click)="nextCandidateStep()" 
-                    [disabled]="!isCurrentStepValid()">
-                    Suivant
-                  </button>
-
-                  <button *ngIf="currentStepCandidate === candidateSteps.length - 1" type="button"
-                    class="btn btn-success" (click)="processPayment()" 
-                    [disabled]="processing || candidateForm.invalid || !candidateForm.value.termsAccepted">
-                    <span *ngIf="!processing">Payer et finaliser</span>
-                    <span *ngIf="processing">En cours...</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </mat-tab>
-
-      <!-- Promoter Tab -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <i class="bx bx-male"></i>
-          Promoteur
-        </ng-template>
-
-        <div class="row align-items-center mt-5">
+      <div class="row align-items-center mt-5">
         <div class="col-md-7 order-1 order-md-2">
           <div *ngIf="errorMessages.length" class="alert alert-danger">
             <p *ngFor="let msg of errorMessages">{{msg}}</p>
           </div>
 
-            <div class="card p-4">
-              <h2 class="text-2xl font-bold mb-2">Inscription Promoteur</h2>
-              <p class="text-gray-600 mb-4">Complétez les étapes pour votre inscription</p>
+          <div class="card p-4">
+            <h2 class="text-2xl font-bold mb-2">Inscription Candidat</h2>
+            <p class="text-gray-600 mb-4">Complétez le formulaire pour votre inscription</p>
 
-             <!-- Step Indicator -->
+            <form [formGroup]="candidateForm" (ngSubmit)="registerCandidate()">
+              <!-- Prénom -->
+              <div class="mb-3">
+                <label class="form-label">Prénom <span class="text-danger">*</span></label>
+                <input formControlName="firstname" class="form-control" required>
+                <small *ngIf="candidateForm.get('firstname')?.touched && candidateForm.get('firstname')?.invalid" class="text-danger">Le prénom est requis</small>
+              </div>
+              <!-- Nom -->
+              <div class="mb-3">
+                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                <input formControlName="lastname" class="form-control" required>
+                <small *ngIf="candidateForm.get('lastname')?.touched && candidateForm.get('lastname')?.invalid" class="text-danger">Le nom est requis</small>
+              </div>
+              <!-- Email -->
+              <div class="mb-3">
+                <label class="form-label">Email <span class="text-danger">*</span></label>
+                <input formControlName="email" type="email" class="form-control" required>
+                <small *ngIf="candidateForm.get('email')?.touched && candidateForm.get('email')?.invalid" class="text-danger">Email invalide</small>
+              </div>
+              <!-- Téléphone -->
+              <div class="mb-3">
+                <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                <input formControlName="phoneNumber" class="form-control" required>
+                <small *ngIf="candidateForm.get('phoneNumber')?.touched && candidateForm.get('phoneNumber')?.invalid" class="text-danger">Numéro de téléphone invalide</small>
+              </div>
+              <!-- Sexe -->
+              <div class="mb-3">
+                <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                <select formControlName="sex" class="form-select" required>
+                  <option value="">Sélectionner</option>
+                  <option value="M">Masculin</option>
+                  <option value="F">Féminin</option>
+                  <option value="O">Autre</option>
+                </select>
+                <small *ngIf="candidateForm.get('sex')?.touched && candidateForm.get('sex')?.invalid" class="text-danger">Le sexe est requis</small>
+              </div>
+              <!-- Date de naissance -->
+              <div class="mb-3">
+                <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                <input formControlName="dateOfBirth" type="date" class="form-control" required>
+                <small *ngIf="candidateForm.get('dateOfBirth')?.touched && candidateForm.get('dateOfBirth')?.invalid" class="text-danger">La date de naissance est requise</small>
+              </div>
+              <!-- Lieu de naissance -->
+              <div class="mb-3">
+                <label class="form-label">Lieu de naissance <span class="text-danger">*</span></label>
+                <input formControlName="placeOfBirth" class="form-control" placeholder="Ex: Douala, Yaoundé..." required>
+                <small *ngIf="candidateForm.get('placeOfBirth')?.touched && candidateForm.get('placeOfBirth')?.invalid" class="text-danger">Le lieu de naissance est requis</small>
+              </div>
+              <!-- Mot de passe -->
+              <div class="mb-3">
+                <label class="form-label">Mot de passe <span class="text-danger">*</span></label>
+                <input formControlName="password" type="password" class="form-control" required>
+                <small *ngIf="candidateForm.get('password')?.touched && candidateForm.get('password')?.invalid" class="text-danger">
+                  <div *ngIf="candidateForm.get('password')?.errors?.required">Mot de passe requis</div>
+                  <div *ngIf="candidateForm.get('password')?.errors?.minlength">Minimum 8 caractères</div>
+                  <div *ngIf="candidateForm.get('password')?.errors?.pattern">Majuscule, minuscule et chiffre requis</div>
+                </small>
+              </div>
+              <!-- Confirmation -->
+              <div class="mb-3">
+                <label class="form-label">Confirmation <span class="text-danger">*</span></label>
+                <input formControlName="confirmPassword" type="password" class="form-control" required>
+                <small *ngIf="candidateForm.get('confirmPassword')?.touched && candidateForm.get('confirmPassword')?.invalid" class="text-danger">
+                  <div *ngIf="candidateForm.get('confirmPassword')?.errors?.required">Confirmation requise</div>
+                  <div *ngIf="candidateForm.get('confirmPassword')?.errors?.passwordMismatch">Les mots de passe ne correspondent pas</div>
+                </small>
+              </div>
+              <!-- Langue -->
+              <div class="mb-3">
+                <label class="form-label">Langue <span class="text-danger">*</span></label>
+                <select formControlName="language" class="form-select" required>
+                  <option value="fr">Français</option>
+                  <option value="en">Anglais</option>
+                </select>
+              </div>
+              <!-- Année de début -->
+              <div class="mb-3">
+                <label class="form-label">Année de début <span class="text-danger">*</span></label>
+                <input formControlName="startYear" type="text" class="form-control" required placeholder="ex: 2024">
+              </div>
+              <!-- Année de fin -->
+              <div class="mb-3">
+                <label class="form-label">Année de fin <span class="text-danger">*</span></label>
+                <input formControlName="endYear" type="text" class="form-control" required placeholder="ex: 2025">
+              </div>
+              <!-- Centre de formation avec recherche autocomplete -->
+              <div class="mb-3">
+                <label class="form-label">Centre de formation <span class="text-danger">*</span></label>
+                <input type="text"
+                       class="form-control"
+                       placeholder="Rechercher un centre..."
+                       [formControl]="trainingCenterCtrl"
+                       [matAutocomplete]="auto"
+                       required>
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onTrainingCenterSelected($event)">
+                  <mat-option *ngFor="let center of filteredTrainingCenters | async" [value]="center.fullName">
+                    {{center.fullName}} ({{center.acronym}})
+                  </mat-option>
+                </mat-autocomplete>
+                <input type="hidden" formControlName="trainingCenterAcronym">
+              </div>
+              <!-- Bouton unique -->
+              <div class="mb-3 text-center">
+                <button type="submit" class="btn btn-success" [disabled]="processing || candidateForm.invalid">
+                  <span *ngIf="!processing">S'inscrire</span>
+                  <span *ngIf="processing">En cours...</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Promoter Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <i class="bx bx-male"></i>
+        Promoteur
+      </ng-template>
+
+      <div class="row align-items-center mt-5">
+      <div class="col-md-7 order-1 order-md-2">
+        <div *ngIf="errorMessages.length" class="alert alert-danger">
+          <p *ngFor="let msg of errorMessages">{{msg}}</p>
+        </div>
+
+          <div class="card p-4">
+            <h2 class="text-2xl font-bold mb-2">Inscription Promoteur</h2>
+            <p class="text-gray-600 mb-4">Complétez les étapes pour votre inscription</p>
+
+           <!-- Step Indicator -->
 <div class="step-indicator">
-  <div *ngFor="let step of promoterSteps; let i = index" class="step-container">
-    <div class="step" [class.active]="currentStepPromoter === i" [class.completed]="currentStepPromoter > i">
-      <div class="step-number">{{i + 1}}</div>
-      <div class="step-label">{{step}}</div>
-    </div>
-    <div *ngIf="i < promoterSteps.length - 1" class="step-connector"></div>
+<div *ngFor="let step of promoterSteps; let i = index" class="step-container">
+  <div class="step" [class.active]="currentStepPromoter === i" [class.completed]="currentStepPromoter > i">
+    <div class="step-number">{{i + 1}}</div>
+    <div class="step-label">{{step}}</div>
   </div>
+  <div *ngIf="i < promoterSteps.length - 1" class="step-connector"></div>
 </div>
-              <!-- Form -->
-              <form [formGroup]="promoterForm" (ngSubmit)="registerPromoter()">
-                <!-- Step 1: Informations personnelles du promoteur -->
+</div>
+            <!-- Form -->
+            <form [formGroup]="promoterForm" (ngSubmit)="registerPromoter()">
+              <!-- Step 1: Informations personnelles du promoteur -->
 <div *ngIf="currentStepPromoter === 0" class="space-y-4 mt-4">
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="form-label">Nom</label>
-      <input formControlName="lastName" class="form-control" placeholder="Nom">
-    </div>
-    <div>
-      <label class="form-label">Prénom</label>
-      <input formControlName="firstName" class="form-control" placeholder="Prénom">
-    </div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="form-label">Sexe</label>
-      <select formControlName="gender" class="form-select">
-        <option value="">Sélectionner</option>
-        <option value="M">Masculin</option>
-        <option value="F">Féminin</option>
-        <option value="O">Autre</option>
-      </select>
-    </div>
-    <div>
-      <label class="form-label">Date de naissance</label>
-      <input formControlName="birthDate" type="date" class="form-control">
-    </div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="form-label">Nationalité</label>
-      <input formControlName="nationality" class="form-control">
-    </div>
-    <div>
-      <label class="form-label">Numéro CNI</label>
-      <input formControlName="cniNumber" class="form-control">
-    </div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="form-label">Téléphone</label>
-      <input formControlName="phone" class="form-control">
-    </div>
-    <div>
-      <label class="form-label">Email</label>
-      <input formControlName="email" type="email" class="form-control">
-    </div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="form-label">Ville de résidence</label>
-      <input formControlName="residenceCity" class="form-control">
-    </div>
-    <div>
-      <label class="form-label">Profession (niveau scolaire)</label>
-      <input formControlName="profession" class="form-control">
-    </div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="form-label">Mot de passe</label>
-      <input formControlName="password" type="password" class="form-control" placeholder="Minimum 8 caractères">
-    </div>
-    <div>
-      <label class="form-label">Confirmer le mot de passe</label>
-      <input formControlName="confirmPassword" type="password" class="form-control" placeholder="Retapez votre mot de passe">
-    </div>
-  </div>
-</div>
-                <!-- Step 2: Center Info (avec nouveaux champs) -->
-              <div *ngIf="currentStepPromoter === 1" class="space-y-4 mt-4">
-                <div>
-                  <label class="form-label">Nom du centre </label>
-                  <input formControlName="centerName" class="form-control">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Sigle</label>
-                    <input formControlName="centerAcronym" class="form-control">
-                  </div>
-                  <div>
-                    <label class="form-label">Type de centre</label>
-                    <select formControlName="centerType" class="form-select">
-                      <option value="">Sélectionner</option>
-                      <option value="PRIVATE">Privé</option>
-                      <option value="PUBLIC">Public</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Téléphone du centre</label>
-                    <input formControlName="centerPhone" class="form-control">
-                  </div>
-                  <div>
-                    <label class="form-label">Email du centre</label>
-                    <input formControlName="centerEmail" type="email" class="form-control">
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Région</label>
-                    <select formControlName="region" class="form-select">
-                      <option value="">Sélectionner</option>
-                      <option value="Adamaoua">Adamaoua</option>
-                      <option value="Centre">Centre</option>
-                      <option value="Est">Est</option>
-                      <option value="Extrême-Nord">Extrême-Nord</option>
-                      <option value="Littoral">Littoral</option>
-                      <option value="Nord">Nord</option>
-                      <option value="Nord-Ouest">Nord-Ouest</option>
-                      <option value="Ouest">Ouest</option>
-                      <option value="Sud">Sud</option>
-                      <option value="Sud-Ouest">Sud-Ouest</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="form-label">Département</label>
-                    <select formControlName="departement" class="form-select" [disabled]="!promoterForm.value.region">
-                      <option value="">Sélectionnez d'abord une région</option>
-                      <option *ngFor="let dept of departmentsByRegion[promoterForm.value.region]" [value]="dept">
-                        {{dept}}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Ville/Arrondissement</label>
-                    <input formControlName="city" class="form-control">
-                  </div>
-                  <div>
-                    <label class="form-label">Adresse complète</label>
-                    <input formControlName="fullAddress" class="form-control" placeholder="Numéro + rue + quartier">
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label class="form-label">Numéro d'agrément</label>
-                    <input formControlName="approvalNumber" class="form-control">
-                  </div>
-                  <div>
-                    <label class="form-label">Date début validité</label>
-                    <input formControlName="approvalStart" type="date" class="form-control">
-                  </div>
-                  <div>
-                    <label class="form-label">Date fin validité</label>
-                    <input formControlName="approvalEnd" type="date" class="form-control">
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Date de création</label>
-                    <input formControlName="creationDate" type="date" class="form-control" 
-                           min="1900" [max]="currentDate">
-                  </div>
-                  <div>
-  <label>Âge du centre :</label>
-  <span>{{calculateCenterAge()}}</span>
-</div>
-                </div>
-<!-- À placer dans Step 2 du promoteur, juste avant le champ "Site web" -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
   <div>
-    <mat-checkbox formControlName="isCenterPresentCandidateForCqp">
-      Centre présente des candidats au CQP
-    </mat-checkbox>
+    <label class="form-label">Nom</label>
+    <input formControlName="lastName" class="form-control" placeholder="Nom">
   </div>
   <div>
-    <mat-checkbox formControlName="isCenterPresentCandidateForDqp">
-      Centre présente des candidats au DQP
-    </mat-checkbox>
+    <label class="form-label">Prénom</label>
+    <input formControlName="firstName" class="form-control" placeholder="Prénom">
   </div>
 </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="form-label">Sexe</label>
+    <select formControlName="gender" class="form-select">
+      <option value="">Sélectionner</option>
+      <option value="M">Masculin</option>
+      <option value="F">Féminin</option>
+      <option value="O">Autre</option>
+    </select>
+  </div>
+  <div>
+    <label class="form-label">Date de naissance</label>
+    <input formControlName="birthDate" type="date" class="form-control">
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="form-label">Nationalité</label>
+    <input formControlName="nationality" class="form-control">
+  </div>
+  <div>
+    <label class="form-label">Numéro CNI</label>
+    <input formControlName="cniNumber" class="form-control">
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="form-label">Téléphone</label>
+    <input formControlName="phone" class="form-control">
+  </div>
+  <div>
+    <label class="form-label">Email</label>
+    <input formControlName="email" type="email" class="form-control">
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="form-label">Ville de résidence</label>
+    <input formControlName="residenceCity" class="form-control">
+  </div>
+  <div>
+    <label class="form-label">Profession (niveau scolaire)</label>
+    <input formControlName="profession" class="form-control">
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="form-label">Mot de passe</label>
+    <input formControlName="password" type="password" class="form-control" placeholder="Minimum 8 caractères">
+  </div>
+  <div>
+    <label class="form-label">Confirmer le mot de passe</label>
+    <input formControlName="confirmPassword" type="password" class="form-control" placeholder="Retapez votre mot de passe">
+  </div>
+</div>
+</div>
+              <!-- Step 2: Center Info (avec nouveaux champs) -->
+            <div *ngIf="currentStepPromoter === 1" class="space-y-4 mt-4">
+              <div>
+                <label class="form-label">Nom du centre </label>
+                <input formControlName="centerName" class="form-control">
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="form-label">Site web</label>
-                  <input formControlName="website" type="url" class="form-control" placeholder="https://example.com">
+                  <label class="form-label">Sigle</label>
+                  <input formControlName="centerAcronym" class="form-control">
+                </div>
+                <div>
+                  <label class="form-label">Type de centre</label>
+                  <select formControlName="centerType" class="form-select">
+                    <option value="">Sélectionner</option>
+                    <option value="PRIVATE">Privé</option>
+                    <option value="PUBLIC">Public</option>
+                  </select>
                 </div>
               </div>
 
-<!-- Step 3: Documents -->
-<div *ngIf="currentStepPromoter === 2" class="space-y-4 mt-4">
-  <!-- Carte Nationale d'Identité -->
-  <div class="border rounded p-4">
-    <label class="form-label">Carte Nationale d'Identité (valide jusqu'au)</label>
-    <input formControlName="cniValidUntil" type="date" class="form-control mb-2">
-    <label class="form-label">Fichier CNI (PDF, PNG, JPEG)</label>
-    <input type="file" class="form-control" 
-           (change)="onFileChange($event, 'cniFile')"
-           accept=".pdf,.png,.jpg,.jpeg"
-           #cniFileInput>
-    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('cniFile')?.value?.name || 'Aucun' }}</small>
-  </div>
-  
-  <!-- Agrément ministériel -->
-  <div class="border rounded p-4">
-    <label class="form-label">Fichier d'agrément (PDF uniquement)</label>
-    <input type="file" class="form-control" 
-           (change)="onFileChange($event, 'approvalFile')"
-           accept=".pdf"
-           #approvalFileInput>
-    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('approvalFile')?.value?.name || 'Aucun' }}</small>
-  </div>
-  
-  <!-- Lettre d'engagement -->
-  <div class="border rounded p-4">
-    <label class="form-label">Lettre d'engagement signée (PDF)</label>
-    <input type="file" class="form-control" 
-           (change)="onFileChange($event, 'engagementLetter')"
-           accept=".pdf"
-           #engagementLetterInput>
-    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('engagementLetter')?.value?.name || 'Aucun' }}</small>
-  </div>
-  
-  <!-- Photo du promoteur -->
-  <div class="border rounded p-4">
-    <label class="form-label">Photo du promoteur (JPG/PNG, taille < 2Mo)</label>
-    <input type="file" class="form-control" 
-           (change)="onFileChange($event, 'promoterPhoto')"
-           accept=".jpg,.jpeg,.png"
-           #promoterPhotoInput>
-    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('promoterPhoto')?.value?.name || 'Aucun' }}</small>
-  </div>
-  
-  <!-- Plan de localisation -->
-  <div class="border rounded p-4">
-    <label class="form-label">Plan de localisation du centre (Facultatif)</label>
-    <input type="file" class="form-control" 
-           (change)="onFileChange($event, 'locationPlan')"
-           accept=".pdf,.jpg,.jpeg,.png"
-           #locationPlanInput>
-    <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('locationPlan')?.value?.name || 'Aucun' }}</small>
-  </div>
-  
-  <!-- Statuts ou règlement intérieur -->
-  <div class="border rounded p-4">
-    <label class="form-label">Statuts ou Règlement intérieur</label>
-    <input type="file" class="form-control" 
-       (change)="onFileChange($event, 'internalRegulation')"
-       accept=".pdf"
-       #internalRegulationInput>
-<small class="text-muted">Fichier sélectionné: {{ promoterForm.get('internalRegulation')?.value?.name || 'Aucun' }}</small>
-  </div>
-</div>
-             
-  <!-- Step 4: Confirmation (mise à jour) -->
-              <div *ngIf="currentStepPromoter === 3" class="space-y-4 mt-4">
-                <div class="bg-blue-50 p-4 rounded">
-                  <h3 class="font-medium text-blue-800">Vérification des informations</h3>
-                  <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Informations personnelles -->
-                    
-                       <!--  informations personnelles du promoteur : -->
-<div class="space-y-2">
-  <h4 class="font-semibold text-blue-700 border-b pb-1">Informations personnelles</h4>
-  <div class="grid grid-cols-2 gap-2">
-    <div class="font-medium">Nom:</div>
-    <div>{{promoterForm.value.lastName || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Prénom:</div>
-    <div>{{promoterForm.value.firstName || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Sexe:</div>
-    <div>{{promoterForm.value.gender === 'M' ? 'Masculin' : 
-           promoterForm.value.gender === 'F' ? 'Féminin' : 
-           promoterForm.value.gender === 'O' ? 'Autre' : 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Date de naissance:</div>
-    <div>{{promoterForm.value.birthDate | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Nationalité:</div>
-    <div>{{promoterForm.value.nationality || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Numéro CNI:</div>
-    <div>{{promoterForm.value.cniNumber || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Téléphone:</div>
-    <div>{{promoterForm.value.phone || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Email:</div>
-    <div>{{promoterForm.value.email || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Ville de résidence:</div>
-    <div>{{promoterForm.value.residenceCity || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Profession:</div>
-    <div>{{promoterForm.value.profession || 'Non renseigné'}}</div>
-    
-    <div class="font-medium">Mot de passe:</div>
-    <div>••••••••</div>
-  </div>
-</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Téléphone du centre</label>
+                  <input formControlName="centerPhone" class="form-control">
+                </div>
+                <div>
+                  <label class="form-label">Email du centre</label>
+                  <input formControlName="centerEmail" type="email" class="form-control">
+                </div>
+              </div>
 
-                    <!-- Informations du centre -->
-                    <div class="space-y-2">
-                      <h4 class="font-semibold text-blue-700 border-b pb-1">Informations du centre</h4>
-                      <div class="grid grid-cols-2 gap-2">
-                        <div class="font-medium">Nom du centre:</div>
-                        <div>{{promoterForm.value.centerName || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Sigle:</div>
-                        <div>{{promoterForm.value.centerAcronym || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Type de centre:</div>
-                        <div>{{promoterForm.value.centerType === 'PRIVATE' ? 'Privé' : 'Public'}}</div>
-                        
-                        <div class="font-medium">Téléphone:</div>
-                        <div>{{promoterForm.value.centerPhone || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Email:</div>
-                        <div>{{promoterForm.value.centerEmail || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Région:</div>
-                        <div>{{promoterForm.value.region || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Département:</div>
-                        <div>{{promoterForm.value.departement || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Ville/Arrondissement:</div>
-                        <div>{{promoterForm.value.city || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Adresse complète:</div>
-                        <div>{{promoterForm.value.fullAddress || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Numéro d'agrément:</div>
-                        <div>{{promoterForm.value.approvalNumber || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Agrément valide du:</div>
-                        <div>{{promoterForm.value.approvalStart | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Agrément valide jusqu'au:</div>
-                        <div>{{promoterForm.value.approvalEnd | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Années d'existence:</div>
-                        <div>{{calculateCenterAge()}}</div>
-                        
-                        <div class="font-medium">Site web:</div>
-                        <div>{{promoterForm.value.website || 'Non renseigné'}}</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Région</label>
+                  <select formControlName="region" class="form-select">
+                    <option value="">Sélectionner</option>
+                    <option value="Adamaoua">Adamaoua</option>
+                    <option value="Centre">Centre</option>
+                    <option value="Est">Est</option>
+                    <option value="Extrême-Nord">Extrême-Nord</option>
+                    <option value="Littoral">Littoral</option>
+                    <option value="Nord">Nord</option>
+                    <option value="Nord-Ouest">Nord-Ouest</option>
+                    <option value="Ouest">Ouest</option>
+                    <option value="Sud">Sud</option>
+                    <option value="Sud-Ouest">Sud-Ouest</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Département</label>
+                  <select formControlName="departement" class="form-select" [disabled]="!promoterForm.value.region">
+                    <option value="">Sélectionnez d'abord une région</option>
+                    <option *ngFor="let dept of departmentsByRegion[promoterForm.value.region]" [value]="dept">
+                      {{dept}}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Ville/Arrondissement</label>
+                  <input formControlName="city" class="form-control">
+                </div>
+                <div>
+                  <label class="form-label">Adresse complète</label>
+                  <input formControlName="fullAddress" class="form-control" placeholder="Numéro + rue + quartier">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="form-label">Numéro d'agrément</label>
+                  <input formControlName="approvalNumber" class="form-control">
+                </div>
+                <div>
+                  <label class="form-label">Date début validité</label>
+                  <input formControlName="approvalStart" type="date" class="form-control">
+                </div>
+                <div>
+                  <label class="form-label">Date fin validité</label>
+                  <input formControlName="approvalEnd" type="date" class="form-control">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Date de création</label>
+                  <input formControlName="creationDate" type="date" class="form-control" 
+                         min="1900" [max]="currentDate">
+                </div>
+                <div>
+<label>Âge du centre :</label>
+<span>{{calculateCenterAge()}}</span>
+</div>
+              </div>
+<!-- À placer dans Step 2 du promoteur, juste avant le champ "Site web" -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+  <mat-checkbox formControlName="isCenterPresentCandidateForCqp" (change)="onExamTypeCheckboxChange()">
+    Centre présente des candidats au CQP
+  </mat-checkbox>
+</div>
+<div>
+  <mat-checkbox formControlName="isCenterPresentCandidateForDqp" (change)="onExamTypeCheckboxChange()">
+    Centre présente des candidats au DQP
+  </mat-checkbox>
+</div>
+</div>
+              <div>
+                <label class="form-label">Site web</label>
+                <input formControlName="website" type="url" class="form-control" placeholder="https://example.com">
+              </div>
+
+              <!-- Sélection des spécialités selon le type d'examen -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <label class="form-label mb-0 fw-bold">Spécialités de votre centre <span class="text-danger">*</span></label>
+                  <div class="text-muted">
+                    <small>
+                      <i class="bx bx-check-circle text-success" *ngIf="getTotalSpecialitiesCount() > 0"></i>
+                      {{getTotalSpecialitiesCount()}} spécialité(s) créée(s)
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Interface unifiée pour CQP et DQP -->
+                <div *ngIf="promoterForm.get('isCenterPresentCandidateForCqp')?.value || promoterForm.get('isCenterPresentCandidateForDqp')?.value" class="mb-4">
+                  <h6 class="text-primary mb-3">
+                    <i class="bx bx-graduation"></i> 
+                    <span *ngIf="promoterForm.get('isCenterPresentCandidateForCqp')?.value && promoterForm.get('isCenterPresentCandidateForDqp')?.value">
+                      Filières et Spécialités CQP & DQP
+                    </span>
+                    <span *ngIf="promoterForm.get('isCenterPresentCandidateForCqp')?.value && !promoterForm.get('isCenterPresentCandidateForDqp')?.value">
+                      Filières et Spécialités CQP
+                    </span>
+                    <span *ngIf="!promoterForm.get('isCenterPresentCandidateForCqp')?.value && promoterForm.get('isCenterPresentCandidateForDqp')?.value">
+                      Filières et Spécialités DQP
+                    </span>
+                  </h6>
+                  
+                  <!-- Bouton de création rapide -->
+                  <div class="text-center mb-3">
+                    <button type="button" 
+                            class="btn btn-outline-primary"
+                            (click)="createQuickSpeciality()"
+                            title="Créer rapidement une nouvelle spécialité">
+                      <i class="bx bx-plus-circle me-2"></i>
+                      Créer une spécialité rapidement
+                    </button>
+                  </div>
+                  
+                  <!-- Sélection des filières -->
+                  <div class="mb-3">
+                    <label class="form-label">Sélectionner les filières</label>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text">
+                        <i class="bx bx-search"></i>
+                      </span>
+                      <input type="text" 
+                             class="form-control" 
+                             placeholder="Rechercher une filière..."
+                             [formControl]="courseSearchCtrl"
+                             [matAutocomplete]="autoCourse">
+                      <mat-autocomplete #autoCourse="matAutocomplete" (optionSelected)="onCourseSelected($event.option.value)">
+                        <mat-option *ngFor="let course of filteredCourses$ | async" [value]="course">
+                                                          {{course.courseName}}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </div>
+                  </div>
+
+                  <!-- Filières sélectionnées -->
+                  <div class="selected-courses mb-3">
+                    <div *ngIf="selectedCourses.length > 0" class="mb-3 text-center">
+                      <h6 class="text-primary">Filières sélectionnées ({{selectedCourses.length}})</h6>
+                    </div>
+                    <div class="row justify-content-center">
+                      <div class="col-md-8">
+                        <div *ngFor="let course of selectedCourses; let i = index" 
+                             class="card mb-3">
+                          <div class="card-header d-flex justify-content-between align-items-center">
+                                                          <h6 class="mb-0">
+                                {{course.courseName}}
+                              </h6>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    (click)="removeCourse(course)"
+                                    title="Retirer cette filière">
+                              <i class="bx bx-x"></i>
+                            </button>
+                          </div>
+                          <div class="card-body">
+                            <p class="text-muted small mb-3">{{course.description || 'Aucune description'}}</p>
+                            
+                            <!-- Sélection des spécialités pour cette filière -->
+                            <div class="mb-3">
+                              <label class="form-label">Spécialités de cette filière</label>
+                              <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                  <i class="bx bx-search"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       placeholder="Rechercher une spécialité..."
+                                       [formControl]="specialitySearchCtrl"
+                                       [matAutocomplete]="autoSpecialityCourse">
+                                <mat-autocomplete #autoSpecialityCourse="matAutocomplete" 
+                                                 (optionSelected)="onSpecialitySelectedForCourse($event.option.value, course)">
+                                  <mat-option *ngFor="let s of filteredSpecialities$ | async" [value]="s">
+                                    {{s.name}} <span class="text-muted">({{s.code}})</span>
+                                  </mat-option>
+                                </mat-autocomplete>
+                                <button class="btn btn-success" 
+                                        type="button"
+                                        (click)="showCreateSpecialityFormForCourse(course)"
+                                        title="Créer une spécialité pour cette filière"
+                                        style="min-width: 120px;">
+                                  <i class="bx bx-plus-circle me-1"></i>
+                                  <span class="d-none d-sm-inline">Créer</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            <!-- Spécialités sélectionnées pour cette filière -->
+                            <div class="selected-course-specialities">
+                              <div *ngIf="selectedCourseSpecialities[course.courseName || '']?.length > 0" class="mb-2">
+                                <small class="text-muted">Spécialités sélectionnées ({{selectedCourseSpecialities[course.courseName || ''].length}})</small>
+                              </div>
+                              <div *ngFor="let speciality of selectedCourseSpecialities[course.courseName || '']" 
+                                   class="d-flex align-items-center border rounded mb-1 px-2 py-1"
+                                   style="background: #f8f9fa; font-size: 0.9em;">
+                                <span class="badge bg-primary me-2">{{speciality.code || 'N/A'}}</span>
+                                <strong>{{speciality.name}}</strong>
+                                <small class="text-muted ms-2">{{speciality.description || ''}}</small>
+                                <span class="badge bg-info ms-2">{{speciality.examType || 'N/A'}}</span>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger ms-2"
+                                        (click)="removeSpecialityFromCourse(speciality, course)"
+                                        title="Retirer cette spécialité">
+                                  <i class="bx bx-x"></i>
+                                </button>
+                              </div>
+                              <div *ngIf="!selectedCourseSpecialities[course.courseName || '']?.length" class="text-muted text-center py-2">
+                                <small>Aucune spécialité sélectionnée pour cette filière</small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-
-                      <h4 class="font-semibold text-blue-700 border-b pb-1 mt-4">Documents</h4>
-                      <div class="grid grid-cols-2 gap-2">
-                        <div class="font-medium">CNI valide jusqu'au:</div>
-                        <div>{{promoterForm.value.cniValidUntil | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
-                        
-                        <div class="font-medium">Fichier CNI:</div>
-                        <div>{{promoterForm.value.cniFile ? 'Uploadé' : 'Manquant'}}</div>
-                        
-                        <div class="font-medium">Fichier agrément:</div>
-                        <div>{{promoterForm.value.approvalFile ? 'Uploadé' : 'Manquant'}}</div>
-                        
-                        <div class="font-medium">Lettre d'engagement:</div>
-                        <div>{{promoterForm.value.engagementLetter ? 'Uploadé' : 'Manquant'}}</div>
-                        
-                        <div class="font-medium">Photo promoteur:</div>
-                        <div>{{promoterForm.value.promoterPhoto ? 'Uploadé' : 'Manquant'}}</div>
-                        
-                        <div class="font-medium">Plan localisation:</div>
-                        <div>{{promoterForm.value.locationPlan ? 'Uploadé' : 'Non fourni'}}</div>
-                        
-                        <div class="font-medium">Statuts/Règlement:</div>
-<div>{{promoterForm.value.internalRegulation ? 'Uploadé' : 'Manquant'}}</div>
+                    </div>
+                    <div *ngIf="selectedCourses.length === 0" class="text-muted text-center py-4">
+                      <i class="bx bx-info-circle" style="font-size: 2em;"></i>
+                      <div class="mt-2">
+                        <small>Aucune filière sélectionnée</small>
                       </div>
                     </div>
                   </div>
                 </div>
 
-  <div class="mt-4">
-    <mat-checkbox formControlName="termsAccepted">
-      J'accepte les conditions d'utilisation
-    </mat-checkbox>
-  </div>
-</div>
-                <!-- Navigation -->
-                <div class="flex justify-between mt-6">
-                  <button *ngIf="currentStepPromoter > 0" type="button" 
-                    class="btn btn-outline-primary" (click)="prevPromoterStep()">
-                    Précédent
-                  </button>
-                  <div *ngIf="currentStepPromoter === 0"></div>
-
-                  <button *ngIf="currentStepPromoter < promoterSteps.length - 1" type="button"
-                    class="btn btn-primary" (click)="nextPromoterStep()">
-                    Suivant
-                  </button>
-
-                  <button *ngIf="currentStepPromoter === promoterSteps.length - 1"
-      type="submit"
-      class="btn btn-success"
-      [disabled]="processing || promoterForm.invalid"
-      aria-label="S'inscrire">
-      <span *ngIf="!processing">S'inscrire</span>
-      <span *ngIf="processing">En cours...</span>
-    </button>
+                <!-- Formulaire de création de nouvelle spécialité pour filière -->
+                <div class="row justify-content-center" *ngIf="isCreatingSpecialityForCourse">
+                  <div class="col-md-8">
+                    <div class="card">
+                      <div class="card-body">
+                        <h6 class="card-title text-center text-primary">
+                          Créer une nouvelle spécialité pour la filière "{{currentCourseForSpeciality?.name}}"
+                        </h6>
+                        <form [formGroup]="newSpecialityForm" (ngSubmit)="createNewSpecialityForCourse()">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="mb-3">
+                                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" formControlName="name" placeholder="Nom de la spécialité">
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="mb-3">
+                                <label class="form-label">Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" formControlName="code" placeholder="Code de la spécialité">
+                              </div>
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" formControlName="description" rows="2" placeholder="Description de la spécialité"></textarea>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Type d'examen <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-4 justify-content-center">
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="examTypeCQP" 
+                                       [checked]="newSpecialityForm.get('examType')?.value?.includes('CQP')"
+                                       (change)="onExamTypeChange('CQP', $event)">
+                                <label class="form-check-label" for="examTypeCQP">
+                                  CQP
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="examTypeDQP" 
+                                       [checked]="newSpecialityForm.get('examType')?.value?.includes('DQP')"
+                                       (change)="onExamTypeChange('DQP', $event)">
+                                <label class="form-check-label" for="examTypeDQP">
+                                  DQP
+                                </label>
+                              </div>
+                            </div>
+                            <small class="text-muted text-center d-block">Sélectionnez au moins un type d'examen</small>
+                          </div>
+                          <div class="d-flex gap-2 justify-content-center">
+                            <button type="submit" 
+                                    class="btn btn-primary"
+                                    [disabled]="newSpecialityForm.invalid">
+                              <i class="bx bx-plus"></i> Créer
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-secondary"
+                                    (click)="hideCreateSpecialityFormForCourse()">
+                              Annuler
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </form>
+              </div>
             </div>
+
+            <!-- Résumé des spécialités sélectionnées -->
+            <div *ngIf="getTotalSpecialitiesCount() > 0" class="alert alert-info mt-3">
+              <h6 class="alert-heading">
+                <i class="bx bx-info-circle me-2"></i>
+                Résumé des spécialités sélectionnées
+              </h6>
+              <div class="mt-2">
+                <!-- Résumé par filière -->
+                <div *ngFor="let course of selectedCourses" class="mb-2">
+                  <strong>{{course.courseName}}:</strong>
+                  <span class="badge bg-primary me-1" *ngFor="let speciality of selectedCourseSpecialities[course.courseName || '']">
+                    {{speciality.name}} ({{speciality.examType || 'N/A'}})
+                  </span>
+                  <span *ngIf="!selectedCourseSpecialities[course.courseName || '']?.length" class="text-muted">
+                    <small>Aucune spécialité sélectionnée</small>
+                  </span>
+                </div>
+                <div class="mt-2">
+                  <strong>Total: {{getTotalSpecialitiesCount()}} spécialité(s)</strong>
+                </div>
+              </div>
+            </div>
+
+<!-- Step 3: Documents -->
+<div *ngIf="currentStepPromoter === 2" class="space-y-4 mt-4">
+<!-- Carte Nationale d'Identité -->
+<div class="border rounded p-4">
+  <label class="form-label">Carte Nationale d'Identité (valide jusqu'au)</label>
+  <input formControlName="cniValidUntil" type="date" class="form-control mb-2">
+  <label class="form-label">Fichier CNI (PDF, PNG, JPEG)</label>
+  <input type="file" class="form-control" 
+         (change)="onFileChange($event, 'cniFile')"
+         accept=".pdf,.png,.jpg,.jpeg"
+         #cniFileInput>
+  <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('cniFile')?.value?.name || 'Aucun' }}</small>
+</div>
+
+<!-- Agrément ministériel -->
+<div class="border rounded p-4">
+  <label class="form-label">Fichier d'agrément (PDF uniquement)</label>
+  <input type="file" class="form-control" 
+         (change)="onFileChange($event, 'approvalFile')"
+         accept=".pdf"
+         #approvalFileInput>
+  <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('approvalFile')?.value?.name || 'Aucun' }}</small>
+</div>
+
+<!-- Lettre d'engagement -->
+<div class="border rounded p-4">
+  <label class="form-label">Lettre d'engagement signée (PDF)</label>
+  <input type="file" class="form-control" 
+         (change)="onFileChange($event, 'engagementLetter')"
+         accept=".pdf"
+         #engagementLetterInput>
+  <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('engagementLetter')?.value?.name || 'Aucun' }}</small>
+</div>
+
+<!-- Photo du promoteur -->
+<div class="border rounded p-4">
+  <label class="form-label">Photo du promoteur (JPG/PNG, taille < 2Mo)</label>
+  <input type="file" class="form-control" 
+         (change)="onFileChange($event, 'promoterPhoto')"
+         accept=".jpg,.jpeg,.png"
+         #promoterPhotoInput>
+  <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('promoterPhoto')?.value?.name || 'Aucun' }}</small>
+</div>
+
+<!-- Plan de localisation -->
+<div class="border rounded p-4">
+  <label class="form-label">Plan de localisation du centre (Facultatif)</label>
+  <input type="file" class="form-control" 
+         (change)="onFileChange($event, 'locationPlan')"
+         accept=".pdf,.jpg,.jpeg,.png"
+         #locationPlanInput>
+  <small class="text-muted">Fichier sélectionné: {{ promoterForm.get('locationPlan')?.value?.name || 'Aucun' }}</small>
+</div>
+
+<!-- Statuts ou règlement intérieur -->
+<div class="border rounded p-4">
+  <label class="form-label">Statuts ou Règlement intérieur</label>
+  <input type="file" class="form-control" 
+     (change)="onFileChange($event, 'internalRegulation')"
+     accept=".pdf"
+     #internalRegulationInput>
+<small class="text-muted">Fichier sélectionné: {{ promoterForm.get('internalRegulation')?.value?.name || 'Aucun' }}</small>
+</div>
+</div>
+           
+<!-- Step 4: Confirmation (mise à jour) -->
+            <div *ngIf="currentStepPromoter === 3" class="space-y-4 mt-4">
+              <div class="bg-blue-50 p-4 rounded">
+                <h3 class="font-medium text-blue-800">Vérification des informations</h3>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Informations personnelles -->
+                  
+                     <!--  informations personnelles du promoteur : -->
+<div class="space-y-2">
+<h4 class="font-semibold text-blue-700 border-b pb-1">Informations personnelles</h4>
+<div class="grid grid-cols-2 gap-2">
+  <div class="font-medium">Nom:</div>
+  <div>{{promoterForm.value.lastName || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Prénom:</div>
+  <div>{{promoterForm.value.firstName || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Sexe:</div>
+  <div>{{promoterForm.value.gender === 'M' ? 'Masculin' : 
+         promoterForm.value.gender === 'F' ? 'Féminin' : 
+         promoterForm.value.gender === 'O' ? 'Autre' : 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Date de naissance:</div>
+  <div>{{promoterForm.value.birthDate | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Nationalité:</div>
+  <div>{{promoterForm.value.nationality || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Numéro CNI:</div>
+  <div>{{promoterForm.value.cniNumber || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Téléphone:</div>
+  <div>{{promoterForm.value.phone || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Email:</div>
+  <div>{{promoterForm.value.email || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Ville de résidence:</div>
+  <div>{{promoterForm.value.residenceCity || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Profession:</div>
+  <div>{{promoterForm.value.profession || 'Non renseigné'}}</div>
+  
+  <div class="font-medium">Mot de passe:</div>
+  <div>••••••••</div>
+</div>
+</div>
+
+                  <!-- Informations du centre -->
+                  <div class="space-y-2">
+                    <h4 class="font-semibold text-blue-700 border-b pb-1">Informations du centre</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div class="font-medium">Nom du centre:</div>
+                      <div>{{promoterForm.value.centerName || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Sigle:</div>
+                      <div>{{promoterForm.value.centerAcronym || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Type de centre:</div>
+                      <div>{{promoterForm.value.centerType === 'PRIVATE' ? 'Privé' : 'Public'}}</div>
+                      
+                      <div class="font-medium">Téléphone:</div>
+                      <div>{{promoterForm.value.centerPhone || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Email:</div>
+                      <div>{{promoterForm.value.centerEmail || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Région:</div>
+                      <div>{{promoterForm.value.region || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Département:</div>
+                      <div>{{promoterForm.value.departement || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Ville/Arrondissement:</div>
+                      <div>{{promoterForm.value.city || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Adresse complète:</div>
+                      <div>{{promoterForm.value.fullAddress || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Numéro d'agrément:</div>
+                      <div>{{promoterForm.value.approvalNumber || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Agrément valide du:</div>
+                      <div>{{promoterForm.value.approvalStart | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Agrément valide jusqu'au:</div>
+                      <div>{{promoterForm.value.approvalEnd | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Années d'existence:</div>
+                      <div>{{calculateCenterAge()}}</div>
+                      
+                      <div class="font-medium">Site web:</div>
+                      <div>{{promoterForm.value.website || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Spécialités:</div>
+                      <div>
+                        <!-- Spécialités CQP -->
+                        <div *ngIf="promoterForm.value.isCenterPresentCandidateForCqp && selectedCourses.length > 0" class="mb-2">
+                          <div class="mb-1">
+                            <strong>CQP - {{selectedCourses.length}} filière(s):</strong>
+                          </div>
+                          <div *ngFor="let course of selectedCourses" class="mb-2">
+                            <div class="mb-1">
+                              <strong>{{course.courseName}}:</strong>
+                            </div>
+                            <div *ngIf="selectedCourseSpecialities[course.courseName || '']?.length > 0">
+                              <span class="badge bg-success me-1 mb-1" *ngFor="let speciality of selectedCourseSpecialities[course.courseName || '']">
+                                {{speciality.name}} ({{speciality.examType || 'N/A'}})
+                              </span>
+                            </div>
+                            <div *ngIf="!selectedCourseSpecialities[course.courseName || '']?.length" class="text-muted">
+                              <small>Aucune spécialité sélectionnée</small>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Filières et spécialités DQP -->
+                        <div *ngIf="promoterForm.value.isCenterPresentCandidateForDqp && selectedCourses.length > 0" class="mb-2">
+                          <div class="mb-1">
+                            <strong>DQP - {{selectedCourses.length}} filière(s):</strong>
+                          </div>
+                          <div *ngFor="let course of selectedCourses" class="mb-2">
+                            <div class="mb-1">
+                              <strong>{{course.courseName}}:</strong>
+                            </div>
+                            <div *ngIf="selectedCourseSpecialities[course.courseName || '']?.length > 0">
+                              <span class="badge bg-info me-1 mb-1" *ngFor="let speciality of selectedCourseSpecialities[course.courseName || '']">
+                                {{speciality.name}} ({{speciality.examType || 'N/A'}})
+                              </span>
+                            </div>
+                            <div *ngIf="!selectedCourseSpecialities[course.courseName || '']?.length" class="text-muted">
+                              <small>Aucune spécialité sélectionnée</small>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Message si aucune spécialité -->
+                        <div *ngIf="getTotalSpecialitiesCount() === 0" class="text-muted">
+                          <small>Aucune spécialité sélectionnée</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h4 class="font-semibold text-blue-700 border-b pb-1 mt-4">Documents</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div class="font-medium">CNI valide jusqu'au:</div>
+                      <div>{{promoterForm.value.cniValidUntil | date:'dd/MM/yyyy' || 'Non renseigné'}}</div>
+                      
+                      <div class="font-medium">Fichier CNI:</div>
+                      <div>{{promoterForm.value.cniFile ? 'Uploadé' : 'Manquant'}}</div>
+                      
+                      <div class="font-medium">Fichier agrément:</div>
+                      <div>{{promoterForm.value.approvalFile ? 'Uploadé' : 'Manquant'}}</div>
+                      
+                      <div class="font-medium">Lettre d'engagement:</div>
+                      <div>{{promoterForm.value.engagementLetter ? 'Uploadé' : 'Manquant'}}</div>
+                      
+                      <div class="font-medium">Photo promoteur:</div>
+                      <div>{{promoterForm.value.promoterPhoto ? 'Uploadé' : 'Manquant'}}</div>
+                      
+                      <div class="font-medium">Plan localisation:</div>
+                      <div>{{promoterForm.value.locationPlan ? 'Uploadé' : 'Non fourni'}}</div>
+                      
+                      <div class="font-medium">Statuts/Règlement:</div>
+<div>{{promoterForm.value.internalRegulation ? 'Uploadé' : 'Manquant'}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+<div class="mt-4">
+  <mat-checkbox formControlName="termsAccepted">
+    J'accepte les conditions d'utilisation
+  </mat-checkbox>
+</div>
+</div>
+              <!-- Navigation -->
+              <div class="flex justify-between mt-6">
+                <button *ngIf="currentStepPromoter > 0" type="button" 
+                  class="btn btn-outline-primary" (click)="prevPromoterStep()">
+                  Précédent
+                </button>
+                <div *ngIf="currentStepPromoter === 0"></div>
+
+                <button *ngIf="currentStepPromoter < promoterSteps.length - 1" type="button"
+                  class="btn btn-primary" (click)="nextPromoterStep()">
+                  Suivant
+                </button>
+
+                <button *ngIf="currentStepPromoter === promoterSteps.length - 1"
+    type="submit"
+    class="btn btn-success"
+    [disabled]="processing || promoterForm.invalid"
+    aria-label="S'inscrire">
+    <span *ngIf="!processing">S'inscrire</span>
+    <span *ngIf="processing">En cours...</span>
+  </button>
+              </div>
+            </form>
           </div>
         </div>
-      </mat-tab>
-    </mat-tab-group>
-   
-      <p class="text-center">You already have an account <span class="text-primary"
-                                    (click)="goToLogin()" style="cursor: pointer;">Login</span></p>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+ 
+    <p class="text-center">You already have an account <span class="text-primary"
+                                  (click)="goToLogin()" style="cursor: pointer;">Login</span></p>
 </div>
 </div>

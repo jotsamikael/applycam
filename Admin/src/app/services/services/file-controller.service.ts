@@ -98,24 +98,23 @@ export class FileControllerService extends BaseService {
       map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
     );
   }
-
-  /**
+ /**
    * Generates a direct URL to a promoter file by type.
    * @param promoterId The ID of the promoter (user).
    * @param fileType The type/key of the file.
    * @returns The full URL as a string.
    */
-  generateFileUrl(promoterId: number | string, fileType: string): string {
-    return `${this.rootUrl}/files/promoter-files/${promoterId}/${fileType}`;
-  }
+ generateFileUrl(promoterId: number | string, fileType: string): string {
+  return `${this.rootUrl}/files/promoter-files/${promoterId}/${fileType}`;
+}
 
-  /**
-   * Generates a direct URL to a training center file by type.
-   * @param agreementNumber The agreement number of the training center.
-   * @param fileType The type/key of the file.
-   * @returns The full URL as a string.
-   */
-  generateTrainingCenterFileUrl(agreementNumber: string, fileType: string): string {
-    return `${this.rootUrl}/files/centerr-files/${agreementNumber}/${fileType}`;
-  }
+/**
+ * Generates a direct URL to a training center file by type.
+ * @param agreementNumber The agreement number of the training center.
+ * @param fileType The type/key of the file.
+ * @returns The full URL as a string.
+ */
+generateTrainingCenterFileUrl(agreementNumber: string, fileType: string): string {
+  return `${this.rootUrl}/files/centerr-files/${agreementNumber}/${fileType}`;
+}
 }

@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+
 public interface SessionRepository  extends JpaRepository<Session, Long>{
 	
 	 	Optional<List<Session>> findByExamDate(LocalDate examDate);
@@ -25,5 +27,11 @@ public interface SessionRepository  extends JpaRepository<Session, Long>{
 	    Page<Session> findAllBySessionYear(String sessionYear,Pageable pageable);
 	    
 	    Optional<Session> findBySessionYearAndExamType(String sessionYear, String examType);
+
+
+		Optional<Session> findByexamTypeAndExamDate(String examType, LocalDate examDate);
+		
+		long countBySessionYearAndExamType(String sessionYear, String examType);
+
 
 }

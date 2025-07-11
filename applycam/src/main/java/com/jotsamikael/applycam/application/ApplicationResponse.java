@@ -1,5 +1,9 @@
 package com.jotsamikael.applycam.application;
 
+import java.time.LocalDate;
+
+import com.jotsamikael.applycam.common.ContentStatus;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,10 +15,10 @@ public class ApplicationResponse {
     private String speciality;
     private String applicationRegion;
     private String applicationYear;
-    private String status;
+    private ContentStatus status;
     private String paymentMethod;
     private Double amount;
-    private String email;
     private String examType;
+    private LocalDate examDate;
     
 }

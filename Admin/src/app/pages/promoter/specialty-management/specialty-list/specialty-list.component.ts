@@ -3,7 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { SpecialityService } from '../../../../services/services/speciality.service';
-import { PageResponseSpecialityResponse, SpecialityRequest, SpecialityResponse, TrainingCenterResponse } from '../../../../services/models';
+import { PageResponseSpecialityResponse, SpecialityResponse, TrainingCenterResponse } from '../../../../services/models';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TrainingcenterService } from 'src/app/services/services';
@@ -26,7 +26,7 @@ export class SpecialtyListComponent implements OnInit {
   ];
 
   trainingCenters: TrainingCenterResponse[] = [];
-  displayedColumns: string[] = ['name', 'description', 'actions'];
+  displayedColumns: string[] = ['name', 'code', 'description', 'examType', 'actions'];
   dataSource: MatTableDataSource<SpecialityResponse>;
   specialties: SpecialityResponse[] = [];
   specialtyForm: FormGroup;
@@ -68,6 +68,7 @@ export class SpecialtyListComponent implements OnInit {
       name: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
       code: ['', [Validators.required, Validators.maxLength(20)]],
+      examType: ['', [Validators.required, Validators.maxLength(50)]],
       trainingCenterId: ['', [Validators.required]]
     });
   }
@@ -113,7 +114,8 @@ export class SpecialtyListComponent implements OnInit {
     this.specialtyForm.patchValue({
       name: specialty.name,
       description: specialty.description,
-      code: '', // 'code' property does not exist on SpecialityResponse, set to empty or handle accordingly
+      code: specialty.code || '',
+      examType: specialty.examType || '',
       trainingCenterId: '' // Set to empty string or replace with the correct property if available
     });
     this.showModal = true;
@@ -147,13 +149,14 @@ export class SpecialtyListComponent implements OnInit {
     }
 
     this.processing = true;
-    const specialtyRequest: SpecialityRequest = this.specialtyForm.value;
+    const formValue = this.specialtyForm.value;
 
-    // Ensure description is always present for CreateSpecialityRequest
+    // Create the request object that matches CreateSpecialityRequest interface
     const createSpecialtyRequest = {
-      ...specialtyRequest,
-      description: (specialtyRequest as any).description ?? '',
-      examType: (specialtyRequest as any).examType ?? '' // Provide a default or get from form
+      code: formValue.code,
+      name: formValue.name,
+      description: formValue.description || '',
+      examType: formValue.examType || ''
     };
 
     if (this.isEditMode && this.currentSpecialtyId) {

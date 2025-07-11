@@ -2,18 +2,26 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, AbstractControl, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from '../services/services/authentication.service';
-import { ApplicationService } from '../services/services/application.service';
-import { PaymentService } from '../services/services/payment.service';
+
 import { ExamCenterControllerService } from '../services/services/exam-center-controller.service';
 import { TrainingcenterService } from '../services/services/trainingcenter.service';
+import { SpecialityService } from '../services/services/speciality.service';
+import { CourseService } from '../services/services/course.service';
+
 import { CandidateRegistrationRequest } from '../services/models/candidate-registration-request';
-import { ApplicationRequest } from '../services/models/application-request';
+
 import { ExamCenterResponse } from '../services/models/exam-center-response';
 import { TrainingCenterResponse } from '../services/models/training-center-response';
-import { forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { SpecialityResponse } from '../services/models/speciality-response';
+import { SessionResponse } from '../services/models/session-response';
+import { CourseResponse } from '../services/models/course-response';
+import { CourseWithSpecialitiesResponse } from '../services/models/course-with-specialities-response';
+import { forkJoin, Observable, of } from 'rxjs';
+import { map, switchMap, startWith } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
+import { TokenService } from '../services/token/token.service';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 interface PromoterFormData {
   firstName: string;
@@ -56,41 +64,7 @@ interface PromoterFormData {
   approvalNumber: string;
 }
 
-interface CandidateFormData {
-  lastName: string;
-  firstName: string;
-  email: string;
-  phoneNumber: string;
-  password: string;
-  confirmPassword: string;
-  preferredLanguage: string;
-  sex: string;
-  dateOfBirth: string;
-  birthCity: string;
-  birthDepartment: string;
-  birthRegion: string;
-  nationality: string;
-  originRegion: string;
-  maritalStatus: string;
-  childrenCount: number;
-  teachingLanguage: string;
-  isFirstAttempt: boolean;
-  examType: string;
-  desiredField: string;
-  trainingCenterCode: string;
-  trainingCenterName: string;
-  trainingCenterCity: string;
-  examSession: string;
-  trainingMode: string;
-  fundingSource: string;
-  birthCertificate: File | null;
-  identityDocument: File | null;
-  diploma: File | null;
-  identityPhotos: File[] | null;
-  firstAttemptProof: File | null;
-  motivationLetter: File | null;
-  termsAccepted: boolean;
-}
+
 
 @Component({
   selector: 'app-register',
@@ -119,6 +93,26 @@ export class RegisterComponent implements OnInit {
   // Nouvelles propriétés pour les listes déroulantes
   examCenters: ExamCenterResponse[] = [];
   trainingCenters: TrainingCenterResponse[] = [];
+  specialities: SpecialityResponse[] = [];
+  sessions: SessionResponse[] = [];
+  courses: CourseWithSpecialitiesResponse[] = [];
+  
+  // Propriétés pour la gestion des spécialités
+  selectedSpecialities: SpecialityResponse[] = [];
+  isCreatingSpeciality = false;
+  newSpecialityForm: FormGroup;
+  specialitySearchTerm = '';
+  filteredSpecialities: SpecialityResponse[] = [];
+  specialitySearchCtrl = new FormControl('');
+  filteredSpecialities$: Observable<SpecialityResponse[]> = of([]);
+  
+  // Propriétés pour la gestion des cours et spécialités par filière
+  selectedCourses: CourseWithSpecialitiesResponse[] = [];
+  selectedCourseSpecialities: { [courseName: string]: SpecialityResponse[] } = {};
+  courseSearchCtrl = new FormControl('');
+  filteredCourses$: Observable<CourseWithSpecialitiesResponse[]> = of([]);
+  isCreatingSpecialityForCourse = false;
+  currentCourseForSpeciality: CourseWithSpecialitiesResponse | null = null;
   
   departmentsByRegion: { [key: string]: string[] } = {
     'Adamaoua': ['Djérem', 'Faro-et-Déo', 'Mayo-Banyo', 'Mbéré', 'Vina'],
@@ -148,18 +142,33 @@ export class RegisterComponent implements OnInit {
     'Ougandaise', 'Kenyanne', 'Éthiopienne', 'Erythréenne', 'Espagnole', 'Française', 'Italienne', 'Allemande'
   ].sort();
 
+  // Propriétés pour gérer l'inscription
+  candidateAccountCreated = false;
+  candidateAccountId: string | null = null;
+  personalInfoUpdated = false;
+  applicationCreated = false;
+  applicationId: string | null = null;
+  documentsUploaded = false;
+  paymentCompleted = false;
+
+  trainingCenterCtrl = new FormControl('');
+  filteredTrainingCenters: Observable<any[]> = of([]);
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthenticationService,
-    private applicationService: ApplicationService,
-    private paymentService: PaymentService,
-    private examCenterService: ExamCenterControllerService,
+   
     private trainingCenterService: TrainingcenterService,
+    private specialityService: SpecialityService,
+    private courseService: CourseService,
+   
     private fb: FormBuilder,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private tokenService: TokenService
   ) {
     this.candidateForm = this.createCandidateForm();
+    this.newSpecialityForm = this.createNewSpecialityForm();
   }
 
   ngOnInit() {
@@ -169,172 +178,602 @@ export class RegisterComponent implements OnInit {
         this.selectedTabIndex = tab;
       }
       this.promoterForm.patchValue({
-        lastName: 'Ekani',
-        firstName: 'Jules',
+        lastName: 'Ngo\'o',
+        firstName: 'Daniel',
         gender: 'M',
-        birthDate: '1979-05-18',
+        birthDate: '1985-08-10',
         nationality: 'Camerounaise',
-        cniNumber: '8765432109',
-        phone: '698112233',
-        email: 'jules.ekani@topskills.cm',
-        profession: 'Consultant',
-        centerName: 'TopSkills Formation',
-        centerAcronym: 'TSF',
+        cniNumber: '9988776655',
+        phone: '677223344',
+        email: 'daniel.ngoo@aftech.cm',
+        profession: 'Ingénieur',
+        centerName: 'AFTECH Training Center',
+        centerAcronym: 'AFTC',
         centerType: 'PRIVE',
-        centerPhone: '650332211',
-        creationDate: '2015-10-05',
-        centerEmail: 'info@topskills.cm',
-        city: 'Yaoundé',
-        approvalNumber: 'AG445566',
-        approvalStart: '2021-06-01',
-        approvalEnd: '2027-06-01',
-        departement: 'Mfoundi',
-        fullAddress: 'Derrière hôtel Jouvence, Odza',
-        residenceCity: 'Yaoundé',
-        region: 'Centre',
-        cniValidUntil: '2029-05-18',
+        centerPhone: '655441122',
+        creationDate: '2017-03-15',
+        centerEmail: 'info@aftech.cm',
+        city: 'Douala',
+        approvalNumber: 'AG778899',
+        approvalStart: '2021-09-01',
+        approvalEnd: '2025-08-31',
+        departement: 'Wouri',
+        fullAddress: 'Rue des technologies, Bonamoussadi',
+        residenceCity: 'Douala',
+        region: 'Littoral',
+        cniValidUntil: '2029-08-10',
         isCenterPresentCandidateForCqp: true,
-        isCenterPresentCandidateForDqp: false,
-        password: 'TopSkills789!',
-        confirmPassword: 'TopSkills789!',
-        website: 'https://topskills.cm',
+        isCenterPresentCandidateForDqp: true,
+        password: 'Aftech2024!',
+        confirmPassword: 'Aftech2024!',
+        website: 'https://aftech.cm',
         termsAccepted: true
       });
-      
     });
 
     // Charger les données nécessaires
-    // this.loadExamCenters();
-    // this.loadTrainingCenters();
+    
+    this.loadTrainingCenters();
+    this.loadSpecialities();
+    this.loadCourses();
+    
+    // Autocomplete filtering
+    this.filteredTrainingCenters = this.trainingCenterCtrl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterTrainingCenters(value || ''))
+    );
 
-    this.candidateForm.patchValue({
-      lastName: 'Ndiaye',
-      firstName: 'Fatou',
-      email: 'fatou.ndiaye@example.com',
-      phoneNumber: '699112233',
-      password: 'MotDePasse123',
-      confirmPassword: 'MotDePasse123',
-      preferredLanguage: 'fr',
-      sex: 'F',
-      dateOfBirth: '1998-05-15',
-      birthCity: 'Dakar',
-      birthDepartment: 'Dakar',
-      nationality: 'Sénégalaise',
-      originRegion: 'Dakar',
-      maritalStatus: 'single',
-      childrenCount: 0,
-      teachingLanguage: 'fr',
-      isFirstAttempt: true,
-      examType: 'CQP',
-      desiredField: 'Informatique',
-      examCenter: '1', // ID du centre d'examen
-      examSession: '2025-06',
-      trainingMode: 'presentiel',
-      fundingSource: 'personal',
-      termsAccepted: true
+    // Filtrage des spécialités en temps réel
+    this.filteredSpecialities$ = this.specialitySearchCtrl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterSpecialities(value || ''))
+    );
+
+    // Filtrage des cours en temps réel
+    this.filteredCourses$ = this.courseSearchCtrl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterCourses(value || ''))
+    );
+  }
+
+  loadCourses(): void {
+    // Charger les cours avec leurs spécialités
+    this.authService.getAllCoursesWithSpecialitiesPaged({ offset: 0, pageSize: 1000 }).subscribe({
+      next: (response) => {
+        this.courses = response.content || [];
+        console.log('Liste des cours avec spécialités récupérés :', this.courses);
+        
+        // Afficher un message informatif si aucun cours n'est trouvé
+        if (this.courses.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Aucune filière disponible',
+            text: 'Aucune filière n\'est actuellement disponible. Veuillez contacter l\'administrateur.',
+            confirmButtonText: 'Compris'
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Erreur chargement cours:', err);
+        
+        // En cas d'erreur, essayer de charger les cours sans spécialités
+        this.courseService.getCourses({ offset: 0, pageSize: 1000 }).subscribe({
+          next: (response) => {
+            // Convertir CourseResponse en CourseWithSpecialitiesResponse pour la compatibilité
+            this.courses = response.content?.map(course => ({
+              courseId: undefined,
+              courseName: course.name,
+              specialities: []
+            })) || [];
+            console.log('Liste des cours récupérés (sans spécialités) :', this.courses);
+          },
+          error: (courseErr) => {
+            console.error('Erreur chargement cours (fallback):', courseErr);
+            Swal.fire({
+              icon: 'warning',
+              title: 'Attention',
+              text: 'Impossible de charger les filières. Veuillez réessayer plus tard.',
+              confirmButtonText: 'Compris'
+            });
+          }
+        });
+      }
     });
   }
 
-  // Méthodes pour charger les données
-  // loadExamCenters(): void {
-  //   this.trainingCenterService.getAllTrainingCenters()
-  //     .pipe(
-  //       switchMap(trainingCentersResponse => {
-  //         const divisions = [...new Set(
-  //           (trainingCentersResponse.content || [])
-  //             .map(tc => tc.division)
-  //             .filter((d): d is string => !!d)
-  //         )];
+  private _filterCourses(value: any): CourseWithSpecialitiesResponse[] {
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.courses.filter(course =>
+      (course.courseName && course.courseName.toLowerCase().includes(filterValue))
+    );
+  }
 
-  //         if (divisions.length === 0) {
-  //           return forkJoin([]);
-  //         }
+  displayCourse(course: CourseWithSpecialitiesResponse): string {
+    return course && course.courseName ? course.courseName : '';
+  }
 
-  //         const examCenterRequests = divisions.map(division =>
-  //           this.examCenterService.findByName4({ division })
-  //         );
+  onCourseSelected(course: CourseWithSpecialitiesResponse): void {
+    if (!this.selectedCourses.find(c => c.courseName === course.courseName)) {
+      this.selectedCourses.push(course);
+      this.selectedCourseSpecialities[course.courseName || ''] = [];
+      
+      // Charger les spécialités existantes pour cette filière si disponibles
+      if (course.specialities && course.specialities.length > 0) {
+        this.selectedCourseSpecialities[course.courseName || ''] = course.specialities;
+        console.log(`Spécialités existantes ajoutées pour ${course.courseName}:`, course.specialities);
+      }
+      
+      this.courseSearchCtrl.setValue('');
+      
+      // Afficher un message de confirmation
+      Swal.fire({
+        icon: 'success',
+        title: 'Filière ajoutée',
+        text: `La filière "${course.courseName}" a été ajoutée à votre sélection.`,
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Filière déjà sélectionnée',
+        text: 'Cette filière est déjà dans votre liste.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  }
 
-  //         return forkJoin(examCenterRequests);
-  //       }),
-  //       map(responses => {
-  //         return responses.flatMap(response => response.content || []);
-  //       })
-  //     ).subscribe({
-  //       next: (centers) => {
-  //         this.examCenters = centers;
-  //       },
-  //       error: (err) => {
-  //         console.error('Erreur chargement centres d\'examen:', err);
-  //       }
-  //     });
-  // }
+  removeCourse(course: CourseWithSpecialitiesResponse): void {
+    this.selectedCourses = this.selectedCourses.filter(c => c.courseName !== course.courseName);
+    delete this.selectedCourseSpecialities[course.courseName || ''];
+  }
 
-  // loadTrainingCenters(): void {
-  //   this.trainingCenterService.getAllTrainingCenters().subscribe({
-  //     next: (response) => {
-  //       this.trainingCenters = response.content || [];
-  //     },
-  //     error: (err) => {
-  //       console.error('Erreur chargement centres de formation:', err);
-  //     }
-  //   });
-  // }
+  onSpecialitySelectedForCourse(speciality: SpecialityResponse, course: CourseWithSpecialitiesResponse): void {
+    const courseName = course.courseName || '';
+    if (!this.selectedCourseSpecialities[courseName].find(s => s.id === speciality.id)) {
+      this.selectedCourseSpecialities[courseName].push(speciality);
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Spécialité déjà sélectionnée',
+        text: 'Cette spécialité est déjà dans la liste de cette filière.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  }
+
+  removeSpecialityFromCourse(speciality: SpecialityResponse, course: CourseWithSpecialitiesResponse): void {
+    const courseName = course.courseName || '';
+    this.selectedCourseSpecialities[courseName] = this.selectedCourseSpecialities[courseName].filter(s => s.id !== speciality.id);
+  }
+
+  showCreateSpecialityFormForCourse(course: CourseWithSpecialitiesResponse): void {
+    const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
+    if (!approvalNumber || approvalNumber.trim() === '') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Numéro d\'agrément requis',
+        text: 'Veuillez d\'abord saisir le numéro d\'agrément de votre centre avant de créer une nouvelle spécialité.',
+        confirmButtonText: 'Compris'
+      });
+      this.promoterForm.get('approvalNumber')?.markAsTouched();
+      return;
+    }
+    
+    this.isCreatingSpecialityForCourse = true;
+    this.currentCourseForSpeciality = course;
+    
+    // Pré-remplir le nom avec le terme de recherche si disponible
+    if (this.specialitySearchTerm && this.specialitySearchTerm.trim() !== '') {
+      this.newSpecialityForm.patchValue({
+        name: this.specialitySearchTerm.trim()
+      });
+    }
+  }
+
+  hideCreateSpecialityFormForCourse(): void {
+    this.isCreatingSpecialityForCourse = false;
+    this.currentCourseForSpeciality = null;
+    this.newSpecialityForm.reset();
+  }
+
+  createNewSpecialityForCourse(): void {
+    if (this.newSpecialityForm.invalid || !this.currentCourseForSpeciality) {
+      return;
+    }
+
+    const formValue = this.newSpecialityForm.value;
+    const createSpecialityRequest = {
+      code: formValue.code,
+      name: formValue.name,
+      description: formValue.description || '',
+      examType: formValue.examType
+    };
+
+    console.log('Création spécialité pour filière:', createSpecialityRequest);
+
+    this.authService.createAndLinkSpecialityToTrainingCenter({
+      agreementNumber: this.promoterForm.get('approvalNumber')?.value,
+      body: createSpecialityRequest
+    }).subscribe({
+      next: (response) => {
+        console.log('Réponse création spécialité:', response);
+        
+        // Créer un objet spécialité temporaire pour l'ajouter à la sélection
+        const newSpeciality: SpecialityResponse = {
+          id: undefined,
+          name: formValue.name,
+          code: formValue.code,
+          description: formValue.description || '',
+          examType: formValue.examType
+        };
+        
+        // Ajouter la nouvelle spécialité à la filière sélectionnée
+        const courseName = this.currentCourseForSpeciality?.courseName || '';
+        if (!this.selectedCourseSpecialities[courseName]) {
+          this.selectedCourseSpecialities[courseName] = [];
+        }
+        this.selectedCourseSpecialities[courseName].push(newSpeciality);
+        
+        this.hideCreateSpecialityFormForCourse();
+        Swal.fire({
+          icon: 'success',
+          title: 'Spécialité créée',
+          text: 'La spécialité a été créée et liée à votre centre avec succès.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      error: (err) => {
+        console.error('Erreur création spécialité:', err);
+        
+        // Si le statut est 200, considérer comme un succès malgré l'erreur
+        if (err.status === 200) {
+          console.log('Réponse avec statut 200, considérer comme succès');
+          
+          // Créer un objet spécialité temporaire pour l'ajouter à la sélection
+          const newSpeciality: SpecialityResponse = {
+            id: undefined,
+            name: formValue.name,
+            code: formValue.code,
+            description: formValue.description || '',
+            examType: formValue.examType
+          };
+          
+          // Ajouter la nouvelle spécialité à la filière sélectionnée
+          const courseName = this.currentCourseForSpeciality?.courseName || '';
+          if (!this.selectedCourseSpecialities[courseName]) {
+            this.selectedCourseSpecialities[courseName] = [];
+          }
+          this.selectedCourseSpecialities[courseName].push(newSpeciality);
+          
+          this.hideCreateSpecialityFormForCourse();
+          Swal.fire({
+            icon: 'success',
+            title: 'Spécialité créée',
+            text: 'La spécialité a été créée et liée à votre centre avec succès.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          return;
+        }
+        
+        let errorMessage = 'Erreur lors de la création de la spécialité.';
+        
+        // Gestion spécifique des erreurs
+        if (err.error && err.error.message) {
+          errorMessage = err.error.message;
+        } else if (err.error && err.error.businessErrorDescription) {
+          errorMessage = err.error.businessErrorDescription;
+        } else if (err.status === 400) {
+          errorMessage = 'Données invalides. Vérifiez les informations saisies.';
+        } else if (err.status === 409) {
+          errorMessage = 'Une spécialité avec ce nom existe déjà.';
+        }
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: errorMessage,
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  }
+
+  loadSpecialities(): void {
+    this.authService.getall2({ offset: 0, pageSize: 1000 }).subscribe({
+      next: (response) => {
+        this.specialities = response.content || [];
+        console.log('Liste des spécialités récupérées :', this.specialities);
+      },
+      error: (err) => {
+        console.error('Erreur chargement spécialités:', err);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Attention',
+          text: 'Impossible de charger les spécialités. Veuillez réessayer plus tard.',
+          confirmButtonText: 'Compris'
+        });
+      }
+    });
+  }
+
+  private _filterSpecialities(value: any): SpecialityResponse[] {
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.specialities.filter(s =>
+      (s.name && s.name.toLowerCase().includes(filterValue)) ||
+      (s.code && s.code.toLowerCase().includes(filterValue)) ||
+      (s.description && s.description.toLowerCase().includes(filterValue))
+    );
+  }
+
+  displaySpeciality(s: SpecialityResponse): string {
+    return s && s.name ? s.name : '';
+  }
+
+  onSpecialitySelected(speciality: SpecialityResponse): void {
+    if (!this.selectedSpecialities.find(s => s.id === speciality.id)) {
+      this.selectedSpecialities.push(speciality);
+      this.specialitySearchCtrl.setValue(''); // reset le champ après sélection
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Spécialité déjà sélectionnée',
+        text: 'Cette spécialité est déjà dans votre liste.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  }
+
+  removeSpeciality(speciality: SpecialityResponse): void {
+    this.selectedSpecialities = this.selectedSpecialities.filter(s => s.id !== speciality.id);
+  }
+
+  showCreateSpecialityForm(): void {
+    const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
+    if (!approvalNumber || approvalNumber.trim() === '') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Numéro d\'agrément requis',
+        text: 'Veuillez d\'abord saisir le numéro d\'agrément de votre centre avant de créer une nouvelle spécialité.',
+        confirmButtonText: 'Compris'
+      });
+      // Marquer le champ comme touché pour afficher l'erreur
+      this.promoterForm.get('approvalNumber')?.markAsTouched();
+      return;
+    }
+    
+    this.isCreatingSpeciality = true;
+    
+    // Pré-remplir le nom avec le terme de recherche si disponible
+    if (this.specialitySearchTerm && this.specialitySearchTerm.trim() !== '') {
+      this.newSpecialityForm.patchValue({
+        name: this.specialitySearchTerm.trim()
+      });
+    }
+  }
+
+  hideCreateSpecialityForm(): void {
+    this.isCreatingSpeciality = false;
+    this.newSpecialityForm.reset();
+  }
+
+  createNewSpeciality(): void {
+    if (this.newSpecialityForm.invalid) {
+      return;
+    }
+
+    const formValue = this.newSpecialityForm.value;
+    const createSpecialityRequest = {
+      code: formValue.code,
+      name: formValue.name,
+      description: formValue.description || '',
+      examType: formValue.examType
+    };
+
+    console.log('Création spécialité avec:', createSpecialityRequest);
+
+    this.authService.createAndLinkSpecialityToTrainingCenter({
+      agreementNumber: this.promoterForm.get('approvalNumber')?.value,
+      body: createSpecialityRequest
+    }).subscribe({
+      next: (response) => {
+        console.log('Réponse création spécialité:', response);
+        
+        // Créer un objet spécialité temporaire pour l'ajouter à la sélection
+        const newSpeciality: SpecialityResponse = {
+          id: undefined, // L'ID sera défini après le rechargement
+          name: formValue.name,
+          code: formValue.code,
+          description: formValue.description || '',
+          examType: formValue.examType
+        };
+        
+        // Ajouter la nouvelle spécialité à la sélection
+        this.selectedSpecialities.push(newSpeciality);
+        
+        this.hideCreateSpecialityForm();
+        Swal.fire({
+          icon: 'success',
+          title: 'Spécialité créée',
+          text: 'La spécialité a été créée et liée à votre centre avec succès.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      error: (err) => {
+        console.error('Erreur création spécialité:', err);
+        
+        // Si le statut est 200, considérer comme un succès malgré l'erreur
+        if (err.status === 200) {
+          console.log('Réponse avec statut 200, considérer comme succès');
+          
+          // Créer un objet spécialité temporaire pour l'ajouter à la sélection
+          const newSpeciality: SpecialityResponse = {
+            id: undefined,
+            name: formValue.name,
+            code: formValue.code,
+            description: formValue.description || '',
+            examType: formValue.examType
+          };
+          
+          // Ajouter la nouvelle spécialité à la sélection
+          this.selectedSpecialities.push(newSpeciality);
+          
+          this.hideCreateSpecialityForm();
+          Swal.fire({
+            icon: 'success',
+            title: 'Spécialité créée',
+            text: 'La spécialité a été créée et liée à votre centre avec succès.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          return;
+        }
+        
+        let errorMessage = 'Erreur lors de la création de la spécialité.';
+        
+        // Gestion spécifique des erreurs
+        if (err.error && err.error.message) {
+          errorMessage = err.error.message;
+        } else if (err.error && err.error.businessErrorDescription) {
+          errorMessage = err.error.businessErrorDescription;
+        } else if (err.status === 400) {
+          errorMessage = 'Données invalides. Vérifiez les informations saisies.';
+        } else if (err.status === 409) {
+          errorMessage = 'Une spécialité avec ce nom existe déjà.';
+        }
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: errorMessage,
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  }
+
+  private _filterTrainingCenters(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.trainingCenters.filter(center =>
+      center.fullName.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onTrainingCenterSelected(event: MatAutocompleteSelectedEvent) {
+    const selectedName = event.option.value;
+    const selected = this.trainingCenters.find(c => c.fullName === selectedName);
+    if (selected) {
+      this.candidateForm.get('trainingCenterAcronym')?.setValue(selected.acronym);
+    }
+  }
+
+  loadTrainingCenters(): void {
+    console.log('Chargement des centres de formation...');
+    this.trainingCenters = [];
+    
+    this.authService.getAllTrainingCenters1({ offset: 0, pageSize: 1000 }).subscribe({
+        next: (response) => {
+        console.log('Réponse centres de formation:', response);
+          const centers = response.content || [];
+        this.trainingCenters = centers.sort((a, b) => a.fullName.localeCompare(b.fullName));
+        console.log('Centres de formation chargés:', this.trainingCenters.length);
+        
+        // Met à jour l'autocomplete
+            this.filteredTrainingCenters = this.trainingCenterCtrl.valueChanges.pipe(
+              startWith(''),
+              map(value => this._filterTrainingCenters(value || ''))
+            );
+        },
+        error: (err) => {
+          console.error('Erreur chargement centres de formation:', err);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Attention',
+          text: 'Impossible de charger les centres de formation. Veuillez réessayer plus tard.',
+          confirmButtonText: 'Compris'
+      });
+      }
+    });
+  }
+  
+  private showServiceWarning(serviceName: string): void {
+    // Only show warning once per session
+    if (!sessionStorage.getItem('serviceWarningShown')) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Mode hors ligne',
+        text: `Les ${serviceName} sont chargées en mode hors ligne. Certaines options peuvent être limitées.`,
+        confirmButtonText: 'Compris',
+        timer: 5000,
+        timerProgressBar: true
+      });
+      sessionStorage.setItem('serviceWarningShown', 'true');
+    }
+  }
 
   // CANDIDATE FORM
   createCandidateForm(): FormGroup {
     return this.fb.group({
-      // Step 1: Account
-      lastName: ['', Validators.required],
-      firstName: ['', Validators.required],
+      firstname: ['', Validators.required],
+      lastname: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [
-        Validators.required, 
-        Validators.pattern(/^[0-9]{9,}$/)
-      ]],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)
-      ]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{9,}$/)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)]],
       confirmPassword: ['', Validators.required],
-      preferredLanguage: ['fr'],
-
-      // Step 2: Personal Info
+      language: ['fr', Validators.required],
       sex: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
-      birthCity: ['', Validators.required],
-      birthDepartment: ['', Validators.required],
-      birthRegion: ['', Validators.required],
-      nationality: ['', Validators.required],
-      originRegion: ['', Validators.required],
-      maritalStatus: [''],
-      childrenCount: [0],
-      teachingLanguage: ['fr', Validators.required],
-
-      // Step 3: Exam Info
-      isFirstAttempt: ['', Validators.required],
-      examType: ['', Validators.required],
-      desiredField: ['', Validators.required],
-      trainingCenterCode: [''],
-      trainingCenterName: ['', Validators.required],
-      trainingCenterCity: [''],
-      examSession: ['', Validators.required],
-      trainingMode: ['', Validators.required],
-      fundingSource: ['', Validators.required],
-
-      // Step 4: Documents
-      birthCertificate: [null, Validators.required],
-      identityDocument: [null, Validators.required],
-      diploma: [null, Validators.required],
-      identityPhotos: [null, Validators.required],
-      firstAttemptProof: [null],
-      motivationLetter: [null],
-
-      // Step 5: Terms
-      termsAccepted: [false, Validators.requiredTrue]
+      placeOfBirth: ['', Validators.required],
+      startYear: ['', Validators.required],
+      endYear: ['', Validators.required],
+      trainingCenterAcronym: ['', Validators.required]
     }, { validator: this.passwordMatchValidator });
   }
-   passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
+
+  // SPECIALITY FORM
+  createNewSpecialityForm(): FormGroup {
+    return this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]],
+      description: ['', [Validators.maxLength(500)]],
+      code: ['', [Validators.required, Validators.maxLength(20)]],
+      examType: ['', [Validators.required, this.examTypeValidator]]
+    });
+  }
+
+  examTypeValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    const value = control.value;
+    if (!value || value.trim() === '') {
+      return { required: true };
+    }
+    return null;
+  }
+
+  onExamTypeChange(examType: string, event: any): void {
+    const currentValue = this.newSpecialityForm.get('examType')?.value || '';
+    let newValue = currentValue;
+    
+    if (event.target.checked) {
+      // Ajouter le type d'examen
+      if (currentValue.includes(examType)) {
+        newValue = currentValue; // Déjà présent
+      } else {
+        newValue = currentValue ? `${currentValue}, ${examType}` : examType;
+      }
+    } else {
+      // Retirer le type d'examen
+      newValue = currentValue.replace(new RegExp(`\\b${examType}\\b,?\\s*`, 'g'), '').replace(/,\s*$/, '');
+    }
+    
+    this.newSpecialityForm.patchValue({ examType: newValue });
+  }
+
+  passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
     const password = control.get('password');
     const confirmPassword = control.get('confirmPassword');
 
@@ -344,6 +783,7 @@ export class RegisterComponent implements OnInit {
     }
     return null;
   }
+
   onCandidateFileChange(event: Event, controlName: string): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
@@ -356,191 +796,54 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  nextCandidateStep(): void {
-    if (this.isCurrentStepValid()) {
-      this.currentStepCandidate++;
-      window.scrollTo(0, 0);
-    } else {
-      this.markCurrentStepAsTouched();
-    }
-  }
-
-  isCurrentStepValid(): boolean {
-    switch (this.currentStepCandidate) {
-      case 0: // Account
-        return this.candidateForm.get('lastName')?.valid &&
-               this.candidateForm.get('firstName')?.valid &&
-               this.candidateForm.get('email')?.valid &&
-               this.candidateForm.get('phoneNumber')?.valid &&
-               this.candidateForm.get('password')?.valid &&
-               this.candidateForm.get('confirmPassword')?.valid;
-      
-      case 1: // Personal Info
-        return this.candidateForm.get('sex')?.valid &&
-               this.candidateForm.get('dateOfBirth')?.valid &&
-               this.candidateForm.get('birthCity')?.valid &&
-               this.candidateForm.get('birthDepartment')?.valid &&
-               this.candidateForm.get('birthRegion')?.valid &&
-               this.candidateForm.get('nationality')?.valid &&
-               this.candidateForm.get('originRegion')?.valid &&
-               this.candidateForm.get('teachingLanguage')?.valid;
-      
-      case 2: // Exam Info
-        return this.candidateForm.get('isFirstAttempt')?.valid &&
-               this.candidateForm.get('examType')?.valid &&
-               this.candidateForm.get('desiredField')?.valid &&
-               this.candidateForm.get('examSession')?.valid &&
-               this.candidateForm.get('trainingMode')?.valid &&
-               this.candidateForm.get('fundingSource')?.valid;
-      
-      case 3: // Documents
-        return this.candidateForm.get('birthCertificate')?.valid &&
-               this.candidateForm.get('identityDocument')?.valid &&
-               this.candidateForm.get('diploma')?.valid &&
-               this.candidateForm.get('identityPhotos')?.valid;
-      
-      default:
-        return true;
-    }
-  }
-
-  markCurrentStepAsTouched(): void {
-    const controls = this.candidateForm.controls;
-    Object.keys(controls).forEach(key => {
-      const control = controls[key];
-      if (this.isFieldInCurrentStep(key)) {
-        control.markAsTouched();
-      }
-    });
-  }
-
-  isFieldInCurrentStep(fieldName: string): boolean {
-    switch (this.currentStepCandidate) {
-      case 0: // Account
-        return ['lastName', 'firstName', 'email', 'phoneNumber', 'password', 'confirmPassword', 'preferredLanguage'].includes(fieldName);
-      case 1: // Personal Info
-        return ['sex', 'dateOfBirth', 'birthCity', 'birthDepartment', 'birthRegion', 
-               'nationality', 'originRegion', 'maritalStatus', 'childrenCount', 'teachingLanguage'].includes(fieldName);
-      case 2: // Exam Info
-        return ['isFirstAttempt', 'examType', 'desiredField', 'trainingCenterCode', 
-               'trainingCenterName', 'trainingCenterCity', 'examSession', 'trainingMode', 'fundingSource'].includes(fieldName);
-      case 3: // Documents
-        return ['birthCertificate', 'identityDocument', 'diploma', 'identityPhotos', 
-               'firstAttemptProof', 'motivationLetter'].includes(fieldName);
-      default:
-        return false;
-    }
-  }
-
-  prevCandidateStep(): void {
-    this.currentStepCandidate--;
-    window.scrollTo(0, 0);
-  }
-
-  calculateFees(): number {
-    return this.candidateForm.value.examType === 'CQP' ? 25000 : 35000;
-  }
-
-  processPayment(): void {
-    if (this.candidateForm.invalid || !this.candidateForm.value.termsAccepted) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: 'Veuillez compléter tous les champs requis et accepter les conditions'
-      });
+  registerCandidate(): void {
+    this.errorMessages = [];
+    if (this.candidateForm.invalid) {
+      Object.values(this.candidateForm.controls).forEach(control => control.markAsTouched());
+      this.errorMessages = ['Veuillez remplir tous les champs obligatoires.'];
       return;
     }
-
-    this.processing = true;
-    this.registerCandidate();
-  }
-
-  registerCandidate(): void {
     this.processing = true;
     const formValue = this.candidateForm.value;
 
-    // 1. Créer le compte candidat (CandidateRegistrationRequest)
-    const registrationRequest: CandidateRegistrationRequest = {
-      firstname: formValue.firstName,
-      lastname: formValue.lastName,
+    // Récupère le nom du centre à partir de l'acronym sélectionné
+    const selectedCenter = this.trainingCenters.find(c => c.acronym === formValue.trainingCenterAcronym);
+    const trainingCenterName = selectedCenter ? selectedCenter.fullName : '';
+
+    const registrationRequest: any = {
+      firstname: formValue.firstname,
+      lastname: formValue.lastname,
       email: formValue.email,
       phoneNumber: formValue.phoneNumber,
       password: formValue.password,
       confirmPassword: formValue.confirmPassword,
-      language: formValue.preferredLanguage,
-      startYear: this.currentYear.toString(),
-      endYear: (this.currentYear + 1).toString(),
-      trainingCenterName: formValue.trainingCenterName
+      language: formValue.language,
+      sex: formValue.sex,
+      dateOfBirth: formValue.dateOfBirth,
+      placeOfBirth: formValue.placeOfBirth,
+      startYear: formValue.startYear + '-01-01',
+      endYear: formValue.endYear + '-01-01',
+      trainingCenterName: trainingCenterName
     };
+
+    console.log('Payload envoyé au backend :', registrationRequest);
 
     this.authService.register({ body: registrationRequest }).subscribe({
-      next: () => {
-        // 2. Créer la candidature (ApplicationRequest)
-        this.createApplication(formValue);
+      next: (response) => {
+        this.processing = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'Inscription réussie',
+          text: 'Votre inscription a été enregistrée avec succès. Vous pouvez maintenant vous connecter.',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          this.router.navigate(['/login']);
+        });
       },
       error: (err) => {
         this.processing = false;
-        this.handleError(err);
-      }
-    });
-  }
-
-  createApplication(formValue: any): void {
-    const applicationRequest: ApplicationRequest = {
-      academicLevel: formValue.desiredField,
-      amount: this.calculateFees(),
-      applicationRegion: formValue.birthRegion,
-      dateOfBirth: formValue.dateOfBirth,
-      departmentOfOrigin: formValue.birthDepartment,
-      email: formValue.email,
-      examType: formValue.examType,
-      financialRessource: formValue.fundingSource,
-      formationMode: formValue.trainingMode,
-      freeCandidate: false,
-      learningLanguage: formValue.teachingLanguage,
-      matrimonialSituation: formValue.maritalStatus,
-      nationIdNumber: formValue.identityDocument?.name || '',
-      nationality: formValue.nationality,
-      numberOfKid: formValue.childrenCount,
-      paymentMethod: this.selectedPaymentMethod,
-      placeOfBirth: formValue.birthCity,
-      regionOrigins: formValue.originRegion,
-      repeatCandidate: !formValue.isFirstAttempt,
-      secretCode: Math.floor(1000 + Math.random() * 9000), // Code secret aléatoire
-      sessionYear: formValue.examSession,
-      sex: formValue.sex,
-      speciality: formValue.desiredField,
-      trainingCenterAcronym: formValue.trainingCenterCode
-    };
-
-    this.applicationService.candidateAppliance({ body: applicationRequest }).subscribe({
-      next: () => {
-        // 3. Créer le paiement
-        this.createPayment();
-      },
-      error: (err) => {
-        this.processing = false;
-        this.handleError(err);
-      }
-    });
-  }
-
-  createPayment(): void {
-    const paymentData = {
-      amount: this.calculateFees(),
-      paymentMethod: this.selectedPaymentMethod,
-      secretCode: Math.floor(1000 + Math.random() * 9000)
-    };
-
-    this.paymentService.createPayment({ body: paymentData }).subscribe({
-      next: () => {
-        this.processing = false;
-        this.showSuccess('Candidat');
-        this.router.navigate(['/login']);
-      },
-      error: (err) => {
-        this.processing = false;
-        this.handleError(err);
+        console.error('Erreur backend :', err);
+        this.handleRegistrationError(err);
       }
     });
   }
@@ -634,8 +937,64 @@ export class RegisterComponent implements OnInit {
     if (invalidFields.length) {
       this.errorMessages = ['Veuillez remplir tous les champs obligatoires du centre'];
       this.markFieldsAsTouched(this.promoterForm, requiredFields);
+      
+      // Afficher une alerte plus détaillée
+      Swal.fire({
+        icon: 'warning',
+        title: 'Informations manquantes',
+        text: 'Veuillez remplir tous les champs obligatoires du centre avant de continuer.',
+        confirmButtonText: 'Compris'
+      });
       return false;
     }
+
+    // Validation selon le type d'examen choisi
+    const isCqp = this.promoterForm.get('isCenterPresentCandidateForCqp')?.value;
+    const isDqp = this.promoterForm.get('isCenterPresentCandidateForDqp')?.value;
+
+    if (!isCqp && !isDqp) {
+      this.errorMessages = ['Veuillez sélectionner au moins un type d\'examen (CQP ou DQP)'];
+      
+      Swal.fire({
+        icon: 'warning',
+        title: 'Type d\'examen requis',
+        text: 'Votre centre doit proposer au moins un type d\'examen (CQP ou DQP).',
+        confirmButtonText: 'Compris'
+      });
+      return false;
+    }
+
+    // Validation des filières et spécialités
+    if (this.selectedCourses.length === 0) {
+      this.errorMessages = ['Veuillez sélectionner au moins une filière'];
+      
+      Swal.fire({
+        icon: 'warning',
+        title: 'Filières requises',
+        text: 'Vous devez sélectionner au moins une filière et ses spécialités.',
+        confirmButtonText: 'Compris'
+      });
+      return false;
+    }
+
+    // Vérifier que chaque filière a au moins une spécialité
+    const coursesWithoutSpecialities = this.selectedCourses.filter(course => 
+      !this.validateCourseHasSpecialities(course)
+    );
+
+    if (coursesWithoutSpecialities.length > 0) {
+              const courseNames = coursesWithoutSpecialities.map(c => c.courseName).join(', ');
+      this.errorMessages = ['Chaque filière sélectionnée doit avoir au moins une spécialité'];
+      
+      Swal.fire({
+        icon: 'warning',
+        title: 'Spécialités requises',
+        text: `Les filières suivantes n'ont pas de spécialités sélectionnées : ${courseNames}`,
+        confirmButtonText: 'Compris'
+      });
+      return false;
+    }
+
     return true;
   }
 
@@ -687,7 +1046,28 @@ export class RegisterComponent implements OnInit {
     // 1. Envoi des infos promoteur/centre (JSON)
     this.authService.createPromoter({ body: formValue}).subscribe({
       next: () => {
-        // 2. Préparer FormData pour les fichiers
+        // 2. Lier toutes les spécialités des filières au centre (CQP et DQP)
+        const allSpecialityIds: number[] = [];
+        Object.values(this.selectedCourseSpecialities).forEach(specialities => {
+          const specialityIds = specialities.map(s => s.id).filter(id => id !== undefined) as number[];
+          allSpecialityIds.push(...specialityIds);
+        });
+
+        if (allSpecialityIds.length > 0) {
+          this.authService.addSpecialitiesToTrainingCenter1({
+            agreementNumber: formValue.approvalNumber,
+            body: allSpecialityIds
+          }).subscribe({
+            next: () => {
+              console.log('Spécialités liées avec succès');
+            },
+            error: (err) => {
+              console.error('Erreur liaison spécialités:', err);
+            }
+          });
+        }
+
+        // 3. Préparer FormData pour les fichiers
         const formData = new FormData();
         if (formValue.cniFile) formData.append('cniFile', formValue.cniFile);
         if (formValue.approvalFile) formData.append('approvalFile', formValue.approvalFile);
@@ -696,7 +1076,7 @@ export class RegisterComponent implements OnInit {
         if (formValue.internalRegulation) formData.append('internalRegulation', formValue.internalRegulation);
         if (formValue.locationPlan) formData.append('locationPlan', formValue.locationPlan);
 
-        // 3. Appel uploadPromoterFile (renseigne bien les paramètres)
+        // 5. Appel uploadPromoterFile (renseigne bien les paramètres)
         this.authService.uploadPromoterFile({
           'approval-Number': formValue.approvalNumber,
           email: formValue.email,
@@ -787,19 +1167,21 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  private handleError(error: any): void {
-    this.processing = false;
-    console.error('Registration error:', error);
-    
-    if (error.status === 400 && error.error?.validationErrors) {
-      this.errorMessages = error.error.validationErrors;
-    } else if (error.error?.message) {
-      this.errorMessages = [error.error.message];
-    } else if (error.message) {
-      this.errorMessages = [error.message];
-    } else {
-      this.errorMessages = ['Une erreur technique est survenue'];
+  private handleRegistrationError(error: any): void {
+    let errorMessage = 'Une erreur est survenue lors de l\'inscription.';
+    if (error && error.error && error.error.message) {
+      errorMessage = error.error.message;
+    } else if (error && error.message) {
+      errorMessage = error.message;
     }
+    this.errorMessages = [errorMessage];
+    // Affichage d'une popup d'erreur
+    Swal.fire({
+      icon: 'error',
+      title: 'Erreur',
+      text: errorMessage,
+      confirmButtonText: 'OK'
+    });
   }
 
   getFileName(file: File | null): string {
@@ -810,4 +1192,401 @@ export class RegisterComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  getTrainingCenterName(code: string): string | undefined {
+    if (!code) return undefined;
+    const center = this.trainingCenters.find(tc => tc.acronym === code);
+    return center?.fullName;
+  }
+
+  // Méthode de test pour déboguer l'inscription
+  testRegistration(): void {
+    const testRequest: any = {
+      firstname: 'Test',
+      lastname: 'User',
+      email: 'test.user@example.com',
+      phoneNumber: '690123456',
+      password: 'TestPass123',
+      confirmPassword: 'TestPass123',
+      language: 'fr',
+      sex: 'M',
+      dateOfBirth: '1990-01-01',
+      placeOfBirth: 'Douala',
+      startYear: '2025',
+      endYear: '2026',
+      trainingCenterName: 'Institut Supérieur de Management'
+    };
+
+    console.log('Testing registration with:', testRequest);
+
+    this.authService.register({ body: testRequest }).subscribe({
+      next: (response) => {
+        console.log('Test registration successful:', response);
+        Swal.fire({
+          icon: 'success',
+          title: 'Test réussi',
+          text: 'L\'inscription de test a fonctionné !'
+        });
+      },
+      error: (err) => {
+        console.error('Test registration failed:', err);
+        this.handleRegistrationError(err);
+      }
+    });
+  }
+
+  // Méthode pour réinitialiser le formulaire
+  resetForm(): void {
+    this.currentStepCandidate = 0;
+    this.candidateAccountCreated = false;
+    this.candidateAccountId = null;
+    this.personalInfoUpdated = false;
+    this.applicationCreated = false;
+    this.applicationId = null;
+    this.documentsUploaded = false;
+    this.paymentCompleted = false;
+    this.candidateForm.reset();
+    this.processing = false;
+    
+    // Réinitialiser les spécialités
+    this.selectedSpecialities = [];
+    this.isCreatingSpeciality = false;
+    this.specialitySearchTerm = '';
+    this.newSpecialityForm.reset();
+    
+    // Réinitialiser les filières et spécialités DQP
+    this.selectedCourses = [];
+    this.selectedCourseSpecialities = {};
+    this.isCreatingSpecialityForCourse = false;
+    this.currentCourseForSpeciality = null;
+    this.courseSearchCtrl.setValue('');
+    
+    // Réinitialiser les valeurs par défaut
+    this.candidateForm.patchValue({
+      preferredLanguage: 'fr',
+      teachingLanguage: 'fr',
+      childrenCount: 0,
+      termsAccepted: false
+    });
+  }
+
+  getSelectedSpecialitiesSummary(): string {
+    if (this.selectedSpecialities.length === 0) {
+      return 'Aucune spécialité sélectionnée';
+    }
+    
+    const specialityNames = this.selectedSpecialities.map(s => s.name).join(', ');
+    return `${this.selectedSpecialities.length} spécialité(s): ${specialityNames}`;
+  }
+
+  getTotalSpecialitiesCount(): number {
+    let total = 0;
+    
+    // Compter les spécialités des filières (CQP et DQP)
+    Object.values(this.selectedCourseSpecialities).forEach(specialities => {
+      total += specialities.length;
+    });
+    
+    return total;
+  }
+
+  getExamTypesSummary(): string {
+    const examTypes = [...new Set(this.selectedSpecialities.map(s => s.examType).filter(type => type))];
+    if (examTypes.length === 0) {
+      return 'Aucun type d\'examen spécifié';
+    }
+    return examTypes.join(', ');
+  }
+
+  createQuickSpeciality(): void {
+    const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
+    if (!approvalNumber || approvalNumber.trim() === '') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Numéro d\'agrément requis',
+        text: 'Veuillez d\'abord saisir le numéro d\'agrément de votre centre.',
+        confirmButtonText: 'Compris'
+      });
+      this.promoterForm.get('approvalNumber')?.markAsTouched();
+      return;
+    }
+
+    // Vérifier qu'au moins une filière est sélectionnée
+    if (this.selectedCourses.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Filière requise',
+        text: 'Veuillez d\'abord sélectionner une filière avant de créer une spécialité.',
+        confirmButtonText: 'Compris'
+      });
+      return;
+    }
+
+    // Pré-remplir avec le terme de recherche si disponible
+    const prefillName = this.specialitySearchTerm && this.specialitySearchTerm.trim() !== '' 
+      ? this.specialitySearchTerm.trim() 
+      : '';
+
+    // Créer les options du dropdown des filières
+    const courseOptions = this.selectedCourses.map(course => 
+      `<option value="${course.courseName}">${course.courseName}</option>`
+    ).join('');
+
+    // Demander le nom de la spécialité et la filière
+    Swal.fire({
+      title: 'Créer une nouvelle spécialité',
+      html: `
+        <div class="mb-3">
+          <label class="form-label fw-bold">Nom de la spécialité <span class="text-danger">*</span></label>
+          <input id="specialityName" class="form-control" placeholder="Ex: Informatique, Comptabilité..." value="${prefillName}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Filière <span class="text-danger">*</span></label>
+          <select id="courseSelect" class="form-select">
+            <option value="">Sélectionnez une filière</option>
+            ${courseOptions}
+          </select>
+          <small class="text-muted">La filière est obligatoire pour organiser vos spécialités</small>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Type d'examen</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="quickCQP" checked>
+            <label class="form-check-label" for="quickCQP">
+              <strong>CQP</strong>
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="quickDQP">
+            <label class="form-check-label" for="quickDQP">
+              <strong>DQP</strong>
+            </label>
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '<i class="bx bx-plus-circle me-2"></i>Créer la spécialité',
+      cancelButtonText: '<i class="bx bx-x me-2"></i>Annuler',
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#6c757d',
+      width: '500px',
+      customClass: {
+        confirmButton: 'btn btn-success',
+        cancelButton: 'btn btn-secondary'
+      },
+      preConfirm: () => {
+        const name = (document.getElementById('specialityName') as HTMLInputElement).value;
+        const selectedCourse = (document.getElementById('courseSelect') as HTMLSelectElement).value;
+        const cqp = (document.getElementById('quickCQP') as HTMLInputElement).checked;
+        const dqp = (document.getElementById('quickDQP') as HTMLInputElement).checked;
+        
+        if (!name || name.trim() === '') {
+          Swal.showValidationMessage('Le nom de la spécialité est requis');
+          return false;
+        }
+        
+        if (!selectedCourse || selectedCourse.trim() === '') {
+          Swal.showValidationMessage('La sélection d\'une filière est obligatoire');
+          return false;
+        }
+        
+        if (!cqp && !dqp) {
+          Swal.showValidationMessage('Sélectionnez au moins un type d\'examen');
+          return false;
+        }
+        
+        const examTypes = [];
+        if (cqp) examTypes.push('CQP');
+        if (dqp) examTypes.push('DQP');
+        
+        return { 
+          name: name.trim(), 
+          examTypes: examTypes.join(', '),
+          selectedCourse: selectedCourse
+        };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const { name, examTypes, selectedCourse } = result.value;
+        
+        // Créer une spécialité avec des valeurs par défaut
+        const createSpecialityRequest = {
+          code: name.substring(0, 3).toUpperCase(),
+          name: name,
+          description: `Spécialité en ${name}`,
+          examType: examTypes
+        };
+
+        console.log('Création rapide spécialité:', createSpecialityRequest);
+
+        this.authService.createAndLinkSpecialityToTrainingCenter({
+          agreementNumber: approvalNumber,
+          body: createSpecialityRequest
+        }).subscribe({
+          next: (response) => {
+            console.log('Réponse création rapide:', response);
+            
+            // Créer un objet spécialité temporaire
+            const newSpeciality: SpecialityResponse = {
+              id: undefined,
+              name: name,
+              code: createSpecialityRequest.code,
+              description: createSpecialityRequest.description,
+              examType: examTypes
+            };
+            
+            // Ajouter la spécialité à la filière sélectionnée
+            const existingCourse = this.selectedCourses.find(c => c.courseName === selectedCourse);
+            if (existingCourse) {
+              // Ajouter la spécialité à la filière existante
+              if (!this.selectedCourseSpecialities[selectedCourse]) {
+                this.selectedCourseSpecialities[selectedCourse] = [];
+              }
+              this.selectedCourseSpecialities[selectedCourse].push(newSpeciality);
+            } else {
+              // Ajouter la filière et la spécialité
+              const courseToAdd = this.courses.find(c => c.courseName === selectedCourse);
+              if (courseToAdd) {
+                this.selectedCourses.push(courseToAdd);
+                this.selectedCourseSpecialities[selectedCourse] = [newSpeciality];
+              }
+            }
+            
+            // Vider le champ de recherche
+            this.specialitySearchTerm = '';
+            
+            Swal.fire({
+              icon: 'success',
+              title: 'Spécialité créée avec succès !',
+              html: `
+                <div class="text-center">
+                  <i class="bx bx-check-circle text-success" style="font-size: 3em;"></i>
+                  <p class="mt-3"><strong>${name}</strong></p>
+                  <p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p>
+                  <p class="text-muted small">Types d'examen: ${examTypes}</p>
+                </div>
+              `,
+              timer: 3000,
+              showConfirmButton: false,
+              timerProgressBar: true
+            });
+          },
+          error: (err) => {
+            console.error('Erreur création rapide spécialité:', err);
+            
+            // Si le statut est 200, considérer comme un succès malgré l'erreur
+            if (err.status === 200) {
+              console.log('Réponse avec statut 200, considérer comme succès');
+              
+              // Créer un objet spécialité temporaire
+              const newSpeciality: SpecialityResponse = {
+                id: undefined,
+                name: name,
+                code: createSpecialityRequest.code,
+                description: createSpecialityRequest.description,
+                examType: examTypes
+              };
+              
+              // Ajouter la spécialité à la filière sélectionnée
+              const existingCourse = this.selectedCourses.find(c => c.courseName === selectedCourse);
+              if (existingCourse) {
+                // Ajouter la spécialité à la filière existante
+                if (!this.selectedCourseSpecialities[selectedCourse]) {
+                  this.selectedCourseSpecialities[selectedCourse] = [];
+                }
+                this.selectedCourseSpecialities[selectedCourse].push(newSpeciality);
+              } else {
+                // Ajouter la filière et la spécialité
+                const courseToAdd = this.courses.find(c => c.courseName === selectedCourse);
+                if (courseToAdd) {
+                  this.selectedCourses.push(courseToAdd);
+                  this.selectedCourseSpecialities[selectedCourse] = [newSpeciality];
+                }
+              }
+              
+              // Vider le champ de recherche
+              this.specialitySearchTerm = '';
+              
+              Swal.fire({
+                icon: 'success',
+                title: 'Spécialité créée avec succès !',
+                html: `
+                  <div class="text-center">
+                    <i class="bx bx-check-circle text-success" style="font-size: 3em;"></i>
+                    <p class="mt-3"><strong>${name}</strong></p>
+                    <p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p>
+                    <p class="text-muted small">Types d'examen: ${examTypes}</p>
+                  </div>
+                `,
+                timer: 3000,
+                showConfirmButton: false,
+                timerProgressBar: true
+              });
+              return;
+            }
+            
+            let errorMessage = 'Erreur lors de la création de la spécialité.';
+            if (err.error && err.error.message) {
+              errorMessage = err.error.message;
+            } else if (err.error && err.error.businessErrorDescription) {
+              errorMessage = err.error.businessErrorDescription;
+            }
+            
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur de création',
+              text: errorMessage,
+              confirmButtonText: 'OK',
+              confirmButtonColor: '#dc3545'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // Méthode pour filtrer les spécialités par filière
+  getSpecialitiesForCourse(course: CourseWithSpecialitiesResponse): SpecialityResponse[] {
+    // Retourner les spécialités spécifiques à cette filière si disponibles
+    if (course.specialities && course.specialities.length > 0) {
+      return course.specialities;
+    }
+    
+    // Sinon, retourner toutes les spécialités disponibles
+    return this.specialities;
+  }
+
+  // Méthode pour vérifier si une spécialité est déjà sélectionnée pour une filière
+  isSpecialitySelectedForCourse(speciality: SpecialityResponse, course: CourseWithSpecialitiesResponse): boolean {
+    const courseName = course.courseName || '';
+    return this.selectedCourseSpecialities[courseName]?.some(s => s.id === speciality.id) || false;
+  }
+
+  // Méthode pour obtenir le nombre de spécialités par filière
+  getSpecialitiesCountForCourse(course: CourseWithSpecialitiesResponse): number {
+    const courseName = course.courseName || '';
+    return this.selectedCourseSpecialities[courseName]?.length || 0;
+  }
+
+  // Méthode pour valider qu'une filière a au moins une spécialité
+  validateCourseHasSpecialities(course: CourseWithSpecialitiesResponse): boolean {
+    const courseName = course.courseName || '';
+    return this.selectedCourseSpecialities[courseName]?.length > 0;
+  }
+
+  onExamTypeCheckboxChange(): void {
+    const isCqp = this.promoterForm.get('isCenterPresentCandidateForCqp')?.value;
+    const isDqp = this.promoterForm.get('isCenterPresentCandidateForDqp')?.value;
+
+    // Si aucun type d'examen n'est sélectionné, réinitialiser les sélections
+    if (!isCqp && !isDqp) {
+      this.selectedCourses = [];
+      this.selectedCourseSpecialities = {};
+      this.courseSearchCtrl.setValue('');
+      this.specialitySearchCtrl.setValue('');
+    }
+
+    // Recharger les cours et spécialités selon le type d'examen
+    this.loadCourses();
+    this.loadSpecialities();
+  }
 }

@@ -1,0 +1,19 @@
+package com.jotsamikael.applycam.speciality;
+
+import java.time.LocalDate;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+public class ActivateSpecialityRequest {
+	
+	private Double dqpPrice;
+	private String specialityName;
+	private String examType;
+	private LocalDate examDate;
+
+}
