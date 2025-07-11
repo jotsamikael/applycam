@@ -11,6 +11,7 @@ import { RequestBuilder } from '../../request-builder';
 import { CreateSpecialityRequest } from '../../models/create-speciality-request';
 
 export interface CreateAndLinkSpecialityToTrainingCenter$Params {
+  courseName: string;
   agreementNumber: string;
       body: CreateSpecialityRequest
 }
@@ -18,6 +19,7 @@ export interface CreateAndLinkSpecialityToTrainingCenter$Params {
 export function createAndLinkSpecialityToTrainingCenter(http: HttpClient, rootUrl: string, params: CreateAndLinkSpecialityToTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
   const rb = new RequestBuilder(rootUrl, createAndLinkSpecialityToTrainingCenter.PATH, 'post');
   if (params) {
+    rb.path('courseName', params.courseName, {});
     rb.query('agreementNumber', params.agreementNumber, {});
     rb.body(params.body, 'application/json');
   }
@@ -32,4 +34,4 @@ export function createAndLinkSpecialityToTrainingCenter(http: HttpClient, rootUr
   );
 }
 
-createAndLinkSpecialityToTrainingCenter.PATH = '/auth/create-and-link';
+createAndLinkSpecialityToTrainingCenter.PATH = '/auth/create-and-link/{courseName}';

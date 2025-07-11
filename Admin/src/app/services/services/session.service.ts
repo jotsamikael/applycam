@@ -19,9 +19,12 @@ import { findByName2 } from '../fn/session/find-by-name-2';
 import { FindByName2$Params } from '../fn/session/find-by-name-2';
 import { findSessionByYear } from '../fn/session/find-session-by-year';
 import { FindSessionByYear$Params } from '../fn/session/find-session-by-year';
-import { getall1 } from '../fn/session/getall-1';
-import { Getall1$Params } from '../fn/session/getall-1';
+import { getall } from '../fn/session/getall';
+import { Getall$Params } from '../fn/session/getall';
+import { getSessionDetailsList } from '../fn/session/get-session-details-list';
+import { GetSessionDetailsList$Params } from '../fn/session/get-session-details-list';
 import { PageResponseSessionResponse } from '../models/page-response-session-response';
+import { SessionDetailsListResponse } from '../models/session-details-list-response';
 import { SessionResponse } from '../models/session-response';
 import { updateSession } from '../fn/session/update-session';
 import { UpdateSession$Params } from '../fn/session/update-session';
@@ -111,6 +114,31 @@ export class SessionService extends BaseService {
     );
   }
 
+  /** Path part for operation `getSessionDetailsList()` */
+  static readonly GetSessionDetailsListPath = '/session/list-details/{id}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getSessionDetailsList()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSessionDetailsList$Response(params: GetSessionDetailsList$Params, context?: HttpContext): Observable<StrictHttpResponse<SessionDetailsListResponse>> {
+    return getSessionDetailsList(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getSessionDetailsList$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSessionDetailsList(params: GetSessionDetailsList$Params, context?: HttpContext): Observable<SessionDetailsListResponse> {
+    return this.getSessionDetailsList$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SessionDetailsListResponse>): SessionDetailsListResponse => r.body)
+    );
+  }
+
   /** Path part for operation `findSessionByYear()` */
   static readonly FindSessionByYearPath = '/session/get-by-year/{sessionYear}';
 
@@ -136,27 +164,27 @@ export class SessionService extends BaseService {
     );
   }
 
-  /** Path part for operation `getall1()` */
-  static readonly Getall1Path = '/session/get-all';
+  /** Path part for operation `getall()` */
+  static readonly GetallPath = '/session/get-all';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `getall1()` instead.
+   * To access only the response body, use `getall()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getall1$Response(params?: Getall1$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSessionResponse>> {
-    return getall1(this.http, this.rootUrl, params, context);
+  getall$Response(params?: Getall$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSessionResponse>> {
+    return getall(this.http, this.rootUrl, params, context);
   }
 
   /**
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `getall1$Response()` instead.
+   * To access the full response (for headers, for example), `getall$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getall1(params?: Getall1$Params, context?: HttpContext): Observable<PageResponseSessionResponse> {
-    return this.getall1$Response(params, context).pipe(
+  getall(params?: Getall$Params, context?: HttpContext): Observable<PageResponseSessionResponse> {
+    return this.getall$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseSessionResponse>): PageResponseSessionResponse => r.body)
     );
   }

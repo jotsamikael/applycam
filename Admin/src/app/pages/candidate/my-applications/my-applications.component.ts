@@ -100,7 +100,7 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   }
 
   loadFormLists(): void {
-    this.specialityService.getall().subscribe({
+    this.authService.getall1({ offset: 0, pageSize: 1000 }).subscribe({
       next: (data) => {
         if (Array.isArray(data)) {
           this.specialities = data;
@@ -112,7 +112,7 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
       },
       error: () => this.specialities = []
     });
-    this.sessionService.getall1({ offset: 0, pageSize: 1000 }).subscribe({
+    this.sessionService.getall({ offset: 0, pageSize: 1000 }).subscribe({
       next: (data) => {
         if (data && Array.isArray(data.content)) {
           this.sessions = data.content;

@@ -47,7 +47,7 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
 
   loadSessions(): void {
     this.processing = true;
-    this.sessionService.getall1({ field: 'sessionYear', order: true }).subscribe({
+    this.sessionService.getall({ field: 'sessionYear', order: true }).subscribe({
       next: (res: any) => {
         this.dataSource.data = res?.content ?? [];
         this.processing = false;

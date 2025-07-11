@@ -379,7 +379,7 @@
                   </h6>
                   
                   <!-- Bouton de création rapide -->
-                  <div class="text-center mb-3">
+                  <!-- <div class="text-center mb-3">
                     <button type="button" 
                             class="btn btn-outline-primary"
                             (click)="createQuickSpeciality()"
@@ -387,7 +387,7 @@
                       <i class="bx bx-plus-circle me-2"></i>
                       Créer une spécialité rapidement
                     </button>
-                  </div>
+                  </div> -->
                   
                   <!-- Sélection des filières -->
                   <div class="mb-3">
@@ -436,9 +436,7 @@
                             <div class="mb-3">
                               <label class="form-label">Spécialités de cette filière</label>
                               <div class="input-group mb-3">
-                                <span class="input-group-text">
-                                  <i class="bx bx-search"></i>
-                                </span>
+                                
                                 <input type="text" 
                                        class="form-control" 
                                        placeholder="Rechercher une spécialité..."
@@ -446,20 +444,25 @@
                                        [matAutocomplete]="autoSpecialityCourse">
                                 <mat-autocomplete #autoSpecialityCourse="matAutocomplete" 
                                                  (optionSelected)="onSpecialitySelectedForCourse($event.option.value, course)">
-                                  <mat-option *ngFor="let s of filteredSpecialities$ | async" [value]="s">
+                                  <mat-option *ngFor="let s of getSpecialitiesForCourse(course)" [value]="s">
                                     {{s.name}} <span class="text-muted">({{s.code}})</span>
                                   </mat-option>
                                 </mat-autocomplete>
-                                <button class="btn btn-success" 
+                                <!-- <button class="btn btn-success" 
                                         type="button"
-                                        (click)="showCreateSpecialityFormForCourse(course)"
-                                        title="Créer une spécialité pour cette filière"
+                                        (click)="addSpecialityToCenter(specialitySearchCtrl.value, course)"
+                                        title="Ajouter cette spécialité au centre"
                                         style="min-width: 120px;">
                                   <i class="bx bx-plus-circle me-1"></i>
-                                  <span class="d-none d-sm-inline">Créer</span>
-                                </button>
+                                  <span class="d-none d-sm-inline">Ajouter</span>
+                                </button> -->
                               </div>
                             </div>
+
+                            <!-- Nouveau bouton pour ouvrir le popup d'ajout -->
+                            <button class="btn btn-outline-primary ms-2" type="button" title="Créer rapidement une nouvelle spécialité" (click)="createQuickSpeciality()">
+                              <i class="bx bx-plus"></i> Ajouter une spécialité
+                            </button>
 
                             <!-- Spécialités sélectionnées pour cette filière -->
                             <div class="selected-course-specialities">

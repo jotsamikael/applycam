@@ -211,11 +211,10 @@ export class RegisterComponent implements OnInit {
       });
     });
 
-    // Charger les données nécessaires
-    
+    // Charger les filières et leurs spécialités (remplace loadCourses)
+    this.loadCoursesWithSpecialities();
     this.loadTrainingCenters();
     this.loadSpecialities();
-    this.loadCourses();
     
     // Autocomplete filtering
     this.filteredTrainingCenters = this.trainingCenterCtrl.valueChanges.pipe(
@@ -236,46 +235,24 @@ export class RegisterComponent implements OnInit {
     );
   }
 
-  loadCourses(): void {
-    // Charger les cours avec leurs spécialités
+  // Nouvelle méthode pour charger filières + spécialités
+  loadCoursesWithSpecialities(): void {
     this.authService.getAllCoursesWithSpecialitiesPaged({ offset: 0, pageSize: 1000 }).subscribe({
       next: (response) => {
         this.courses = response.content || [];
-        console.log('Liste des cours avec spécialités récupérés :', this.courses);
-        
-        // Afficher un message informatif si aucun cours n'est trouvé
-        if (this.courses.length === 0) {
-          Swal.fire({
-            icon: 'info',
-            title: 'Aucune filière disponible',
-            text: 'Aucune filière n\'est actuellement disponible. Veuillez contacter l\'administrateur.',
-            confirmButtonText: 'Compris'
-          });
-        }
+        // Met à jour l'autocomplete des filières si besoin
+        this.filteredCourses$ = this.courseSearchCtrl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterCourses(value || ''))
+        );
       },
       error: (err) => {
         console.error('Erreur chargement cours:', err);
-        
-        // En cas d'erreur, essayer de charger les cours sans spécialités
-        this.courseService.getCourses({ offset: 0, pageSize: 1000 }).subscribe({
-          next: (response) => {
-            // Convertir CourseResponse en CourseWithSpecialitiesResponse pour la compatibilité
-            this.courses = response.content?.map(course => ({
-              courseId: undefined,
-              courseName: course.name,
-              specialities: []
-            })) || [];
-            console.log('Liste des cours récupérés (sans spécialités) :', this.courses);
-          },
-          error: (courseErr) => {
-            console.error('Erreur chargement cours (fallback):', courseErr);
-            Swal.fire({
-              icon: 'warning',
-              title: 'Attention',
-              text: 'Impossible de charger les filières. Veuillez réessayer plus tard.',
-              confirmButtonText: 'Compris'
-            });
-          }
+        Swal.fire({
+          icon: 'warning',
+          title: 'Attention',
+          text: 'Impossible de charger les filières. Veuillez réessayer plus tard.',
+          confirmButtonText: 'Compris'
         });
       }
     });
@@ -295,17 +272,20 @@ export class RegisterComponent implements OnInit {
   onCourseSelected(course: CourseWithSpecialitiesResponse): void {
     if (!this.selectedCourses.find(c => c.courseName === course.courseName)) {
       this.selectedCourses.push(course);
-      this.selectedCourseSpecialities[course.courseName || ''] = [];
-      
-      // Charger les spécialités existantes pour cette filière si disponibles
+      // Affiche uniquement les spécialités de la filière sélectionnée
       if (course.specialities && course.specialities.length > 0) {
         this.selectedCourseSpecialities[course.courseName || ''] = course.specialities;
-        console.log(`Spécialités existantes ajoutées pour ${course.courseName}:`, course.specialities);
+        this.specialitySearchCtrl.setValue(''); // reset le champ
+      } else {
+        this.selectedCourseSpecialities[course.courseName || ''] = [];
+        Swal.fire({
+          icon: 'info',
+          title: 'Aucune spécialité',
+          text: `La filière "${course.courseName}" n'a pas encore de spécialité. Vous pouvez en ajouter.`,
+          confirmButtonText: 'OK'
+        });
       }
-      
       this.courseSearchCtrl.setValue('');
-      
-      // Afficher un message de confirmation
       Swal.fire({
         icon: 'success',
         title: 'Filière ajoutée',
@@ -395,6 +375,7 @@ export class RegisterComponent implements OnInit {
     console.log('Création spécialité pour filière:', createSpecialityRequest);
 
     this.authService.createAndLinkSpecialityToTrainingCenter({
+      courseName: this.currentCourseForSpeciality.courseName || '',
       agreementNumber: this.promoterForm.get('approvalNumber')?.value,
       body: createSpecialityRequest
     }).subscribe({
@@ -484,7 +465,7 @@ export class RegisterComponent implements OnInit {
   }
 
   loadSpecialities(): void {
-    this.authService.getall2({ offset: 0, pageSize: 1000 }).subscribe({
+    this.authService.getall1({ offset: 0, pageSize: 1000 }).subscribe({
       next: (response) => {
         this.specialities = response.content || [];
         console.log('Liste des spécialités récupérées :', this.specialities);
@@ -566,6 +547,16 @@ export class RegisterComponent implements OnInit {
     if (this.newSpecialityForm.invalid) {
       return;
     }
+    // On doit demander une filière (courseName) pour cette méthode
+    if (!this.selectedCourses.length) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Filière requise',
+        text: 'Veuillez sélectionner une filière avant de créer une spécialité.',
+        confirmButtonText: 'Compris'
+      });
+      return;
+    }
 
     const formValue = this.newSpecialityForm.value;
     const createSpecialityRequest = {
@@ -574,10 +565,10 @@ export class RegisterComponent implements OnInit {
       description: formValue.description || '',
       examType: formValue.examType
     };
-
-    console.log('Création spécialité avec:', createSpecialityRequest);
-
+    // On prend la première filière sélectionnée par défaut
+    const courseName = this.selectedCourses[0].courseName || '';
     this.authService.createAndLinkSpecialityToTrainingCenter({
+      courseName,
       agreementNumber: this.promoterForm.get('approvalNumber')?.value,
       body: createSpecialityRequest
     }).subscribe({
@@ -1297,6 +1288,7 @@ export class RegisterComponent implements OnInit {
     return examTypes.join(', ');
   }
 
+  // Création rapide d'une spécialité liée à la filière sélectionnée
   createQuickSpeciality(): void {
     const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
     if (!approvalNumber || approvalNumber.trim() === '') {
@@ -1309,7 +1301,6 @@ export class RegisterComponent implements OnInit {
       this.promoterForm.get('approvalNumber')?.markAsTouched();
       return;
     }
-
     // Vérifier qu'au moins une filière est sélectionnée
     if (this.selectedCourses.length === 0) {
       Swal.fire({
@@ -1407,6 +1398,7 @@ export class RegisterComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed && result.value) {
         const { name, examTypes, selectedCourse } = result.value;
+        const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
         
         // Créer une spécialité avec des valeurs par défaut
         const createSpecialityRequest = {
@@ -1415,17 +1407,39 @@ export class RegisterComponent implements OnInit {
           description: `Spécialité en ${name}`,
           examType: examTypes
         };
+        // Vérification stricte des champs obligatoires
+        if (!selectedCourse || !approvalNumber || !name || !createSpecialityRequest.code || !createSpecialityRequest.description || !createSpecialityRequest.examType) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Champs manquants',
+            text: 'Tous les champs sont obligatoires pour créer une spécialité.',
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
+        const courseExists = this.courses.some(c => c.courseName === selectedCourse);
+        if (!courseExists) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Filière inconnue',
+            text: 'La filière sélectionnée n\'existe pas.',
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
 
         console.log('Création rapide spécialité:', createSpecialityRequest);
 
+        // Utilise createAndLinkSpecialityToTrainingCenter pour créer et lier la spécialité à la filière
         this.authService.createAndLinkSpecialityToTrainingCenter({
+          courseName: selectedCourse, // Ajouté !
           agreementNumber: approvalNumber,
           body: createSpecialityRequest
         }).subscribe({
           next: (response) => {
             console.log('Réponse création rapide:', response);
             
-            // Créer un objet spécialité temporaire
+            // Ajoute la spécialité à la filière sélectionnée côté UI
             const newSpeciality: SpecialityResponse = {
               id: undefined,
               name: name,
@@ -1433,38 +1447,26 @@ export class RegisterComponent implements OnInit {
               description: createSpecialityRequest.description,
               examType: examTypes
             };
-            
-            // Ajouter la spécialité à la filière sélectionnée
             const existingCourse = this.selectedCourses.find(c => c.courseName === selectedCourse);
             if (existingCourse) {
-              // Ajouter la spécialité à la filière existante
               if (!this.selectedCourseSpecialities[selectedCourse]) {
                 this.selectedCourseSpecialities[selectedCourse] = [];
               }
               this.selectedCourseSpecialities[selectedCourse].push(newSpeciality);
             } else {
-              // Ajouter la filière et la spécialité
               const courseToAdd = this.courses.find(c => c.courseName === selectedCourse);
               if (courseToAdd) {
                 this.selectedCourses.push(courseToAdd);
                 this.selectedCourseSpecialities[selectedCourse] = [newSpeciality];
               }
             }
-            
-            // Vider le champ de recherche
             this.specialitySearchTerm = '';
-            
+            // Recharge la liste des filières et spécialités pour afficher la nouvelle
+            this.loadCoursesWithSpecialities();
             Swal.fire({
               icon: 'success',
               title: 'Spécialité créée avec succès !',
-              html: `
-                <div class="text-center">
-                  <i class="bx bx-check-circle text-success" style="font-size: 3em;"></i>
-                  <p class="mt-3"><strong>${name}</strong></p>
-                  <p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p>
-                  <p class="text-muted small">Types d'examen: ${examTypes}</p>
-                </div>
-              `,
+              html: `<div class="text-center"><i class="bx bx-check-circle text-success" style="font-size: 3em;"></i><p class="mt-3"><strong>${name}</strong></p><p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p><p class="text-muted small">Types d'examen: ${examTypes}</p></div>`,
               timer: 3000,
               showConfirmButton: false,
               timerProgressBar: true
@@ -1546,13 +1548,10 @@ export class RegisterComponent implements OnInit {
 
   // Méthode pour filtrer les spécialités par filière
   getSpecialitiesForCourse(course: CourseWithSpecialitiesResponse): SpecialityResponse[] {
-    // Retourner les spécialités spécifiques à cette filière si disponibles
-    if (course.specialities && course.specialities.length > 0) {
-      return course.specialities;
-    }
-    
-    // Sinon, retourner toutes les spécialités disponibles
-    return this.specialities;
+    // Retourne les spécialités de la filière sélectionnée
+    return course.specialities && course.specialities.length > 0
+      ? course.specialities
+      : [];
   }
 
   // Méthode pour vérifier si une spécialité est déjà sélectionnée pour une filière
@@ -1586,7 +1585,82 @@ export class RegisterComponent implements OnInit {
     }
 
     // Recharger les cours et spécialités selon le type d'examen
-    this.loadCourses();
+    this.loadCoursesWithSpecialities();
     this.loadSpecialities();
+  }
+
+  addSpecialityToCenter(speciality: SpecialityResponse, course: CourseWithSpecialitiesResponse): void {
+    const agreementNumber = this.promoterForm.get('approvalNumber')?.value;
+    if (!agreementNumber) {
+      Swal.fire({ icon: 'warning', title: 'Numéro d\'agrément requis', text: 'Veuillez renseigner le numéro d\'agrément.' });
+      return;
+    }
+    // Ajoute la spécialité au centre pour la filière
+    this.authService.addSpecialitiesToTrainingCenter1({
+      agreementNumber,
+      body: [speciality.id]
+    }).subscribe({
+      next: () => {
+        Swal.fire({ icon: 'success', title: 'Spécialité ajoutée', text: 'La spécialité a été liée à votre centre.' });
+        this.loadCoursesWithSpecialities(); // Rafraîchir la liste
+      },
+      error: (err) => {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible d\'ajouter la spécialité.' });
+      }
+    });
+  }
+
+  // Ajout d'une spécialité via popup pour une filière donnée
+  addSpecialityViaPopup(course: CourseWithSpecialitiesResponse): void {
+    const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
+    if (!approvalNumber) {
+      Swal.fire({ icon: 'warning', title: 'Numéro d\'agrément requis', text: 'Veuillez renseigner le numéro d\'agrément.' });
+      return;
+    }
+    Swal.fire({
+      title: `Ajouter une spécialité à la filière "${course.courseName}"`,
+      html: `
+        <input id="specialityName" class="swal2-input" placeholder="Nom de la spécialité">
+        <input id="specialityCode" class="swal2-input" placeholder="Code">
+        <input id="specialityDesc" class="swal2-input" placeholder="Description">
+        <select id="specialityExamType" class="swal2-input">
+          <option value="">Type d'examen</option>
+          <option value="CQP">CQP</option>
+          <option value="DQP">DQP</option>
+        </select>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Ajouter',
+      preConfirm: () => {
+        const name = (document.getElementById('specialityName') as HTMLInputElement).value;
+        const code = (document.getElementById('specialityCode') as HTMLInputElement).value;
+        const description = (document.getElementById('specialityDesc') as HTMLInputElement).value;
+        const examType = (document.getElementById('specialityExamType') as HTMLSelectElement).value;
+        if (!name || !code || !examType) {
+          Swal.showValidationMessage('Nom, code et type d\'examen sont obligatoires');
+          return false;
+        }
+        return { name, code, description, examType };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const { name, code, description, examType } = result.value;
+        const createSpecialityRequest = { name, code, description, examType };
+        this.authService.createAndLinkSpecialityToTrainingCenter({
+          courseName: course.courseName,
+          agreementNumber: approvalNumber,
+          body: createSpecialityRequest
+        }).subscribe({
+          next: () => {
+            Swal.fire({ icon: 'success', title: 'Spécialité ajoutée', text: 'La spécialité a été créée et liée à la filière.' });
+            this.loadCoursesWithSpecialities();
+          },
+          error: () => {
+            Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible d\'ajouter la spécialité.' });
+          }
+        });
+      }
+    });
   }
 }

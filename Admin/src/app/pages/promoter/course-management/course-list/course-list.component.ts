@@ -104,7 +104,7 @@ export class CourseListComponent implements OnInit {
   }
 
   loadSpecialities() {
-    this.specialityService.getall().subscribe({
+    this.specialityService.getallSpeciality({ offset: 0, pageSize: 1000 }).subscribe({
       next: (response) => {
         this.specialities = response.content || [];
       },

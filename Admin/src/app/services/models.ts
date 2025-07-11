@@ -52,6 +52,7 @@ export { PageResponseSubjectResponse } from './models/page-response-subject-resp
 export { PageResponseTrainingCenterResponse } from './models/page-response-training-center-response';
 export { PaymentResponse } from './models/payment-response';
 export { PromoterResponse } from './models/promoter-response';
+export { SessionDetailsListResponse } from './models/session-details-list-response';
 export { SessionResponse } from './models/session-response';
 export { Speciality } from './models/speciality';
 export { SpecialityResponse } from './models/speciality-response';

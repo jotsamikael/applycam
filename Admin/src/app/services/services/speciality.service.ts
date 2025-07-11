@@ -24,8 +24,8 @@ import { createSpeciality } from '../fn/speciality/create-speciality';
 import { CreateSpeciality$Params } from '../fn/speciality/create-speciality';
 import { findByName1 } from '../fn/speciality/find-by-name-1';
 import { FindByName1$Params } from '../fn/speciality/find-by-name-1';
-import { getall } from '../fn/speciality/getall';
-import { Getall$Params } from '../fn/speciality/getall';
+import { getallSpeciality } from '../fn/speciality/getall-speciality';
+import { GetallSpeciality$Params } from '../fn/speciality/getall-speciality';
 import { getAllSpecialityByTrainingCenter } from '../fn/speciality/get-all-speciality-by-training-center';
 import { GetAllSpecialityByTrainingCenter$Params } from '../fn/speciality/get-all-speciality-by-training-center';
 import { getAllSpecialityOfCourse } from '../fn/speciality/get-all-speciality-of-course';
@@ -330,27 +330,27 @@ export class SpecialityService extends BaseService {
     );
   }
 
-  /** Path part for operation `getall()` */
-  static readonly GetallPath = '/specialities/get-all';
+  /** Path part for operation `getallSpeciality()` */
+  static readonly GetallSpecialityPath = '/specialities/get-all';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `getall()` instead.
+   * To access only the response body, use `getallSpeciality()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getall$Response(params?: Getall$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
-    return getall(this.http, this.rootUrl, params, context);
+  getallSpeciality$Response(params?: GetallSpeciality$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
+    return getallSpeciality(this.http, this.rootUrl, params, context);
   }
 
   /**
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `getall$Response()` instead.
+   * To access the full response (for headers, for example), `getallSpeciality$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getall(params?: Getall$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
-    return this.getall$Response(params, context).pipe(
+  getallSpeciality(params?: GetallSpeciality$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
+    return this.getallSpeciality$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseSpecialityResponse>): PageResponseSpecialityResponse => r.body)
     );
   }

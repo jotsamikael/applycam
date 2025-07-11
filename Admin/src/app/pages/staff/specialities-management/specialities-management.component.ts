@@ -82,7 +82,7 @@ export class SpecialitiesManagementComponent implements OnInit {
   }
 
   loadSessions(): void {
-    this.sessionService.getall1({ offset: 0, pageSize: 1000, field: 'examDate', order: true }).subscribe({
+    this.sessionService.getall({ offset: 0, pageSize: 1000, field: 'examDate', order: true }).subscribe({
       next: (response) => {
         this.sessions = response.content || [];
       },
@@ -104,7 +104,7 @@ export class SpecialitiesManagementComponent implements OnInit {
   }
 
   loadSpecialities(): void {
-    this.specialityService.getall().subscribe({
+    this.specialityService.getallSpeciality({ offset: 0, pageSize: 1000 }).subscribe({
       next: (response: PageResponseSpecialityResponse) => {
         this.specialities = response.content || [];
         this.dataSource = new MatTableDataSource(this.specialities);

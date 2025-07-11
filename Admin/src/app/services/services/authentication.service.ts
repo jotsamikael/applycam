@@ -24,8 +24,8 @@ import { createAndLinkSpecialityToTrainingCenter } from '../fn/authentication/cr
 import { CreateAndLinkSpecialityToTrainingCenter$Params } from '../fn/authentication/create-and-link-speciality-to-training-center';
 import { createPromoter } from '../fn/authentication/create-promoter';
 import { CreatePromoter$Params } from '../fn/authentication/create-promoter';
-import { getall2 } from '../fn/authentication/getall-2';
-import { Getall2$Params } from '../fn/authentication/getall-2';
+import { getall1 } from '../fn/authentication/getall-1';
+import { Getall1$Params } from '../fn/authentication/getall-1';
 import { getAllCoursesWithSpecialitiesPaged } from '../fn/authentication/get-all-courses-with-specialities-paged';
 import { GetAllCoursesWithSpecialitiesPaged$Params } from '../fn/authentication/get-all-courses-with-specialities-paged';
 import { getAllTrainingCenters1 } from '../fn/authentication/get-all-training-centers-1';
@@ -103,7 +103,7 @@ export class AuthenticationService extends BaseService {
   }
 
   /** Path part for operation `createAndLinkSpecialityToTrainingCenter()` */
-  static readonly CreateAndLinkSpecialityToTrainingCenterPath = '/auth/create-and-link';
+  static readonly CreateAndLinkSpecialityToTrainingCenterPath = '/auth/create-and-link/{courseName}';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
@@ -256,27 +256,27 @@ export class AuthenticationService extends BaseService {
     );
   }
 
-  /** Path part for operation `getall2()` */
-  static readonly Getall2Path = '/auth/get-all-speciality';
+  /** Path part for operation `getall1()` */
+  static readonly Getall1Path = '/auth/get-all-speciality';
 
   /**
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `getall2()` instead.
+   * To access only the response body, use `getall1()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getall2$Response(params?: Getall2$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
-    return getall2(this.http, this.rootUrl, params, context);
+  getall1$Response(params?: Getall1$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
+    return getall1(this.http, this.rootUrl, params, context);
   }
 
   /**
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `getall2$Response()` instead.
+   * To access the full response (for headers, for example), `getall1$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getall2(params?: Getall2$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
-    return this.getall2$Response(params, context).pipe(
+  getall1(params?: Getall1$Params, context?: HttpContext): Observable<PageResponseSpecialityResponse> {
+    return this.getall1$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseSpecialityResponse>): PageResponseSpecialityResponse => r.body)
     );
   }

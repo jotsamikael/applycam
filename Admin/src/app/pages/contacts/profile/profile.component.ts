@@ -1,38 +1,50 @@
 import { Component, OnInit } from '@angular/core';
-
-import { revenueBarChart, statData } from './data';
-
-import { ChartType } from './profile.model';
+import { UserControllerService } from 'src/app/services/services/user-controller.service';
+import { UserResponse } from 'src/app/services/models/user-response';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { revenueBarChart, statData } from './data'; // si tu as ce fichier
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-
-/**
- * Contacts-profile component
- */
 export class ProfileComponent implements OnInit {
-  // bread crumb items
-  breadCrumbItems: Array<{}>;
+  user: UserResponse | null = null;
+  editMode = false;
+  profileForm: FormGroup;
 
-  revenueBarChart: ChartType;
-  statData:any;
-  constructor() { }
+  breadCrumbItems: Array<{}> = [{ label: 'Contacts' }, { label: 'Profile', active: true }];
+  statData: any = statData; // ou [] si tu n'as pas de stats
+  revenueBarChart: any = revenueBarChart; // ou {} si tu n'as pas de chart
+
+  constructor(
+    private userController: UserControllerService,
+    private fb: FormBuilder
+  ) {}
 
   ngOnInit() {
-    this.breadCrumbItems = [{ label: 'Contacts' }, { label: 'Profile', active: true }];
-
-    // fetches the data
-    this._fetchData();
+    this.userController.getAuthenticatedUserInfo().subscribe(user => {
+      this.user = user;
+      this.profileForm = this.fb.group({
+        firstname: [user.firstname],
+        lastname: [user.lastname],
+        email: [user.email],
+        phoneNumber: [user.phoneNumber],
+        dateOfBirth: [user.dateOfBirth],
+        sex: [user.sex],
+        nationalIdNumber: [user.nationalIdNumber],
+      });
+    });
   }
 
-  /**
-   * Fetches the data
-   */
-  private _fetchData() {
-    this.revenueBarChart = revenueBarChart;
-    this.statData = statData;
+  enableEdit() { this.editMode = true; }
+  cancelEdit() { this.editMode = false; }
+
+  saveProfile() {
+    // À implémenter : appel au service pour mettre à jour le profil
+    console.log('Profil sauvegardé (simulation)', this.profileForm.value);
+    this.editMode = false;
   }
+  // Ajoute ici la logique pour sauvegarder les modifications si tu as un endpoint de mise à jour
 }

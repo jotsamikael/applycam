@@ -74,7 +74,7 @@ export class SpecialtyListComponent implements OnInit {
   }
 
   loadSpecialties(): void {
-    this.specialtyService.getall().subscribe({
+    this.specialtyService.getallSpeciality({ offset: 0, pageSize: 1000 }).subscribe({
       next: (response: PageResponseSpecialityResponse) => {
         this.specialties = response.content || [];
         this.dataSource = new MatTableDataSource(this.specialties);

@@ -10,15 +10,15 @@ import { RequestBuilder } from '../../request-builder';
 
 import { PageResponseSessionResponse } from '../../models/page-response-session-response';
 
-export interface Getall1$Params {
+export interface Getall$Params {
   offset?: number;
   pageSize?: number;
   field?: string;
   order?: boolean;
 }
 
-export function getall1(http: HttpClient, rootUrl: string, params?: Getall1$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSessionResponse>> {
-  const rb = new RequestBuilder(rootUrl, getall1.PATH, 'get');
+export function getall(http: HttpClient, rootUrl: string, params?: Getall$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSessionResponse>> {
+  const rb = new RequestBuilder(rootUrl, getall.PATH, 'get');
   if (params) {
     rb.query('offset', params.offset, {});
     rb.query('pageSize', params.pageSize, {});
@@ -36,4 +36,4 @@ export function getall1(http: HttpClient, rootUrl: string, params?: Getall1$Para
   );
 }
 
-getall1.PATH = '/session/get-all';
+getall.PATH = '/session/get-all';

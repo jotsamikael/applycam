@@ -11,9 +11,6 @@ export interface CandidateRegistrationRequest {
   lastname: string;
   password?: string;
   phoneNumber: string;
-  sex: string;
-  dateOfBirth: string;
-  placeOfBirth: string;
   startYear: string;
   trainingCenterName: string;
 }

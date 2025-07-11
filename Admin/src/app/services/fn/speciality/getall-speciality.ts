@@ -10,15 +10,15 @@ import { RequestBuilder } from '../../request-builder';
 
 import { PageResponseSpecialityResponse } from '../../models/page-response-speciality-response';
 
-export interface Getall2$Params {
+export interface GetallSpeciality$Params {
   offset?: number;
   pageSize?: number;
   field?: string;
   order?: boolean;
 }
 
-export function getall2(http: HttpClient, rootUrl: string, params?: Getall2$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
-  const rb = new RequestBuilder(rootUrl, getall2.PATH, 'get');
+export function getallSpeciality(http: HttpClient, rootUrl: string, params?: GetallSpeciality$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseSpecialityResponse>> {
+  const rb = new RequestBuilder(rootUrl, getallSpeciality.PATH, 'get');
   if (params) {
     rb.query('offset', params.offset, {});
     rb.query('pageSize', params.pageSize, {});
@@ -36,4 +36,4 @@ export function getall2(http: HttpClient, rootUrl: string, params?: Getall2$Para
   );
 }
 
-getall2.PATH = '/auth/get-all-speciality';
+getallSpeciality.PATH = '/specialities/get-all';

@@ -597,13 +597,21 @@
         }
       }
     },
-    "/auth/create-and-link": {
+    "/auth/create-and-link/{courseName}": {
       "post": {
         "tags": [
           "Authentication"
         ],
         "operationId": "createAndLinkSpecialityToTrainingCenter",
         "parameters": [
+          {
+            "name": "courseName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "agreementNumber",
             "in": "query",
@@ -2621,7 +2629,7 @@
         "tags": [
           "speciality"
         ],
-        "operationId": "getall",
+        "operationId": "getallSpeciality",
         "parameters": [
           {
             "name": "offset",
@@ -2706,6 +2714,37 @@
         }
       }
     },
+    "/session/list-details/{id}": {
+      "get": {
+        "tags": [
+          "session"
+        ],
+        "operationId": "getSessionDetailsList",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailsListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/session/get-by-year/{sessionYear}": {
       "get": {
         "tags": [
@@ -2779,7 +2818,7 @@
         "tags": [
           "session"
         ],
-        "operationId": "getall_1",
+        "operationId": "getall",
         "parameters": [
           {
             "name": "offset",
@@ -3686,7 +3725,7 @@
         "tags": [
           "Authentication"
         ],
-        "operationId": "getall_2",
+        "operationId": "getall_1",
         "parameters": [
           {
             "name": "offset",
@@ -5382,10 +5421,10 @@
             "type": "number",
             "format": "double"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -5416,10 +5455,10 @@
           "agreement": {
             "type": "string"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -5727,6 +5766,41 @@
           }
         }
       },
+      "CourseResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "priceForDqp": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "SessionDetailsListResponse": {
+        "type": "object",
+        "properties": {
+          "specialities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecialityResponse"
+            }
+          },
+          "courses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseResponse"
+            }
+          }
+        }
+      },
       "PageResponseSessionResponse": {
         "type": "object",
         "properties": {
@@ -5902,20 +5976,6 @@
             "type": "string"
           },
           "region": {
-            "type": "string"
-          }
-        }
-      },
-      "CourseResponse": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "description": {
             "type": "string"
           }
         }
@@ -6102,10 +6162,10 @@
               "PENDING"
             ]
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -6187,10 +6247,10 @@
               "$ref": "#/components/schemas/TrainingCenter"
             }
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -6226,10 +6286,10 @@
             "type": "string",
             "format": "date"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -6294,10 +6354,10 @@
               "$ref": "#/components/schemas/Subject"
             }
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -6340,10 +6400,10 @@
               "$ref": "#/components/schemas/Speciality"
             }
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -6455,19 +6515,19 @@
               "$ref": "#/components/schemas/HasSchooled"
             }
           },
-          "internalRegulationFileUrl": {
+          "signatureLetterUrl": {
             "type": "string"
           },
           "localisationFileUrl": {
             "type": "string"
           },
-          "signatureLetterUrl": {
+          "internalRegulationFileUrl": {
             "type": "string"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
@@ -6513,10 +6573,10 @@
           "comment": {
             "type": "string"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           }
         }
