@@ -1,0 +1,156 @@
+package com.jotsamikael.applycam.activitySector;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.course.Course;
+import com.jotsamikael.applycam.course.CourseRepository;
+import com.jotsamikael.applycam.speciality.SpecialityRepository;
+import com.jotsamikael.applycam.user.User;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class SectorService {
+	
+	private final CourseRepository courseRepository;
+	private final SectorRepository activitySectorRepository;
+	private final SectorMapper mapper;
+	
+	public String createActivitySector(CreateActivitySectorRequest request, Authentication connectedUser) {
+		
+		User user = ((User) connectedUser.getPrincipal());
+		
+		if(activitySectorRepository.existsByName(request.getName())) {
+   		 throw new DataIntegrityViolationException("Subject already created");
+   	 };
+   	 
+   	 var activitySector = ActivitySector.builder()
+   			 .name(request.getName())
+   			 .code(request.getCode())
+   			 .description(request.getDescription())
+   			.createdBy(user.getIdUser())
+   		    .createdDate(LocalDateTime.now())
+   			 .isActived(true)
+   			 .isArchived(false)
+   			 .build();
+   	 
+   	activitySectorRepository.save(activitySector);
+   	return "create Sucess";
+   	 
+	}
+	
+	 public String updateActivitySector(String name, CreateActivitySectorRequest request, Authentication connectedUser) {
+		 User user = ((User) connectedUser.getPrincipal());
+		 
+	        ActivitySector sector = activitySectorRepository.findByName(name)
+	                .orElseThrow(() -> new EntityNotFoundException("Activity sector not found"));
+	        
+	        if (!sector.isActived() ) {
+	        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Course cannot be updated.");
+	        }
+	        
+	        sector.setName(request.getName());
+	        sector.setCode(request.getCode());
+	        sector.setDescription(request.getDescription());
+	        sector.setLastModifiedBy(user.getIdUser());
+	        sector.setLastModifiedDate(LocalDateTime.now());
+	        
+	        activitySectorRepository.save(sector);
+
+	        return "update succesfull";
+	    }
+
+	    public void delete(Long id) {
+	        if (!activitySectorRepository.existsById(id)) {
+	            throw new EntityNotFoundException("Activity sector not found");
+	        }
+	        activitySectorRepository.deleteById(id);
+	    }
+	    
+	    public PageResponse<ActivitySectorResponse> findAllActivitySectors(int offset, int pageSize, String field, boolean order) {
+	        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+
+	        Page<ActivitySector> page = activitySectorRepository.getAll(PageRequest.of(offset, pageSize, sort));
+
+	        List<ActivitySectorResponse> responses = page.getContent()
+	            .stream()
+	            .map(mapper::mapToResponse)
+	            .collect(Collectors.toList());
+
+	        return new PageResponse<>(
+	            responses,
+	            page.getNumber(),
+	            page.getSize(),
+	            page.getTotalElements(),
+	            page.getTotalPages(),
+	            page.isFirst(),
+	            page.isLast()
+	        );
+	    }
+	    public void toggleCourse(String name, Authentication connectedUser) {
+	    	
+	    	User user =(User) connectedUser.getPrincipal();
+	    	 ActivitySector sector = activitySectorRepository.findByName(name)
+		                .orElseThrow(() -> new EntityNotFoundException("Activity sector not found"));
+		        
+	        if(sector.isActived()){
+	        	sector.setActived(false);
+	            sector.setArchived(true);
+	            
+	        }else{
+	        	sector.setActived(true);
+	        	sector.setArchived(false);
+	        }
+	        sector.setLastModifiedBy(user.getIdUser());
+	        sector.setLastModifiedDate(LocalDateTime.now());
+	        activitySectorRepository.save(sector);
+	    }
+	    
+	    public String addMultipleCoursesToActivitySector(String activitySectorName, List<Long> courseIds) {
+	        ActivitySector sector = activitySectorRepository.findByName(activitySectorName)
+	                .orElseThrow(() -> new EntityNotFoundException("Activity sector not found"));
+
+	        if (sector.getCourseList() == null) {
+	            sector.setCourseList(new ArrayList<>());
+	        }
+
+	        StringBuilder result = new StringBuilder();
+
+	        for (Long courseId : courseIds) {
+	            Course course = courseRepository.findById(courseId)
+	                    .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
+
+	            if (sector.getCourseList().contains(course)) {
+	                result.append("Course '").append(course.getName()).append("' already linked.\n");
+	                continue;
+	            }
+
+	            sector.getCourseList().add(course);
+	            course.setActivitySector(sector);
+	            courseRepository.save(course);
+
+	            result.append("Course '").append(course.getName()).append("' linked successfully.\n");
+	        }
+
+	        activitySectorRepository.save(sector);
+	        return result.toString().trim();
+	    }
+	    
+
+
+}

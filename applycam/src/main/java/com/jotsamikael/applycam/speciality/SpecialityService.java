@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -351,6 +354,117 @@ public class SpecialityService {
 
         return "Speciality '" + speciality.getName() + "' created and linked to training center successfully.";
     }
+    
+    public String addSpecialitiesToSession(Long sessionId, List<Long> specialityIds) {
+    	
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+
+        StringBuilder result = new StringBuilder();
+
+        for (Long id : specialityIds) {
+            Speciality speciality = specialityRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Speciality ID " + id + " not found"));
+
+            speciality.setSession(session);
+            specialityRepository.save(speciality);
+            result.append("Speciality '").append(speciality.getName()).append("' assigned to session.\n");
+        }
+
+        return result.toString();
+    }
+    
+    public String removeSpecialitiesFromTrainingCenter(String agreementNumber, List<Long> specialityIds) {
+
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Training center not found"));
+
+        StringBuilder result = new StringBuilder();
+
+        for (Long specialityId : specialityIds) {
+            Speciality speciality = specialityRepository.findById(specialityId)
+                    .orElseThrow(() -> new EntityNotFoundException("Speciality not found with ID: " + specialityId));
+
+            // Cherche l'association OffersSpeciality à supprimer
+            Optional<OffersSpeciality> offerOptional = trainingCenter.getOffersSpecialityList()
+                    .stream()
+                    .filter(os -> os.getSpeciality().equals(speciality))
+                    .findFirst();
+
+            if (offerOptional.isPresent()) {
+                offersSpecialityRepository.delete(offerOptional.get());
+                result.append("Speciality ").append(speciality.getName()).append(" removed successfully.\n");
+            } else {
+                result.append("Speciality ").append(speciality.getName()).append(" was not linked.\n");
+            }
+        }
+
+        return result.toString().trim();
+    }
+    
+    public List<CourseWithSpecialitiesResponse> getCoursesWithSpecialitiesForTrainingCenter(String agreementNumber) {
+        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Training center not found"));
+
+        // Obtenir les spécialités offertes par ce centre
+        List<Speciality> specialities = trainingCenter.getOffersSpecialityList().stream()
+                .map(OffersSpeciality::getSpeciality)
+                .filter(Objects::nonNull)
+                .toList();
+
+        // Grouper par filière (Course)
+        Map<Course, List<Speciality>> groupedByCourse = specialities.stream()
+                .filter(s -> s.getCourse() != null)
+                .collect(Collectors.groupingBy(Speciality::getCourse));
+
+        // Mapper vers la réponse attendue
+        return groupedByCourse.entrySet().stream()
+                .map(entry -> {
+                    Course course = entry.getKey();
+                    List<Speciality> specList = entry.getValue();
+
+                    List<SpecialityResponse> specialityResponses = specList.stream()
+                            .map(speciality -> new SpecialityResponse(speciality.getId(), speciality.getName(), speciality.getCode(), 
+                            		speciality.getDescription(), speciality.getExamType(), speciality.getDqpPrice()))
+                            .toList();
+
+                    return new CourseWithSpecialitiesResponse(course.getId(), course.getName(), specialityResponses);
+                })
+                .toList();
+    }
+
+    public PageResponse<CourseWithSpecialitiesResponse> getAllCoursesWithSpecialitiesPaged(int offset, int pageSize, String field, boolean order) {
+        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+        PageRequest pageRequest = PageRequest.of(offset, pageSize, sort);
+
+        Page<Course> page = courseRepository.findAll(pageRequest);
+
+        List<CourseWithSpecialitiesResponse> content = page.getContent().stream()
+                .map(course -> {
+                    List<SpecialityResponse> specialityResponses = course.getSpecialityList().stream()
+                            .map(speciality -> new SpecialityResponse(speciality.getId(), speciality.getName(),speciality.getCode(), 
+                            		speciality.getDescription(), speciality.getExamType(), speciality.getDqpPrice()))
+                            .toList();
+
+                    return new CourseWithSpecialitiesResponse(course.getId(), course.getName(), specialityResponses);
+                })
+                .toList();
+
+        return new PageResponse<>(
+                content,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast()
+        );
+    }
+
+
+    
+    
+    
 
     
 }

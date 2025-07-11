@@ -25,6 +25,9 @@ public class CreateCourseRequest {
 	   
 	 	@Size(max = 500, message = "La description ne doit pas dépasser 500 caractères")
 	    private String description;
+	 	
+	 	@NotEmpty(message = "price for Cqp is mandatory")
+	 	private Double priceForCqp;
 	    
 	   
 	 

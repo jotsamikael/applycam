@@ -30,6 +30,20 @@ public class SessionService {
 		
 		
         User user=(User) connectedUser.getPrincipal();
+        
+        String year = createSessionRequest.getSessionYear();
+        String examType = createSessionRequest.getExamType().toUpperCase();
+
+        // Vérifie les limites en fonction du type d'examen
+        long count = sessionRepository.countBySessionYearAndExamType(year, examType);
+
+        if (examType.equals("DQP") && count >= 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une seule session DQP est autorisée pour l'année " + year);
+        }
+
+        if (examType.equals("CQP") && count >= 4) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum 4 sessions CQP sont autorisées pour l'année " + year);
+        }
 
         var session = Session.builder()
                 .examType(createSessionRequest.getExamType())

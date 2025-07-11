@@ -1,0 +1,143 @@
+package com.jotsamikael.applycam.auth;
+
+import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.promoter.CreatePromoterAndCenterRequest;
+import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
+import com.jotsamikael.applycam.promoter.PromoterService;
+import com.jotsamikael.applycam.speciality.CreateSpecialityRequest;
+import com.jotsamikael.applycam.speciality.SpecialityResponse;
+import com.jotsamikael.applycam.speciality.SpecialityService;
+import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@RestController
+@RequestMapping("auth")
+@RequiredArgsConstructor
+@Tag(name = "Authentication")
+public class AuthenticationController {
+
+    private final AuthenticationService service;
+    private final PromoterService promoterService;
+    private final TrainingCenterService trainingCenterService;
+    private final SpecialityService specialityService;
+
+
+    @PostMapping(value="/candidate-register")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<?> register(
+    		@RequestBody  @Valid CandidateRegistrationRequest request
+    ) throws MessagingException {
+        try {
+            //System.out.println(request);
+            service.register(request);
+            return ResponseEntity.accepted().build();
+        } catch (ConstraintViolationException e) {
+            throw new MessagingException("Invalid input provided", e);
+        }
+    }
+
+    @PostMapping("/promoter-register")
+    public ResponseEntity<?> createPromoter(
+    		@RequestBody @Valid CreatePromoterAndCenterRequest request,
+    		Authentication connectedUser
+    ) throws MessagingException {
+        promoterService.createPromoter(connectedUser,request);
+        return ResponseEntity.accepted().build();
+    }
+    
+    @PostMapping(value="/promoter-register/documents/{approval-Number}/{email}/{centerMail}",consumes="multipart/form-data")
+    public ResponseEntity<?> uploadPromoterFile(
+            @RequestParam MultipartFile cniFile,
+    	    @RequestParam MultipartFile approvalFile,
+    	    @RequestParam MultipartFile promoterPhoto,
+    	    @RequestParam MultipartFile engagementLetter,
+    	    @RequestParam MultipartFile locationPlan,
+    	    @RequestParam(required=false) MultipartFile internalRegulation,
+    	    @PathVariable("approval-Number") String approvalNumber,
+            @Parameter(description = "Agreement file to upload")
+            @PathVariable String email,
+            @PathVariable String centerMail
+    ) throws MessagingException {
+        promoterService.uploadPromoterFile(cniFile,approvalFile,promoterPhoto,engagementLetter,locationPlan,internalRegulation,approvalNumber,email,centerMail);
+        return  ResponseEntity.accepted().build();
+    }
+ 
+    @PostMapping("/authenticate")
+    public ResponseEntity<AuthenticationResponse> authenticate(
+            @RequestBody @Valid AuthenticationRequest request
+    ){
+        return  ResponseEntity.ok(service.authenticate(request));
+    }
+    
+   
+
+    @GetMapping("/activate-account")
+    public void confirm(
+            @RequestParam String token
+    ) throws MessagingException {
+        service.activateAccount(token);
+    }
+    
+  //This endpoint gets all training centers for admin
+    @GetMapping("get-all-trainingCenter")
+    public ResponseEntity<PageResponse<TrainingCenterResponse>> getAllTrainingCenters(
+            @RequestParam(defaultValue = "0", required = false) int offset,
+            @RequestParam(defaultValue = "10", required = false) int pageSize,
+            @RequestParam(defaultValue = "fullName", required = false) String field,
+            @RequestParam(defaultValue = "true", required = false) boolean order
+    ) {
+        return ResponseEntity.ok(trainingCenterService.getAllTrainingCenter(offset, pageSize, field, order));
+    }
+    
+    @PostMapping("/create-and-link")
+    public ResponseEntity<String> createAndLinkSpecialityToTrainingCenter(
+            @RequestBody @Valid CreateSpecialityRequest request,
+            @RequestParam String agreementNumber,
+            Authentication authentication
+    ) {
+        String result = specialityService.createAndLinkSpecialityToTrainingCenter(request, authentication, agreementNumber);
+        return ResponseEntity.ok(result);
+    }
+    
+    @PatchMapping("/link-to-center")
+    public ResponseEntity<String> addSpecialitiesToTrainingCenter(
+            @RequestParam String agreementNumber,
+            @RequestBody List<Long> specialityIds
+    ) {
+        String result = specialityService.addSpecialitiesToTrainingCenter(agreementNumber, specialityIds);
+        return ResponseEntity.ok(result);
+    }
+    @GetMapping("/get-all-speciality")
+    public ResponseEntity<PageResponse<SpecialityResponse>> getall( 
+        @RequestParam(name = "offset", defaultValue = "0", required = false) int offset,
+        @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize,
+        @RequestParam(name = "field", defaultValue = "name", required = false) String field,
+        @RequestParam(name = "order", defaultValue = "true", required = false) boolean order
+){
+    return ResponseEntity.ok(specialityService.getAllSpeciality( offset, pageSize, field, order));
+
+}
+    
+
+}

@@ -1,0 +1,16 @@
+package com.jotsamikael.applycam.activitySector;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.jotsamikael.applycam.campus.Campus;
+import com.jotsamikael.applycam.course.Course;
+
+public interface SectorRepository extends JpaRepository<ActivitySector, Long>  {
+	
+	Optional<ActivitySector> findByName(String name);
+	
+	boolean existsByName(String name);
+
+}

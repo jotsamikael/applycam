@@ -2,6 +2,7 @@ package com.jotsamikael.applycam.course;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class CourseRequest {
 	 	@NotEmpty(message = "code is mandatory")
 	    @NotBlank(message = "code can not be blank")
 	    private String code;
+	 	
+	 	@NotNull(message="price is mandatory")
+	 	private Double priceForCqp;
 	   
 	 	@Size(max = 500, message = "La description ne doit pas dépasser 500 caractères")
 	    private String description;

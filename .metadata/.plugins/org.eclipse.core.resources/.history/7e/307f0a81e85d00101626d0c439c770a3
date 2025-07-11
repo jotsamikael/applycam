@@ -1,0 +1,5 @@
+package com.jotsamikael.applycam.speciality;
+
+public class CourseWithSpecialitiesResponse {
+
+}

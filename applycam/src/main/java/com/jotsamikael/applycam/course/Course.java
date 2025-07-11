@@ -2,14 +2,17 @@ package com.jotsamikael.applycam.course;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jotsamikael.applycam.activitySector.ActivitySector;
 import com.jotsamikael.applycam.common.BaseEntity;
 import com.jotsamikael.applycam.session.Session;
 import com.jotsamikael.applycam.speciality.Speciality;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -46,4 +49,12 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course")
     private List<Speciality> specialityList;
+    
+    @ManyToOne
+    @JoinColumn(name="activitySector_id")
+    @JsonIgnore
+    private ActivitySector activitySector;
+    
+    @ManyToMany(mappedBy = "courseList")
+    private List<TrainingCenter> trainingCenterList;
 }

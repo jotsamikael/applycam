@@ -30,5 +30,8 @@ public interface SessionRepository  extends JpaRepository<Session, Long>{
 
 
 		Optional<Session> findByexamTypeAndExamDate(String examType, LocalDate examDate);
+		
+		long countBySessionYearAndExamType(String sessionYear, String examType);
+
 
 }

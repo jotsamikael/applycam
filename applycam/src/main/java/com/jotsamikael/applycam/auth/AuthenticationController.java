@@ -1,10 +1,13 @@
 package com.jotsamikael.applycam.auth;
 
 import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.course.CourseService;
 import com.jotsamikael.applycam.promoter.CreatePromoterAndCenterRequest;
 import com.jotsamikael.applycam.promoter.CreatePromoterRequest;
 import com.jotsamikael.applycam.promoter.PromoterService;
+import com.jotsamikael.applycam.speciality.CourseWithSpecialitiesResponse;
 import com.jotsamikael.applycam.speciality.CreateSpecialityRequest;
+import com.jotsamikael.applycam.speciality.SpecialityResponse;
 import com.jotsamikael.applycam.speciality.SpecialityService;
 import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
@@ -40,7 +43,7 @@ public class AuthenticationController {
     private final PromoterService promoterService;
     private final TrainingCenterService trainingCenterService;
     private final SpecialityService specialityService;
-
+    private final CourseService courseService;
 
     @PostMapping(value="/candidate-register")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -99,7 +102,7 @@ public class AuthenticationController {
     }
     
   //This endpoint gets all training centers for admin
-    @GetMapping("get-all")
+    @GetMapping("get-all-trainingCenter")
     public ResponseEntity<PageResponse<TrainingCenterResponse>> getAllTrainingCenters(
             @RequestParam(defaultValue = "0", required = false) int offset,
             @RequestParam(defaultValue = "10", required = false) int pageSize,
@@ -127,5 +130,36 @@ public class AuthenticationController {
         String result = specialityService.addSpecialitiesToTrainingCenter(agreementNumber, specialityIds);
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/get-all-speciality")
+    public ResponseEntity<PageResponse<SpecialityResponse>> getall( 
+        @RequestParam(name = "offset", defaultValue = "0", required = false) int offset,
+        @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize,
+        @RequestParam(name = "field", defaultValue = "name", required = false) String field,
+        @RequestParam(name = "order", defaultValue = "true", required = false) boolean order
+){
+    return ResponseEntity.ok(specialityService.getAllSpeciality( offset, pageSize, field, order));
+
+}
+    @GetMapping("/courses-with-specialities")
+    public ResponseEntity<PageResponse<CourseWithSpecialitiesResponse>> getAllCoursesWithSpecialitiesPaged(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "name") String field,
+            @RequestParam(defaultValue = "true") boolean order
+    ) {
+        return ResponseEntity.ok(specialityService.getAllCoursesWithSpecialitiesPaged(offset, pageSize, field, order));
+    }
+    
+    @PostMapping("/courses/{agreementNumber}")
+    public ResponseEntity<String> addCoursesToTrainingCenter(
+            @PathVariable String agreementNumber,
+            @RequestBody List<Long> courseIds
+    ) {
+        String result = courseService.addCoursesToTrainingCenter(agreementNumber, courseIds);
+        return ResponseEntity.ok(result);
+    }
+
+    
+    
 
 }

@@ -16,7 +16,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -91,7 +93,7 @@ public class TrainingCenterController {
    }
    
    @PatchMapping("/status/{agreementNumber}")
-   public ResponseEntity<String> changeStatus(
+   public ResponseEntity<Map<String, Boolean>> changeStatus(
            @PathVariable String agreementNumber,
            @RequestParam ContentStatus status,
            @RequestParam(required = false) String comment,
@@ -104,12 +106,10 @@ public class TrainingCenterController {
            } else {
                result = service.changeTrainingCenterStatus(agreementNumber, status, comment,connectedUser);
            }
-           return ResponseEntity.ok(result);
-       } catch (EntityNotFoundException e) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-       } catch (RuntimeException e) {
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-       }
+           return ResponseEntity.ok(Collections.singletonMap("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("success", false));
+        }
    }
    
    

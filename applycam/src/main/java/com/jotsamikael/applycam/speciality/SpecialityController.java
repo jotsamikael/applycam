@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -135,6 +136,39 @@ public class SpecialityController {
         specialityService.activateAndAssignSpecialityToSession(request, authentication);
         return ResponseEntity.ok("Speciality activated and assigned to session successfully.");
     }
+    
+    @PostMapping("/add-specialities/{sessionId}")
+    public ResponseEntity<String> addSpecialities(@PathVariable Long sessionId, @RequestBody List<Long> specialityIds) {
+        return ResponseEntity.ok(specialityService.addSpecialitiesToSession(sessionId, specialityIds));
+    }
+    
+    @DeleteMapping("/{agreementNumber}/remove-specialities")
+    public ResponseEntity<String> removeSpecialities(
+            @PathVariable String agreementNumber,
+            @RequestBody List<Long> specialityIds) {
+        String message = specialityService.removeSpecialitiesFromTrainingCenter(agreementNumber, specialityIds);
+        return ResponseEntity.ok(message);
+    }
+    
+    @GetMapping("/training-center/offered-specialities-by-course/{agreementNumber}")
+    public ResponseEntity<List<CourseWithSpecialitiesResponse>> getCoursesAndSpecialitiesForCenter(
+            @PathVariable String agreementNumber) {
+        List<CourseWithSpecialitiesResponse> result =
+                specialityService.getCoursesWithSpecialitiesForTrainingCenter(agreementNumber);
+        return ResponseEntity.ok(result);
+    }
+    
+    @DeleteMapping("/specialities/{agreementNumber}")
+    public ResponseEntity<String> removeSpecialitiesFromTrainingCenter(
+            @PathVariable String agreementNumber,
+            @RequestBody List<Long> specialityIds
+    ) {
+        String response = specialityService.removeSpecialitiesFromTrainingCenter(agreementNumber, specialityIds);
+        return ResponseEntity.ok(response);
+    }
+
+
+    
     
 
 
