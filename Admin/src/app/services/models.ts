@@ -29,7 +29,6 @@ export { CreatePromoterAndCenterRequest } from './models/create-promoter-and-cen
 export { CreatePromoterRequest } from './models/create-promoter-request';
 export { CreateSessionRequest } from './models/create-session-request';
 export { CreateSpecialityRequest } from './models/create-speciality-request';
-export { CreateStaffRequest } from './models/create-staff-request';
 export { CreateSubjectRequest } from './models/create-subject-request';
 export { CreateTainingCenterRequest } from './models/create-taining-center-request';
 export { Division } from './models/division';
@@ -57,6 +56,7 @@ export { SessionResponse } from './models/session-response';
 export { Speciality } from './models/speciality';
 export { SpecialityResponse } from './models/speciality-response';
 export { SpecialitySubjectRequest } from './models/speciality-subject-request';
+export { StaffRequest } from './models/staff-request';
 export { StaffResponse } from './models/staff-response';
 export { Subject } from './models/subject';
 export { SubjectRequest } from './models/subject-request';

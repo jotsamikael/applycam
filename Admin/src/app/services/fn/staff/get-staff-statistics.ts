@@ -8,16 +8,16 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { PromoterResponse } from '../../models/promoter-response';
 
-export interface FindStaffByEmail1$Params {
-  email: string;
+export interface GetStaffStatistics$Params {
 }
 
-export function findStaffByEmail1(http: HttpClient, rootUrl: string, params: FindStaffByEmail1$Params, context?: HttpContext): Observable<StrictHttpResponse<PromoterResponse>> {
-  const rb = new RequestBuilder(rootUrl, findStaffByEmail1.PATH, 'get');
+export function getStaffStatistics(http: HttpClient, rootUrl: string, params?: GetStaffStatistics$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: {
+};
+}>> {
+  const rb = new RequestBuilder(rootUrl, getStaffStatistics.PATH, 'get');
   if (params) {
-    rb.query('email', params.email, {});
   }
 
   return http.request(
@@ -25,9 +25,12 @@ export function findStaffByEmail1(http: HttpClient, rootUrl: string, params: Fin
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<PromoterResponse>;
+      return r as StrictHttpResponse<{
+      [key: string]: {
+      };
+      }>;
     })
   );
 }
 
-findStaffByEmail1.PATH = '/promoter/find-by-email';
+getStaffStatistics.PATH = '/staff/statistics';

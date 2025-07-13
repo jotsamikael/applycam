@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { CourseResponse } from '../../models/course-response';
 
 export interface FindByName3$Params {
+
+/**
+ * Nom du cours
+ */
   name: string;
 }
 

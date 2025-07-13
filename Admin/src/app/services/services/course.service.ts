@@ -18,18 +18,32 @@ import { createAndAssignCourseToActivitySector } from '../fn/course/create-and-a
 import { CreateAndAssignCourseToActivitySector$Params } from '../fn/course/create-and-assign-course-to-activity-sector';
 import { createCourse } from '../fn/course/create-course';
 import { CreateCourse$Params } from '../fn/course/create-course';
+import { deactivateCourse } from '../fn/course/deactivate-course';
+import { DeactivateCourse$Params } from '../fn/course/deactivate-course';
+import { deleteCoursePermanently } from '../fn/course/delete-course-permanently';
+import { DeleteCoursePermanently$Params } from '../fn/course/delete-course-permanently';
 import { findByName3 } from '../fn/course/find-by-name-3';
 import { FindByName3$Params } from '../fn/course/find-by-name-3';
+import { getCourseById } from '../fn/course/get-course-by-id';
+import { GetCourseById$Params } from '../fn/course/get-course-by-id';
 import { getCourses } from '../fn/course/get-courses';
 import { GetCourses$Params } from '../fn/course/get-courses';
 import { PageResponseCourseResponse } from '../models/page-response-course-response';
+import { reactivateCourse } from '../fn/course/reactivate-course';
+import { ReactivateCourse$Params } from '../fn/course/reactivate-course';
 import { removeCoursesFromTrainingCenter } from '../fn/course/remove-courses-from-training-center';
 import { RemoveCoursesFromTrainingCenter$Params } from '../fn/course/remove-courses-from-training-center';
+import { searchCoursesByName } from '../fn/course/search-courses-by-name';
+import { SearchCoursesByName$Params } from '../fn/course/search-courses-by-name';
 import { toogleCourse2 } from '../fn/course/toogle-course-2';
 import { ToogleCourse2$Params } from '../fn/course/toogle-course-2';
 import { updateCourse1 } from '../fn/course/update-course-1';
 import { UpdateCourse1$Params } from '../fn/course/update-course-1';
 
+
+/**
+ * API de gestion des cours
+ */
 @Injectable({ providedIn: 'root' })
 export class CourseService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
@@ -40,6 +54,10 @@ export class CourseService extends BaseService {
   static readonly AddCoursesPath = '/course-management/{sessionId}/add-courses';
 
   /**
+   * Ajouter à une session.
+   *
+   * Ajouter des cours à une session
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `addCourses()` instead.
    *
@@ -50,6 +68,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Ajouter à une session.
+   *
+   * Ajouter des cours à une session
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `addCourses$Response()` instead.
    *
@@ -65,6 +87,10 @@ export class CourseService extends BaseService {
   static readonly CreateCoursePath = '/course-management/create-course';
 
   /**
+   * Créer un cours.
+   *
+   * Créer un nouveau cours
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createCourse()` instead.
    *
@@ -75,6 +101,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Créer un cours.
+   *
+   * Créer un nouveau cours
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createCourse$Response()` instead.
    *
@@ -90,6 +120,10 @@ export class CourseService extends BaseService {
   static readonly CreateAndAssignCourseToActivitySectorPath = '/course-management/create-and-assign';
 
   /**
+   * Créer et assigner.
+   *
+   * Créer un cours et l'assigner à un secteur d'activité
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createAndAssignCourseToActivitySector()` instead.
    *
@@ -100,6 +134,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Créer et assigner.
+   *
+   * Créer un cours et l'assigner à un secteur d'activité
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createAndAssignCourseToActivitySector$Response()` instead.
    *
@@ -115,6 +153,10 @@ export class CourseService extends BaseService {
   static readonly UpdateCourse1Path = '/course-management/update-course';
 
   /**
+   * Mettre à jour un cours.
+   *
+   * Mettre à jour un cours existant
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateCourse1()` instead.
    *
@@ -125,6 +167,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Mettre à jour un cours.
+   *
+   * Mettre à jour un cours existant
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateCourse1$Response()` instead.
    *
@@ -140,28 +186,164 @@ export class CourseService extends BaseService {
   static readonly ToogleCourse2Path = '/course-management/toggle-course/{name}';
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un cours
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `toogleCourse2()` instead.
    *
    * This method doesn't expect any request body.
    */
-  toogleCourse2$Response(params: ToogleCourse2$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
+  toogleCourse2$Response(params: ToogleCourse2$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
     return toogleCourse2(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un cours
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `toogleCourse2$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  toogleCourse2(params: ToogleCourse2$Params, context?: HttpContext): Observable<{
-}> {
+  toogleCourse2(params: ToogleCourse2$Params, context?: HttpContext): Observable<void> {
     return this.toogleCourse2$Response(params, context).pipe(
-      map((r: StrictHttpResponse<{
-}>): {
-} => r.body)
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `reactivateCourse()` */
+  static readonly ReactivateCoursePath = '/course-management/reactivate/{name}';
+
+  /**
+   * Réactiver un cours.
+   *
+   * Réactiver un cours désactivé
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `reactivateCourse()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateCourse$Response(params: ReactivateCourse$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reactivateCourse(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Réactiver un cours.
+   *
+   * Réactiver un cours désactivé
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `reactivateCourse$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateCourse(params: ReactivateCourse$Params, context?: HttpContext): Observable<void> {
+    return this.reactivateCourse$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deactivateCourse()` */
+  static readonly DeactivateCoursePath = '/course-management/deactivate/{name}';
+
+  /**
+   * Désactiver un cours.
+   *
+   * Désactiver un cours (soft delete)
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deactivateCourse()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateCourse$Response(params: DeactivateCourse$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deactivateCourse(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Désactiver un cours.
+   *
+   * Désactiver un cours (soft delete)
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deactivateCourse$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateCourse(params: DeactivateCourse$Params, context?: HttpContext): Observable<void> {
+    return this.deactivateCourse$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getCourseById()` */
+  static readonly GetCourseByIdPath = '/course-management/{courseId}';
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un cours par son ID
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getCourseById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCourseById$Response(params: GetCourseById$Params, context?: HttpContext): Observable<StrictHttpResponse<CourseResponse>> {
+    return getCourseById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un cours par son ID
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getCourseById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCourseById(params: GetCourseById$Params, context?: HttpContext): Observable<CourseResponse> {
+    return this.getCourseById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<CourseResponse>): CourseResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `searchCoursesByName()` */
+  static readonly SearchCoursesByNamePath = '/course-management/search';
+
+  /**
+   * Rechercher par nom.
+   *
+   * Rechercher des cours par nom
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `searchCoursesByName()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchCoursesByName$Response(params: SearchCoursesByName$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CourseResponse>>> {
+    return searchCoursesByName(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Rechercher par nom.
+   *
+   * Rechercher des cours par nom
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `searchCoursesByName$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchCoursesByName(params: SearchCoursesByName$Params, context?: HttpContext): Observable<Array<CourseResponse>> {
+    return this.searchCoursesByName$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<CourseResponse>>): Array<CourseResponse> => r.body)
     );
   }
 
@@ -169,6 +351,10 @@ export class CourseService extends BaseService {
   static readonly GetCoursesPath = '/course-management/get-all';
 
   /**
+   * Récupérer tous les cours.
+   *
+   * Récupérer tous les cours avec pagination et tri
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getCourses()` instead.
    *
@@ -179,6 +365,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Récupérer tous les cours.
+   *
+   * Récupérer tous les cours avec pagination et tri
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getCourses$Response()` instead.
    *
@@ -194,6 +384,10 @@ export class CourseService extends BaseService {
   static readonly FindByName3Path = '/course-management/findByName/{name}';
 
   /**
+   * Trouver par nom.
+   *
+   * Trouver un cours par son nom
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `findByName3()` instead.
    *
@@ -204,6 +398,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Trouver par nom.
+   *
+   * Trouver un cours par son nom
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `findByName3$Response()` instead.
    *
@@ -215,10 +413,47 @@ export class CourseService extends BaseService {
     );
   }
 
+  /** Path part for operation `deleteCoursePermanently()` */
+  static readonly DeleteCoursePermanentlyPath = '/course-management/{name}';
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un cours
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteCoursePermanently()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteCoursePermanently$Response(params: DeleteCoursePermanently$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteCoursePermanently(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un cours
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteCoursePermanently$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteCoursePermanently(params: DeleteCoursePermanently$Params, context?: HttpContext): Observable<void> {
+    return this.deleteCoursePermanently$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
   /** Path part for operation `removeCoursesFromTrainingCenter()` */
   static readonly RemoveCoursesFromTrainingCenterPath = '/course-management/courses/{agreementNumber}';
 
   /**
+   * Supprimer du centre.
+   *
+   * Supprimer des cours d'un centre de formation
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `removeCoursesFromTrainingCenter()` instead.
    *
@@ -229,6 +464,10 @@ export class CourseService extends BaseService {
   }
 
   /**
+   * Supprimer du centre.
+   *
+   * Supprimer des cours d'un centre de formation
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `removeCoursesFromTrainingCenter$Response()` instead.
    *

@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { SessionResponse } from '../../models/session-response';
 
 export interface FindByName2$Params {
+
+/**
+ * Date d'examen
+ */
   examDate: string;
 }
 

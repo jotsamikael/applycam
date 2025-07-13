@@ -11,10 +11,30 @@ import { RequestBuilder } from '../../request-builder';
 import { PageResponseCandidateResponse } from '../../models/page-response-candidate-response';
 
 export interface GetCandidatesOfConnectedpromoterid$Params {
+
+/**
+ * Année
+ */
   year: number;
+
+/**
+ * Offset de pagination
+ */
   offset?: number;
+
+/**
+ * Taille de page
+ */
   pageSize?: number;
+
+/**
+ * Champ de tri
+ */
   field?: string;
+
+/**
+ * Ordre de tri
+ */
   order?: boolean;
 }
 

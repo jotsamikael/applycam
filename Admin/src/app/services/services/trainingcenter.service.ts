@@ -15,6 +15,12 @@ import { changeStatus } from '../fn/trainingcenter/change-status';
 import { ChangeStatus$Params } from '../fn/trainingcenter/change-status';
 import { createTrainingCenter } from '../fn/trainingcenter/create-training-center';
 import { CreateTrainingCenter$Params } from '../fn/trainingcenter/create-training-center';
+import { deactivateTrainingCenter } from '../fn/trainingcenter/deactivate-training-center';
+import { DeactivateTrainingCenter$Params } from '../fn/trainingcenter/deactivate-training-center';
+import { deleteTrainingCenter } from '../fn/trainingcenter/delete-training-center';
+import { DeleteTrainingCenter$Params } from '../fn/trainingcenter/delete-training-center';
+import { deleteTrainingCenterPermanently } from '../fn/trainingcenter/delete-training-center-permanently';
+import { DeleteTrainingCenterPermanently$Params } from '../fn/trainingcenter/delete-training-center-permanently';
 import { getAgreementStatus } from '../fn/trainingcenter/get-agreement-status';
 import { GetAgreementStatus$Params } from '../fn/trainingcenter/get-agreement-status';
 import { getAllTrainingCenters } from '../fn/trainingcenter/get-all-training-centers';
@@ -23,13 +29,21 @@ import { getTrainingCenterByAgreementNumber } from '../fn/trainingcenter/get-tra
 import { GetTrainingCenterByAgreementNumber$Params } from '../fn/trainingcenter/get-training-center-by-agreement-number';
 import { getTrainingCenterOfConnectedPromoter } from '../fn/trainingcenter/get-training-center-of-connected-promoter';
 import { GetTrainingCenterOfConnectedPromoter$Params } from '../fn/trainingcenter/get-training-center-of-connected-promoter';
+import { getTrainingCenterStatistics } from '../fn/trainingcenter/get-training-center-statistics';
+import { GetTrainingCenterStatistics$Params } from '../fn/trainingcenter/get-training-center-statistics';
 import { PageResponseTrainingCenterResponse } from '../models/page-response-training-center-response';
+import { reactivateTrainingCenter } from '../fn/trainingcenter/reactivate-training-center';
+import { ReactivateTrainingCenter$Params } from '../fn/trainingcenter/reactivate-training-center';
 import { TrainingCenterResponse } from '../models/training-center-response';
-import { updatePromoter } from '../fn/trainingcenter/update-promoter';
-import { UpdatePromoter$Params } from '../fn/trainingcenter/update-promoter';
+import { updateTrainingCenter } from '../fn/trainingcenter/update-training-center';
+import { UpdateTrainingCenter$Params } from '../fn/trainingcenter/update-training-center';
 import { uploadAgreementFile } from '../fn/trainingcenter/upload-agreement-file';
 import { UploadAgreementFile$Params } from '../fn/trainingcenter/upload-agreement-file';
 
+
+/**
+ * API de gestion des centres de formation
+ */
 @Injectable({ providedIn: 'root' })
 export class TrainingcenterService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
@@ -40,6 +54,10 @@ export class TrainingcenterService extends BaseService {
   static readonly CreateTrainingCenterPath = '/trainingcenter/create-training-center';
 
   /**
+   * Créer un centre de formation.
+   *
+   * Créer un nouveau centre de formation
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createTrainingCenter()` instead.
    *
@@ -50,6 +68,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Créer un centre de formation.
+   *
+   * Créer un nouveau centre de formation
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createTrainingCenter$Response()` instead.
    *
@@ -65,6 +87,10 @@ export class TrainingcenterService extends BaseService {
   static readonly UploadAgreementFilePath = '/trainingcenter/agreement/{agreement-number}';
 
   /**
+   * Télécharger un fichier d'accord.
+   *
+   * Télécharger un fichier d'accord pour un centre de formation
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `uploadAgreementFile()` instead.
    *
@@ -76,6 +102,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Télécharger un fichier d'accord.
+   *
+   * Télécharger un fichier d'accord pour un centre de formation
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `uploadAgreementFile$Response()` instead.
    *
@@ -90,27 +120,35 @@ export class TrainingcenterService extends BaseService {
     );
   }
 
-  /** Path part for operation `updatePromoter()` */
-  static readonly UpdatePromoterPath = '/trainingcenter/update-trainingCenter/{fullname}';
+  /** Path part for operation `updateTrainingCenter()` */
+  static readonly UpdateTrainingCenterPath = '/trainingcenter/update-trainingCenter/{fullname}';
 
   /**
+   * Mettre à jour un centre.
+   *
+   * Mettre à jour un centre de formation existant
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `updatePromoter()` instead.
+   * To access only the response body, use `updateTrainingCenter()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updatePromoter$Response(params: UpdatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-    return updatePromoter(this.http, this.rootUrl, params, context);
+  updateTrainingCenter$Response(params: UpdateTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return updateTrainingCenter(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Mettre à jour un centre.
+   *
+   * Mettre à jour un centre de formation existant
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `updatePromoter$Response()` instead.
+   * To access the full response (for headers, for example), `updateTrainingCenter$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updatePromoter(params: UpdatePromoter$Params, context?: HttpContext): Observable<string> {
-    return this.updatePromoter$Response(params, context).pipe(
+  updateTrainingCenter(params: UpdateTrainingCenter$Params, context?: HttpContext): Observable<string> {
+    return this.updateTrainingCenter$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
@@ -119,6 +157,10 @@ export class TrainingcenterService extends BaseService {
   static readonly ChangeStatusPath = '/trainingcenter/status/{agreementNumber}';
 
   /**
+   * Changer le statut.
+   *
+   * Changer le statut d'un centre de formation
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `changeStatus()` instead.
    *
@@ -131,6 +173,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Changer le statut.
+   *
+   * Changer le statut d'un centre de formation
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `changeStatus$Response()` instead.
    *
@@ -148,10 +194,158 @@ export class TrainingcenterService extends BaseService {
     );
   }
 
+  /** Path part for operation `reactivateTrainingCenter()` */
+  static readonly ReactivateTrainingCenterPath = '/trainingcenter/reactivate/{agreementNumber}';
+
+  /**
+   * Réactiver un centre.
+   *
+   * Réactiver un centre de formation désactivé
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `reactivateTrainingCenter()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateTrainingCenter$Response(params: ReactivateTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reactivateTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Réactiver un centre.
+   *
+   * Réactiver un centre de formation désactivé
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `reactivateTrainingCenter$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateTrainingCenter(params: ReactivateTrainingCenter$Params, context?: HttpContext): Observable<void> {
+    return this.reactivateTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteTrainingCenter()` */
+  static readonly DeleteTrainingCenterPath = '/trainingcenter/delete/{agreementNumber}';
+
+  /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un centre de formation
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteTrainingCenter()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteTrainingCenter$Response(params: DeleteTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un centre de formation
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteTrainingCenter$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteTrainingCenter(params: DeleteTrainingCenter$Params, context?: HttpContext): Observable<void> {
+    return this.deleteTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deactivateTrainingCenter()` */
+  static readonly DeactivateTrainingCenterPath = '/trainingcenter/deactivate/{agreementNumber}';
+
+  /**
+   * Désactiver un centre.
+   *
+   * Désactiver un centre de formation (soft delete)
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deactivateTrainingCenter()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateTrainingCenter$Response(params: DeactivateTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deactivateTrainingCenter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Désactiver un centre.
+   *
+   * Désactiver un centre de formation (soft delete)
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deactivateTrainingCenter$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateTrainingCenter(params: DeactivateTrainingCenter$Params, context?: HttpContext): Observable<void> {
+    return this.deactivateTrainingCenter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getTrainingCenterStatistics()` */
+  static readonly GetTrainingCenterStatisticsPath = '/trainingcenter/statistics';
+
+  /**
+   * Statistiques.
+   *
+   * Récupérer les statistiques sur les centres de formation
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getTrainingCenterStatistics()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getTrainingCenterStatistics$Response(params?: GetTrainingCenterStatistics$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: {
+};
+}>> {
+    return getTrainingCenterStatistics(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Statistiques.
+   *
+   * Récupérer les statistiques sur les centres de formation
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getTrainingCenterStatistics$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getTrainingCenterStatistics(params?: GetTrainingCenterStatistics$Params, context?: HttpContext): Observable<{
+[key: string]: {
+};
+}> {
+    return this.getTrainingCenterStatistics$Response(params, context).pipe(
+      map((r: StrictHttpResponse<{
+[key: string]: {
+};
+}>): {
+[key: string]: {
+};
+} => r.body)
+    );
+  }
+
   /** Path part for operation `getAgreementStatus()` */
   static readonly GetAgreementStatusPath = '/trainingcenter/getAgreementStatus/{agreement-number}';
 
   /**
+   * Statut d'accord.
+   *
+   * Obtenir le statut d'un accord
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getAgreementStatus()` instead.
    *
@@ -162,6 +356,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Statut d'accord.
+   *
+   * Obtenir le statut d'un accord
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getAgreementStatus$Response()` instead.
    *
@@ -177,6 +375,10 @@ export class TrainingcenterService extends BaseService {
   static readonly GetTrainingCenterOfConnectedPromoterPath = '/trainingcenter/get-training-centers-of-connected-promoter';
 
   /**
+   * Centres du promoteur connecté.
+   *
+   * Récupérer tous les centres de formation du promoteur connecté
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getTrainingCenterOfConnectedPromoter()` instead.
    *
@@ -187,6 +389,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Centres du promoteur connecté.
+   *
+   * Récupérer tous les centres de formation du promoteur connecté
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getTrainingCenterOfConnectedPromoter$Response()` instead.
    *
@@ -202,6 +408,10 @@ export class TrainingcenterService extends BaseService {
   static readonly GetTrainingCenterByAgreementNumberPath = '/trainingcenter/get-training-by-agreement-number';
 
   /**
+   * Récupérer par numéro d'accord.
+   *
+   * Récupérer un centre de formation par son numéro d'accord
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getTrainingCenterByAgreementNumber()` instead.
    *
@@ -212,6 +422,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Récupérer par numéro d'accord.
+   *
+   * Récupérer un centre de formation par son numéro d'accord
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getTrainingCenterByAgreementNumber$Response()` instead.
    *
@@ -227,6 +441,10 @@ export class TrainingcenterService extends BaseService {
   static readonly GetAllTrainingCentersPath = '/trainingcenter/get-all';
 
   /**
+   * Récupérer tous les centres.
+   *
+   * Récupérer tous les centres de formation avec pagination et tri
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getAllTrainingCenters()` instead.
    *
@@ -237,6 +455,10 @@ export class TrainingcenterService extends BaseService {
   }
 
   /**
+   * Récupérer tous les centres.
+   *
+   * Récupérer tous les centres de formation avec pagination et tri
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getAllTrainingCenters$Response()` instead.
    *
@@ -245,6 +467,39 @@ export class TrainingcenterService extends BaseService {
   getAllTrainingCenters(params?: GetAllTrainingCenters$Params, context?: HttpContext): Observable<PageResponseTrainingCenterResponse> {
     return this.getAllTrainingCenters$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseTrainingCenterResponse>): PageResponseTrainingCenterResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteTrainingCenterPermanently()` */
+  static readonly DeleteTrainingCenterPermanentlyPath = '/trainingcenter/{agreementNumber}';
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un centre de formation
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteTrainingCenterPermanently()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteTrainingCenterPermanently$Response(params: DeleteTrainingCenterPermanently$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteTrainingCenterPermanently(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un centre de formation
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteTrainingCenterPermanently$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteTrainingCenterPermanently(params: DeleteTrainingCenterPermanently$Params, context?: HttpContext): Observable<void> {
+    return this.deleteTrainingCenterPermanently$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

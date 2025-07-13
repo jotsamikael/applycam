@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <app-page-title title="Candidates Management" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+    <app-page-title title="Gestion des Candidats" [breadcrumbItems]="breadCrumbItems"></app-page-title>
 
     <div class="row mb-3">
       <div *ngFor="let stat of stats" class="col-md-2 col-6 mb-2">
@@ -13,19 +13,104 @@
       </div>
     </div>
 
-    <!-- <div class="row justify-content-end mb-3">
-        <div class="col-md-4 text-end">
-            <button class="btn btn-soft-primary waves-effect waves-light mx-2" (click)="openCreateNewModal()">
-                <i class="bx bx-plus me-1"></i> Create Candidate
-            </button>
+    <!-- Barre d'outils -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" (click)="refreshCandidates()" [disabled]="refreshing">
+                    <i class="bx bx-refresh" [class.bx-spin]="refreshing"></i>
+                    {{ refreshing ? 'Actualisation...' : 'Actualiser' }}
+                </button>
+                <button class="btn btn-outline-info" (click)="exportCandidatesToExcel()">
+                    <i class="bx bx-export"></i>
+                    Exporter
+                </button>
+            </div>
         </div>
-    </div> -->
+        <div class="col-md-6 text-end">
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" (click)="toggleAdvancedFilters()">
+                    <i class="bx bx-filter-alt"></i>
+                    {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} les filtres
+                </button>
+                <button class="btn btn-soft-primary waves-effect waves-light" (click)="openCreateNewModal()">
+                    <i class="bx bx-plus me-1"></i> Créer un Candidat
+                </button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Filtres avancés -->
+    <div class="row mb-3" *ngIf="showAdvancedFilters">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bx bx-filter-alt me-2"></i>
+                        Filtres avancés - Candidats
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="filterForm" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Nationalité</label>
+                            <select class="form-select" formControlName="nationality">
+                                <option value="">Toutes</option>
+                                <option *ngFor="let country of countries" [value]="country">
+                                    {{ country }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sexe</label>
+                            <select class="form-select" formControlName="sex">
+                                <option value="">Tous</option>
+                                <option value="Male">Masculin</option>
+                                <option value="Female">Féminin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" formControlName="status">
+                                <option value="">Tous</option>
+                                <option value="ACTIVE">Actif</option>
+                                <option value="INACTIVE">Inactif</option>
+                                <option value="DRAFT">Brouillon</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Centre de formation</label>
+                            <select class="form-select" formControlName="trainingCenter">
+                                <option value="">Tous</option>
+                                <option *ngFor="let center of trainingCenters" [value]="center.agreementNumber">
+                                    {{ center.fullName || center.acronym }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" (click)="applyAdvancedFilters()">
+                                    <i class="bx bx-search"></i>
+                                    Appliquer les filtres
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+                                    <i class="bx bx-x"></i>
+                                    Effacer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtre de recherche rapide -->
     <div class="row justify-content-end mt-3">
         <div class="col-md-3">
             <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Filter</mat-label>
-                <input matInput (keyup)="applyFilter($event)" placeholder="Filter candidates" #input>
+                <mat-label>Filtrer</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Filtrer les candidats" #input>
                 <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
         </div>
@@ -38,13 +123,13 @@
 
                     <!-- Last Name Column -->
                     <ng-container matColumnDef="lastname">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last Name </th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom </th>
                         <td mat-cell *matCellDef="let row"> {{row.lastname}} </td>
                     </ng-container>
 
                     <!-- First Name Column -->
                     <ng-container matColumnDef="firstname">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> First Name </th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Prénom </th>
                         <td mat-cell *matCellDef="let row"> {{row.firstname}} </td>
                     </ng-container>
 
@@ -56,13 +141,13 @@
 
                     <!-- Date of Birth Column -->
                     <ng-container matColumnDef="dateOfBirth">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date of Birth </th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date de naissance </th>
                         <td mat-cell *matCellDef="let row"> {{row.dateOfBirth | date}} </td>
                     </ng-container>
 
                     <!-- Nationality Column -->
                     <ng-container matColumnDef="nationality">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Nationality </th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Nationalité </th>
                         <td mat-cell *matCellDef="let row">
                             <span class="badge bg-primary">{{ row.nationality || 'N/A' }}</span>
                         </td>
@@ -70,7 +155,7 @@
 
                     <!-- Status Column -->
                     <ng-container matColumnDef="contentStatus">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Statut </th>
                         <td mat-cell *matCellDef="let row">
                             <span class="badge bg-info">
                                 {{ row.contentStatus || 'DRAFT' }}
@@ -83,10 +168,10 @@
                         <th mat-header-cell *matHeaderCellDef class="text-end">Actions</th>
                         <td mat-cell *matCellDef="let row" class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary btn-sm" (click)="edit(row)" title="Edit">
+                                <button class="btn btn-outline-primary btn-sm" (click)="edit(row)" title="Modifier">
                                     <i class="bx bx-edit"></i>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" (click)="delete(row)" title="Delete">
+                                <button class="btn btn-outline-danger btn-sm" (click)="delete(row)" title="Supprimer">
                                     <i class="bx bx-trash"></i>
                                 </button>
                                 <button class="btn btn-outline-info btn-sm" (click)="showDetails(row)" title="Voir détails">
@@ -104,7 +189,7 @@
 
                     <!-- Row shown when there is no matching data. -->
                     <tr class="mat-row" *matNoDataRow>
-                        <td class="mat-cell" colspan="7">No data matching the filter "{{input.value}}"</td>
+                        <td class="mat-cell" colspan="7">Aucune donnée correspondant au filtre "{{input.value}}"</td>
                     </tr>
                 </table>
 

@@ -11,9 +11,25 @@ import { RequestBuilder } from '../../request-builder';
 import { PageResponseTrainingCenterResponse } from '../../models/page-response-training-center-response';
 
 export interface GetAllTrainingCenters$Params {
+
+/**
+ * Offset de pagination
+ */
   offset?: number;
+
+/**
+ * Taille de page
+ */
   pageSize?: number;
+
+/**
+ * Champ de tri
+ */
   field?: string;
+
+/**
+ * Ordre de tri
+ */
   order?: boolean;
 }
 

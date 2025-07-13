@@ -9,14 +9,18 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 
-export interface DeleteApplication$Params {
-  applicationId: number;
+export interface DeleteTrainingCenter$Params {
+
+/**
+ * Numéro d'accord
+ */
+  agreementNumber: string;
 }
 
-export function deleteApplication(http: HttpClient, rootUrl: string, params: DeleteApplication$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-  const rb = new RequestBuilder(rootUrl, deleteApplication.PATH, 'patch');
+export function deleteTrainingCenter(http: HttpClient, rootUrl: string, params: DeleteTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+  const rb = new RequestBuilder(rootUrl, deleteTrainingCenter.PATH, 'patch');
   if (params) {
-    rb.path('applicationId', params.applicationId, {});
+    rb.path('agreementNumber', params.agreementNumber, {});
   }
 
   return http.request(
@@ -29,4 +33,4 @@ export function deleteApplication(http: HttpClient, rootUrl: string, params: Del
   );
 }
 
-deleteApplication.PATH = '/application/delete/{applicationId}';
+deleteTrainingCenter.PATH = '/trainingcenter/delete/{agreementNumber}';

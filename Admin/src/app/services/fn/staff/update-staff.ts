@@ -8,13 +8,13 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { CreateStaffRequest } from '../../models/create-staff-request';
+import { StaffRequest } from '../../models/staff-request';
 
 export interface UpdateStaff$Params {
-      body: CreateStaffRequest
+      body: StaffRequest
 }
 
-export function updateStaff(http: HttpClient, rootUrl: string, params: UpdateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+export function updateStaff(http: HttpClient, rootUrl: string, params: UpdateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
   const rb = new RequestBuilder(rootUrl, updateStaff.PATH, 'patch');
   if (params) {
     rb.body(params.body, 'application/json');
@@ -25,9 +25,9 @@ export function updateStaff(http: HttpClient, rootUrl: string, params: UpdateSta
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return (r as HttpResponse<any>).clone({ body: parseFloat(String((r as HttpResponse<any>).body)) }) as StrictHttpResponse<number>;
     })
   );
 }
 
-updateStaff.PATH = '/staff/update-staff/';
+updateStaff.PATH = '/staff/update-staff';

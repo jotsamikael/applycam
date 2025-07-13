@@ -352,8 +352,70 @@ public class SpecialityService {
 
         offersSpecialityRepository.save(offer);
         
-        Course course = courseRepository.findByName(courseName)
-                .orElseThrow(() -> new EntityNotFoundException("Course not listed"));
+        // Recherche de la filière avec gestion d'erreur améliorée
+        Course course = null;
+        String originalCourseName = courseName;
+        
+        try {
+            // Essai 1: Recherche exacte
+            course = courseRepository.findByName(courseName).orElse(null);
+            if (course != null) {
+                System.out.println("Filière trouvée avec le nom exact: " + courseName);
+            }
+            
+            // Essai 2: Recherche flexible avec variations
+            if (course == null) {
+                String nameWithSpaces = courseName.replace("-", " ");
+                String nameWithDashes = courseName.replace(" ", "-");
+                
+                course = courseRepository.findByNameFlexible(courseName, nameWithSpaces, nameWithDashes).orElse(null);
+                if (course != null) {
+                    System.out.println("Filière trouvée avec recherche flexible: " + course.getName());
+                }
+            }
+            
+            // Essai 3: Recherche manuelle si nécessaire
+            if (course == null) {
+                // Lister toutes les filières pour debug
+                List<Course> allCourses = courseRepository.findAll();
+                System.out.println("Toutes les filières disponibles:");
+                for (Course c : allCourses) {
+                    System.out.println("- ID: " + c.getId() + ", Nom: '" + c.getName() + "'");
+                }
+                
+                // Recherche par similarité
+                for (Course c : allCourses) {
+                    if (c.getName().equalsIgnoreCase(courseName) || 
+                        c.getName().equalsIgnoreCase(courseName.replace("-", " ")) ||
+                        c.getName().equalsIgnoreCase(courseName.replace(" ", "-"))) {
+                        course = c;
+                        System.out.println("Filière trouvée par similarité: " + c.getName());
+                        break;
+                    }
+                }
+            }
+            
+            if (course == null) {
+                // Lister toutes les filières pour debug
+                List<Course> allCourses = courseRepository.findAll();
+                StringBuilder availableCourses = new StringBuilder();
+                availableCourses.append("Available courses: ");
+                for (Course c : allCourses) {
+                    availableCourses.append("'").append(c.getName()).append("', ");
+                }
+                if (!allCourses.isEmpty()) {
+                    availableCourses.setLength(availableCourses.length() - 2); // Enlever la dernière virgule
+                }
+                
+                throw new EntityNotFoundException("Course not found with name: '" + originalCourseName + 
+                    "'. Tried variations: '" + courseName + "', '" + courseName.replace("-", " ") + 
+                    "', '" + courseName.replace(" ", "-") + "'. " + availableCourses.toString());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la recherche de filière: " + e.getMessage());
+            throw new EntityNotFoundException("Course not found with name: " + originalCourseName + ". Error: " + e.getMessage());
+        }
 
         // Récupération de la spécialité existante
         

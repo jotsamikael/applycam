@@ -52,6 +52,12 @@ export class CandidatesManagementComponent implements OnInit, AfterViewInit {
     'Suisse', 'Pays-Bas', 'Suède', 'Norvège', 'Danemark', 'Finlande', 'Pologne', 'Russie'
   ].sort(); // Trié par ordre alphabétique
 
+  // Filtres avancés
+  showAdvancedFilters = false;
+  filterForm!: FormGroup;
+  refreshing = false;
+  trainingCenters: any[] = [];
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('formModal') formModal!: TemplateRef<any>;
@@ -68,6 +74,7 @@ export class CandidatesManagementComponent implements OnInit, AfterViewInit {
     this.initForm();
     this.loadCandidates();
     this.loadExamCenters();
+    this.loadTrainingCenters();
   }
 
   ngAfterViewInit() {
@@ -134,6 +141,14 @@ export class CandidatesManagementComponent implements OnInit, AfterViewInit {
       motherProfession: [''],
       examCenterId: [null, [Validators.required]],
       contentStatus: ['DRAFT', [Validators.required]],
+    });
+
+    // Formulaire de filtres avancés
+    this.filterForm = this.fb.group({
+      nationality: [''],
+      sex: [''],
+      status: [''],
+      trainingCenter: ['']
     });
   }
 
@@ -389,5 +404,60 @@ export class CandidatesManagementComponent implements OnInit, AfterViewInit {
         Swal.fire('Erreur', `Impossible de changer le statut: ${err.error?.message || 'Erreur inconnue'}`, 'error');
       }
     });
+  }
+
+  // ==================== MÉTHODES DE FILTRAGE ET EXPORTATION ====================
+
+  loadTrainingCenters(): void {
+    this.trainingCenterService.getAllTrainingCenters({
+      offset: 0,
+      pageSize: 1000,
+      field: 'fullName',
+      order: true
+    }).subscribe({
+      next: (response) => {
+        this.trainingCenters = response.content || [];
+      },
+      error: (error) => {
+        console.error('Error loading training centers:', error);
+      }
+    });
+  }
+
+  refreshCandidates(): void {
+    this.refreshing = true;
+    this.loadCandidates();
+    setTimeout(() => {
+      this.refreshing = false;
+    }, 1000);
+  }
+
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
+  }
+
+  applyAdvancedFilters(): void {
+    const filterValue = this.filterForm.value;
+    let filterString = '';
+    
+    Object.keys(filterValue).forEach(key => {
+      if (filterValue[key]) {
+        filterString += `${key}:${filterValue[key]} `;
+      }
+    });
+    
+    this.dataSource.filter = filterString.trim();
+    Swal.fire('Succès', 'Filtres appliqués pour les candidats', 'success');
+  }
+
+  clearFilters(): void {
+    this.filterForm.reset();
+    this.dataSource.filter = '';
+    Swal.fire('Info', 'Filtres effacés pour les candidats', 'info');
+  }
+
+  exportCandidatesToExcel(): void {
+    // TODO: Implémenter l'export Excel pour les candidats
+    Swal.fire('Info', 'Fonctionnalité d\'export Excel pour les candidats en cours de développement', 'info');
   }
 }

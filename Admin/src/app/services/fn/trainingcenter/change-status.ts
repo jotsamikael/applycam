@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface ChangeStatus$Params {
+
+/**
+ * Numéro d'accord
+ */
   agreementNumber: string;
   status: 'READYTOPAY' | 'DRAFT' | 'PAID' | 'VALIDATED' | 'INCOMPLETED' | 'REJECTED' | 'PENDING';
   comment?: string;

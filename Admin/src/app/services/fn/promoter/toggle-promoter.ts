@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface TogglePromoter$Params {
+
+/**
+ * Email du promoteur
+ */
   email: string;
 }
 

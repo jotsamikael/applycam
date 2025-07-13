@@ -8,10 +8,10 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { CreateStaffRequest } from '../../models/create-staff-request';
+import { StaffRequest } from '../../models/staff-request';
 
 export interface CreateStaff$Params {
-      body: CreateStaffRequest
+      body: StaffRequest
 }
 
 export function createStaff(http: HttpClient, rootUrl: string, params: CreateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
@@ -30,4 +30,4 @@ export function createStaff(http: HttpClient, rootUrl: string, params: CreateSta
   );
 }
 
-createStaff.PATH = '/staff/create-staff';
+createStaff.PATH = '/staff/create';

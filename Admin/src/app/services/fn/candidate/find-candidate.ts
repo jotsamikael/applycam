@@ -11,7 +11,15 @@ import { RequestBuilder } from '../../request-builder';
 import { CandidateResponse } from '../../models/candidate-response';
 
 export interface FindCandidate$Params {
+
+/**
+ * ID du promoteur
+ */
   promoterId: number;
+
+/**
+ * Nom du candidat
+ */
   name: string;
 }
 

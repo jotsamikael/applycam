@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface ChangeStatus1$Params {
+
+/**
+ * Email du promoteur
+ */
   email: string;
 }
 

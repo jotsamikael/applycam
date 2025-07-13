@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface ToggleCandidate$Params {
+
+/**
+ * Email du candidat
+ */
   email: string;
 }
 

@@ -1,57 +1,249 @@
 <div class="container-fluid">
   <app-page-title title="Gestion des paiements" [breadcrumbItems]="breadCrumbItems"></app-page-title>
 
-  <div class="row justify-content-end mb-3">
-    <div class="col-md-4 text-end">
-      <button class="btn btn-soft-primary waves-effect waves-light mx-2" (click)="openCreateModal()">
-        Créer un paiement
+  <!-- Statistiques -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-muted fw-medium">Total Paiements</p>
+              <h4 class="mb-0">{{statistics.totalPayments}}</h4>
+            </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                <span class="avatar-title">
+                  <i class="bx bx-credit-card font-size-24"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-muted fw-medium">Montant Total</p>
+              <h4 class="mb-0 text-success">{{formatCurrency(statistics.totalAmount)}}</h4>
+            </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle bg-success align-self-center">
+                <span class="avatar-title">
+                  <i class="bx bx-money font-size-24"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-muted fw-medium">Montant Moyen</p>
+              <h4 class="mb-0 text-info">{{formatCurrency(statistics.averageAmount)}}</h4>
+            </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle bg-info align-self-center">
+                <span class="avatar-title">
+                  <i class="bx bx-calculator font-size-24"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-muted fw-medium">Paiements ce mois</p>
+              <h4 class="mb-0 text-warning">{{statistics.paymentsThisMonth}}</h4>
+            </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle bg-warning align-self-center">
+                <span class="avatar-title">
+                  <i class="bx bx-calendar-check font-size-24"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre d'outils -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <button class="btn btn-primary waves-effect waves-light me-2" (click)="openCreateModal()">
+        <i class="bx bx-plus me-1"></i> Créer un paiement
+      </button>
+      <button class="btn btn-success waves-effect waves-light me-2" (click)="refreshData()" [disabled]="processing">
+        <i class="bx bx-refresh me-1"></i> Actualiser
+      </button>
+      <button class="btn btn-info waves-effect waves-light" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0">
+        <i class="bx bx-export me-1"></i> Exporter
       </button>
     </div>
   </div>
 
-  <div class="row justify-content-end">
-    <div class="col-md-3">
-      <mat-form-field>
-        <mat-label>Filtrer</mat-label>
-        <input matInput (keyup)="applyFilter($event)" #input>
-      </mat-form-field>
-    </div>
-    <div class="mat-elevation-z8 w-100">
-      <table mat-table [dataSource]="dataSource" matSort>
-        <!-- Montant -->
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Montant</th>
-          <td mat-cell *matCellDef="let payment">{{payment.amount}}</td>
-        </ng-container>
-        <!-- Méthode de paiement -->
-        <ng-container matColumnDef="paymentMethod">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Méthode</th>
-          <td mat-cell *matCellDef="let payment">{{payment.paymentMethod}}</td>
-        </ng-container>
-        <!-- Actions -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Actions</th>
-          <td mat-cell *matCellDef="let payment">
-            <button mat-icon-button color="primary" (click)="openEditModal(payment)" matTooltip="Modifier">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="confirmDelete(payment)" matTooltip="Supprimer">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell text-center py-4" colspan="3">
-            <div class="d-flex flex-column align-items-center">
-              <mat-icon class="mb-2" style="font-size: 48px;">search_off</mat-icon>
-              <h4 class="text-muted">Aucun paiement trouvé</h4>
+  <!-- Formulaire de recherche -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Recherche avancée</h5>
+          <form [formGroup]="searchForm" (ngSubmit)="searchPayments()">
+            <div class="row">
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label class="form-label">Méthode de paiement</label>
+                  <select class="form-select" formControlName="paymentMethod">
+                    <option value="">Toutes les méthodes</option>
+                    <option value="Mobile Money">Mobile Money</option>
+                    <option value="Carte Bancaire">Carte Bancaire</option>
+                    <option value="Virement Bancaire">Virement Bancaire</option>
+                    <option value="Espèces">Espèces</option>
+                    <option value="Chèque">Chèque</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label class="form-label">Montant minimum</label>
+                  <input type="number" class="form-control" formControlName="minAmount" placeholder="Ex: 1000">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label class="form-label">Montant maximum</label>
+                  <input type="number" class="form-control" formControlName="maxAmount" placeholder="Ex: 100000">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="mb-3 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary me-2" [disabled]="processing">
+                    <i class="bx bx-search me-1"></i> Rechercher
+                  </button>
+                  <button type="button" class="btn btn-secondary" (click)="clearSearch()">
+                    <i class="bx bx-x me-1"></i> Effacer
+                  </button>
+                </div>
+              </div>
             </div>
-          </td>
-        </tr>
-      </table>
-      <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des paiements -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="table table-centered table-nowrap mb-0">
+              <!-- Montant -->
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Montant</th>
+                <td mat-cell *matCellDef="let payment">
+                  <span class="fw-medium">{{formatCurrency(payment.amount)}}</span>
+                </td>
+              </ng-container>
+
+              <!-- Méthode de paiement -->
+              <ng-container matColumnDef="paymentMethod">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Méthode de paiement</th>
+                <td mat-cell *matCellDef="let payment">
+                  <span class="badge bg-light text-dark">{{payment.paymentMethod}}</span>
+                </td>
+              </ng-container>
+
+              <!-- Statut -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Statut</th>
+                <td mat-cell *matCellDef="let payment">
+                  <span [class]="getStatusBadgeClass(payment)">{{getStatusText(payment)}}</span>
+                </td>
+              </ng-container>
+
+              <!-- Actions -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let payment">
+                  <div class="d-flex gap-1">
+                    <!-- Bouton Modifier -->
+                    <button mat-icon-button color="primary" 
+                            (click)="openEditModal(payment)" 
+                            matTooltip="Modifier"
+                            [disabled]="!canEdit(payment)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                    <!-- Bouton Supprimer -->
+                    <button mat-icon-button color="warn" 
+                            (click)="confirmDelete(payment)" 
+                            matTooltip="Supprimer"
+                            [disabled]="!canDelete(payment)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+              <!-- Message quand aucune donnée -->
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell text-center py-5" [attr.colspan]="displayedColumns.length">
+                  <div class="d-flex flex-column align-items-center">
+                    <mat-icon class="mb-3 text-muted" style="font-size: 64px; width: 64px; height: 64px;">search_off</mat-icon>
+                    <h4 class="text-muted mb-2">Aucun paiement trouvé</h4>
+                    <p class="text-muted mb-3">Aucun paiement ne correspond à vos critères de recherche</p>
+                    <button class="btn btn-primary" (click)="clearSearch()">
+                      <i class="bx bx-refresh me-1"></i> Voir tous les paiements
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted">
+              Affichage de {{(currentPage * pageSize) + 1}} à {{getMinValue((currentPage + 1) * pageSize, totalElements)}} 
+              sur {{totalElements}} paiements
+            </div>
+            <mat-paginator 
+              [length]="totalElements"
+              [pageSize]="pageSize"
+              [pageSizeOptions]="[5, 10, 25, 50]"
+              [pageIndex]="currentPage"
+              (page)="onPageChange($event)"
+              showFirstLastButtons>
+            </mat-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="processing" class="position-fixed top-50 start-50 translate-middle">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
     </div>
   </div>
 </div>

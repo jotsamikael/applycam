@@ -8,16 +8,20 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { StaffResponse } from '../../models/staff-response';
+import { CourseResponse } from '../../models/course-response';
 
-export interface FindStaffByEmail$Params {
-  email: string;
+export interface SearchCoursesByName$Params {
+
+/**
+ * Nom à rechercher
+ */
+  name: string;
 }
 
-export function findStaffByEmail(http: HttpClient, rootUrl: string, params: FindStaffByEmail$Params, context?: HttpContext): Observable<StrictHttpResponse<StaffResponse>> {
-  const rb = new RequestBuilder(rootUrl, findStaffByEmail.PATH, 'get');
+export function searchCoursesByName(http: HttpClient, rootUrl: string, params: SearchCoursesByName$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CourseResponse>>> {
+  const rb = new RequestBuilder(rootUrl, searchCoursesByName.PATH, 'get');
   if (params) {
-    rb.query('email', params.email, {});
+    rb.query('name', params.name, {});
   }
 
   return http.request(
@@ -25,9 +29,9 @@ export function findStaffByEmail(http: HttpClient, rootUrl: string, params: Find
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<StaffResponse>;
+      return r as StrictHttpResponse<Array<CourseResponse>>;
     })
   );
 }
 
-findStaffByEmail.PATH = '/staff/find-by-email';
+searchCoursesByName.PATH = '/course-management/search';

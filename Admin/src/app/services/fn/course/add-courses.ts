@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface AddCourses$Params {
+
+/**
+ * ID de la session
+ */
   sessionId: number;
       body: Array<number>
 }

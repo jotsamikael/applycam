@@ -13,22 +13,34 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { createSession } from '../fn/session/create-session';
 import { CreateSession$Params } from '../fn/session/create-session';
+import { deactivateSession } from '../fn/session/deactivate-session';
+import { DeactivateSession$Params } from '../fn/session/deactivate-session';
 import { deleteSession } from '../fn/session/delete-session';
 import { DeleteSession$Params } from '../fn/session/delete-session';
+import { deleteSessionPermanently } from '../fn/session/delete-session-permanently';
+import { DeleteSessionPermanently$Params } from '../fn/session/delete-session-permanently';
 import { findByName2 } from '../fn/session/find-by-name-2';
 import { FindByName2$Params } from '../fn/session/find-by-name-2';
 import { findSessionByYear } from '../fn/session/find-session-by-year';
 import { FindSessionByYear$Params } from '../fn/session/find-session-by-year';
 import { getall } from '../fn/session/getall';
 import { Getall$Params } from '../fn/session/getall';
+import { getSessionById } from '../fn/session/get-session-by-id';
+import { GetSessionById$Params } from '../fn/session/get-session-by-id';
 import { getSessionDetailsList } from '../fn/session/get-session-details-list';
 import { GetSessionDetailsList$Params } from '../fn/session/get-session-details-list';
 import { PageResponseSessionResponse } from '../models/page-response-session-response';
+import { reactivateSession } from '../fn/session/reactivate-session';
+import { ReactivateSession$Params } from '../fn/session/reactivate-session';
 import { SessionDetailsListResponse } from '../models/session-details-list-response';
 import { SessionResponse } from '../models/session-response';
 import { updateSession } from '../fn/session/update-session';
 import { UpdateSession$Params } from '../fn/session/update-session';
 
+
+/**
+ * API de gestion des sessions
+ */
 @Injectable({ providedIn: 'root' })
 export class SessionService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
@@ -39,6 +51,10 @@ export class SessionService extends BaseService {
   static readonly CreateSessionPath = '/session/create';
 
   /**
+   * Créer une session.
+   *
+   * Créer une nouvelle session
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createSession()` instead.
    *
@@ -49,6 +65,10 @@ export class SessionService extends BaseService {
   }
 
   /**
+   * Créer une session.
+   *
+   * Créer une nouvelle session
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createSession$Response()` instead.
    *
@@ -64,6 +84,10 @@ export class SessionService extends BaseService {
   static readonly UpdateSessionPath = '/session/update-session';
 
   /**
+   * Mettre à jour une session.
+   *
+   * Mettre à jour une session existante
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateSession()` instead.
    *
@@ -74,6 +98,10 @@ export class SessionService extends BaseService {
   }
 
   /**
+   * Mettre à jour une session.
+   *
+   * Mettre à jour une session existante
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateSession$Response()` instead.
    *
@@ -85,32 +113,168 @@ export class SessionService extends BaseService {
     );
   }
 
+  /** Path part for operation `reactivateSession()` */
+  static readonly ReactivateSessionPath = '/session/reactivate/{sessionId}';
+
+  /**
+   * Réactiver une session.
+   *
+   * Réactiver une session désactivée
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `reactivateSession()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateSession$Response(params: ReactivateSession$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reactivateSession(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Réactiver une session.
+   *
+   * Réactiver une session désactivée
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `reactivateSession$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateSession(params: ReactivateSession$Params, context?: HttpContext): Observable<void> {
+    return this.reactivateSession$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
   /** Path part for operation `deleteSession()` */
   static readonly DeleteSessionPath = '/session/delete-session/{sessionId}';
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver une session
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `deleteSession()` instead.
    *
    * This method doesn't expect any request body.
    */
-  deleteSession$Response(params: DeleteSession$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
+  deleteSession$Response(params: DeleteSession$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
     return deleteSession(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver une session
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `deleteSession$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  deleteSession(params: DeleteSession$Params, context?: HttpContext): Observable<{
-}> {
+  deleteSession(params: DeleteSession$Params, context?: HttpContext): Observable<void> {
     return this.deleteSession$Response(params, context).pipe(
-      map((r: StrictHttpResponse<{
-}>): {
-} => r.body)
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deactivateSession()` */
+  static readonly DeactivateSessionPath = '/session/deactivate/{sessionId}';
+
+  /**
+   * Désactiver une session.
+   *
+   * Désactiver une session (soft delete)
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deactivateSession()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateSession$Response(params: DeactivateSession$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deactivateSession(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Désactiver une session.
+   *
+   * Désactiver une session (soft delete)
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deactivateSession$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateSession(params: DeactivateSession$Params, context?: HttpContext): Observable<void> {
+    return this.deactivateSession$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getSessionById()` */
+  static readonly GetSessionByIdPath = '/session/{sessionId}';
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer une session par son ID
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getSessionById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSessionById$Response(params: GetSessionById$Params, context?: HttpContext): Observable<StrictHttpResponse<SessionResponse>> {
+    return getSessionById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer une session par son ID
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getSessionById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSessionById(params: GetSessionById$Params, context?: HttpContext): Observable<SessionResponse> {
+    return this.getSessionById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SessionResponse>): SessionResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteSessionPermanently()` */
+  static readonly DeleteSessionPermanentlyPath = '/session/{sessionId}';
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement une session
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteSessionPermanently()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteSessionPermanently$Response(params: DeleteSessionPermanently$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteSessionPermanently(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement une session
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteSessionPermanently$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteSessionPermanently(params: DeleteSessionPermanently$Params, context?: HttpContext): Observable<void> {
+    return this.deleteSessionPermanently$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 
@@ -118,6 +282,10 @@ export class SessionService extends BaseService {
   static readonly GetSessionDetailsListPath = '/session/list-details/{id}';
 
   /**
+   * Détails de session.
+   *
+   * Récupérer les détails d'une session
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getSessionDetailsList()` instead.
    *
@@ -128,6 +296,10 @@ export class SessionService extends BaseService {
   }
 
   /**
+   * Détails de session.
+   *
+   * Récupérer les détails d'une session
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getSessionDetailsList$Response()` instead.
    *
@@ -143,6 +315,10 @@ export class SessionService extends BaseService {
   static readonly FindSessionByYearPath = '/session/get-by-year/{sessionYear}';
 
   /**
+   * Rechercher par année.
+   *
+   * Récupérer des sessions par année
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `findSessionByYear()` instead.
    *
@@ -153,6 +329,10 @@ export class SessionService extends BaseService {
   }
 
   /**
+   * Rechercher par année.
+   *
+   * Récupérer des sessions par année
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `findSessionByYear$Response()` instead.
    *
@@ -168,6 +348,10 @@ export class SessionService extends BaseService {
   static readonly GetallPath = '/session/get-all';
 
   /**
+   * Récupérer toutes les sessions.
+   *
+   * Récupérer toutes les sessions avec pagination et tri
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getall()` instead.
    *
@@ -178,6 +362,10 @@ export class SessionService extends BaseService {
   }
 
   /**
+   * Récupérer toutes les sessions.
+   *
+   * Récupérer toutes les sessions avec pagination et tri
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getall$Response()` instead.
    *
@@ -193,6 +381,10 @@ export class SessionService extends BaseService {
   static readonly FindByName2Path = '/session/findBy-examdate/{examDate}';
 
   /**
+   * Rechercher par date.
+   *
+   * Trouver des sessions par date d'examen
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `findByName2()` instead.
    *
@@ -203,6 +395,10 @@ export class SessionService extends BaseService {
   }
 
   /**
+   * Rechercher par date.
+   *
+   * Trouver des sessions par date d'examen
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `findByName2$Response()` instead.
    *

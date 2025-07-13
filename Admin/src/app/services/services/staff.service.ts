@@ -13,17 +13,31 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { createStaff } from '../fn/staff/create-staff';
 import { CreateStaff$Params } from '../fn/staff/create-staff';
-import { findStaffByEmail } from '../fn/staff/find-staff-by-email';
-import { FindStaffByEmail$Params } from '../fn/staff/find-staff-by-email';
-import { getAllStaffs } from '../fn/staff/get-all-staffs';
-import { GetAllStaffs$Params } from '../fn/staff/get-all-staffs';
+import { deactivateStaff } from '../fn/staff/deactivate-staff';
+import { DeactivateStaff$Params } from '../fn/staff/deactivate-staff';
+import { deleteStaff } from '../fn/staff/delete-staff';
+import { DeleteStaff$Params } from '../fn/staff/delete-staff';
+import { deleteStaffPermanently } from '../fn/staff/delete-staff-permanently';
+import { DeleteStaffPermanently$Params } from '../fn/staff/delete-staff-permanently';
+import { getAllStaff } from '../fn/staff/get-all-staff';
+import { GetAllStaff$Params } from '../fn/staff/get-all-staff';
+import { getStaffById } from '../fn/staff/get-staff-by-id';
+import { GetStaffById$Params } from '../fn/staff/get-staff-by-id';
+import { getStaffStatistics } from '../fn/staff/get-staff-statistics';
+import { GetStaffStatistics$Params } from '../fn/staff/get-staff-statistics';
 import { PageResponseStaffResponse } from '../models/page-response-staff-response';
+import { reactivateStaff } from '../fn/staff/reactivate-staff';
+import { ReactivateStaff$Params } from '../fn/staff/reactivate-staff';
+import { searchStaffByName } from '../fn/staff/search-staff-by-name';
+import { SearchStaffByName$Params } from '../fn/staff/search-staff-by-name';
 import { StaffResponse } from '../models/staff-response';
-import { toogleStaff } from '../fn/staff/toogle-staff';
-import { ToogleStaff$Params } from '../fn/staff/toogle-staff';
 import { updateStaff } from '../fn/staff/update-staff';
 import { UpdateStaff$Params } from '../fn/staff/update-staff';
 
+
+/**
+ * API de gestion du personnel
+ */
 @Injectable({ providedIn: 'root' })
 export class StaffService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
@@ -31,9 +45,13 @@ export class StaffService extends BaseService {
   }
 
   /** Path part for operation `createStaff()` */
-  static readonly CreateStaffPath = '/staff/create-staff';
+  static readonly CreateStaffPath = '/staff/create';
 
   /**
+   * Créer un membre du staff.
+   *
+   * Créer un nouveau membre du personnel
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createStaff()` instead.
    *
@@ -44,6 +62,10 @@ export class StaffService extends BaseService {
   }
 
   /**
+   * Créer un membre du staff.
+   *
+   * Créer un nouveau membre du personnel
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createStaff$Response()` instead.
    *
@@ -56,106 +78,311 @@ export class StaffService extends BaseService {
   }
 
   /** Path part for operation `updateStaff()` */
-  static readonly UpdateStaffPath = '/staff/update-staff/';
+  static readonly UpdateStaffPath = '/staff/update-staff';
 
   /**
+   * Mettre à jour un membre du staff.
+   *
+   * Mettre à jour un membre du personnel existant
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateStaff()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updateStaff$Response(params: UpdateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+  updateStaff$Response(params: UpdateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
     return updateStaff(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Mettre à jour un membre du staff.
+   *
+   * Mettre à jour un membre du personnel existant
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateStaff$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updateStaff(params: UpdateStaff$Params, context?: HttpContext): Observable<string> {
+  updateStaff(params: UpdateStaff$Params, context?: HttpContext): Observable<number> {
     return this.updateStaff$Response(params, context).pipe(
-      map((r: StrictHttpResponse<string>): string => r.body)
+      map((r: StrictHttpResponse<number>): number => r.body)
     );
   }
 
-  /** Path part for operation `toogleStaff()` */
-  static readonly ToogleStaffPath = '/staff/toggle-staff/{fullName}';
+  /** Path part for operation `reactivateStaff()` */
+  static readonly ReactivateStaffPath = '/staff/reactivate/{staffId}';
 
   /**
+   * Réactiver un membre du staff.
+   *
+   * Réactiver un membre du staff désactivé
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `toogleStaff()` instead.
+   * To access only the response body, use `reactivateStaff()` instead.
    *
    * This method doesn't expect any request body.
    */
-  toogleStaff$Response(params: ToogleStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
-    return toogleStaff(this.http, this.rootUrl, params, context);
+  reactivateStaff$Response(params: ReactivateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reactivateStaff(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Réactiver un membre du staff.
+   *
+   * Réactiver un membre du staff désactivé
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `toogleStaff$Response()` instead.
+   * To access the full response (for headers, for example), `reactivateStaff$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  toogleStaff(params: ToogleStaff$Params, context?: HttpContext): Observable<{
+  reactivateStaff(params: ReactivateStaff$Params, context?: HttpContext): Observable<void> {
+    return this.reactivateStaff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteStaff()` */
+  static readonly DeleteStaffPath = '/staff/delete-staff/{staffId}';
+
+  /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un membre du staff
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteStaff()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteStaff$Response(params: DeleteStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteStaff(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un membre du staff
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteStaff$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteStaff(params: DeleteStaff$Params, context?: HttpContext): Observable<void> {
+    return this.deleteStaff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deactivateStaff()` */
+  static readonly DeactivateStaffPath = '/staff/deactivate/{staffId}';
+
+  /**
+   * Désactiver un membre du staff.
+   *
+   * Désactiver un membre du staff (soft delete)
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deactivateStaff()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateStaff$Response(params: DeactivateStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deactivateStaff(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Désactiver un membre du staff.
+   *
+   * Désactiver un membre du staff (soft delete)
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deactivateStaff$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateStaff(params: DeactivateStaff$Params, context?: HttpContext): Observable<void> {
+    return this.deactivateStaff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getStaffById()` */
+  static readonly GetStaffByIdPath = '/staff/{staffId}';
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un membre du staff par son ID
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getStaffById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getStaffById$Response(params: GetStaffById$Params, context?: HttpContext): Observable<StrictHttpResponse<StaffResponse>> {
+    return getStaffById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un membre du staff par son ID
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getStaffById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getStaffById(params: GetStaffById$Params, context?: HttpContext): Observable<StaffResponse> {
+    return this.getStaffById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<StaffResponse>): StaffResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteStaffPermanently()` */
+  static readonly DeleteStaffPermanentlyPath = '/staff/{staffId}';
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un membre du staff
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteStaffPermanently()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteStaffPermanently$Response(params: DeleteStaffPermanently$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteStaffPermanently(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un membre du staff
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteStaffPermanently$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteStaffPermanently(params: DeleteStaffPermanently$Params, context?: HttpContext): Observable<void> {
+    return this.deleteStaffPermanently$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getStaffStatistics()` */
+  static readonly GetStaffStatisticsPath = '/staff/statistics';
+
+  /**
+   * Statistiques du staff.
+   *
+   * Récupérer les statistiques sur les membres du staff
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getStaffStatistics()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getStaffStatistics$Response(params?: GetStaffStatistics$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: {
+};
+}>> {
+    return getStaffStatistics(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Statistiques du staff.
+   *
+   * Récupérer les statistiques sur les membres du staff
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getStaffStatistics$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getStaffStatistics(params?: GetStaffStatistics$Params, context?: HttpContext): Observable<{
+[key: string]: {
+};
 }> {
-    return this.toogleStaff$Response(params, context).pipe(
+    return this.getStaffStatistics$Response(params, context).pipe(
       map((r: StrictHttpResponse<{
+[key: string]: {
+};
 }>): {
+[key: string]: {
+};
 } => r.body)
     );
   }
 
-  /** Path part for operation `getAllStaffs()` */
-  static readonly GetAllStaffsPath = '/staff/getAll';
+  /** Path part for operation `searchStaffByName()` */
+  static readonly SearchStaffByNamePath = '/staff/search';
 
   /**
+   * Rechercher par nom.
+   *
+   * Rechercher des membres du staff par nom ou prénom
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `getAllStaffs()` instead.
+   * To access only the response body, use `searchStaffByName()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getAllStaffs$Response(params?: GetAllStaffs$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseStaffResponse>> {
-    return getAllStaffs(this.http, this.rootUrl, params, context);
+  searchStaffByName$Response(params: SearchStaffByName$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StaffResponse>>> {
+    return searchStaffByName(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Rechercher par nom.
+   *
+   * Rechercher des membres du staff par nom ou prénom
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `getAllStaffs$Response()` instead.
+   * To access the full response (for headers, for example), `searchStaffByName$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getAllStaffs(params?: GetAllStaffs$Params, context?: HttpContext): Observable<PageResponseStaffResponse> {
-    return this.getAllStaffs$Response(params, context).pipe(
-      map((r: StrictHttpResponse<PageResponseStaffResponse>): PageResponseStaffResponse => r.body)
+  searchStaffByName(params: SearchStaffByName$Params, context?: HttpContext): Observable<Array<StaffResponse>> {
+    return this.searchStaffByName$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<StaffResponse>>): Array<StaffResponse> => r.body)
     );
   }
 
-  /** Path part for operation `findStaffByEmail()` */
-  static readonly FindStaffByEmailPath = '/staff/find-by-email';
+  /** Path part for operation `getAllStaff()` */
+  static readonly GetAllStaffPath = '/staff/get-all';
 
   /**
+   * Récupérer tous les membres du staff.
+   *
+   * Récupérer tous les membres du personnel avec pagination et tri
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `findStaffByEmail()` instead.
+   * To access only the response body, use `getAllStaff()` instead.
    *
    * This method doesn't expect any request body.
    */
-  findStaffByEmail$Response(params: FindStaffByEmail$Params, context?: HttpContext): Observable<StrictHttpResponse<StaffResponse>> {
-    return findStaffByEmail(this.http, this.rootUrl, params, context);
+  getAllStaff$Response(params?: GetAllStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseStaffResponse>> {
+    return getAllStaff(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Récupérer tous les membres du staff.
+   *
+   * Récupérer tous les membres du personnel avec pagination et tri
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `findStaffByEmail$Response()` instead.
+   * To access the full response (for headers, for example), `getAllStaff$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  findStaffByEmail(params: FindStaffByEmail$Params, context?: HttpContext): Observable<StaffResponse> {
-    return this.findStaffByEmail$Response(params, context).pipe(
-      map((r: StrictHttpResponse<StaffResponse>): StaffResponse => r.body)
+  getAllStaff(params?: GetAllStaff$Params, context?: HttpContext): Observable<PageResponseStaffResponse> {
+    return this.getAllStaff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseStaffResponse>): PageResponseStaffResponse => r.body)
     );
   }
 

@@ -12,20 +12,34 @@ import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
 import { CandidateResponse } from '../models/candidate-response';
+import { deactivateCandidate } from '../fn/candidate/deactivate-candidate';
+import { DeactivateCandidate$Params } from '../fn/candidate/deactivate-candidate';
+import { deleteCandidatePermanently } from '../fn/candidate/delete-candidate-permanently';
+import { DeleteCandidatePermanently$Params } from '../fn/candidate/delete-candidate-permanently';
 import { findCandidate } from '../fn/candidate/find-candidate';
 import { FindCandidate$Params } from '../fn/candidate/find-candidate';
 import { findCandidateByEmail } from '../fn/candidate/find-candidate-by-email';
 import { FindCandidateByEmail$Params } from '../fn/candidate/find-candidate-by-email';
 import { getAllCandidates } from '../fn/candidate/get-all-candidates';
 import { GetAllCandidates$Params } from '../fn/candidate/get-all-candidates';
+import { getCandidateById } from '../fn/candidate/get-candidate-by-id';
+import { GetCandidateById$Params } from '../fn/candidate/get-candidate-by-id';
 import { getCandidatesOfConnectedpromoterid } from '../fn/candidate/get-candidates-of-connectedpromoterid';
 import { GetCandidatesOfConnectedpromoterid$Params } from '../fn/candidate/get-candidates-of-connectedpromoterid';
 import { PageResponseCandidateResponse } from '../models/page-response-candidate-response';
+import { reactivateCandidate } from '../fn/candidate/reactivate-candidate';
+import { ReactivateCandidate$Params } from '../fn/candidate/reactivate-candidate';
+import { searchCandidatesByName } from '../fn/candidate/search-candidates-by-name';
+import { SearchCandidatesByName$Params } from '../fn/candidate/search-candidates-by-name';
 import { toggleCandidate } from '../fn/candidate/toggle-candidate';
 import { ToggleCandidate$Params } from '../fn/candidate/toggle-candidate';
 import { updateCandidate } from '../fn/candidate/update-candidate';
 import { UpdateCandidate$Params } from '../fn/candidate/update-candidate';
 
+
+/**
+ * API de gestion des candidats
+ */
 @Injectable({ providedIn: 'root' })
 export class CandidateService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
@@ -36,6 +50,10 @@ export class CandidateService extends BaseService {
   static readonly UpdateCandidatePath = '/candidate/update/{email}';
 
   /**
+   * Mettre à jour le profil.
+   *
+   * Mettre à jour le profil d'un candidat
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateCandidate()` instead.
    *
@@ -46,6 +64,10 @@ export class CandidateService extends BaseService {
   }
 
   /**
+   * Mettre à jour le profil.
+   *
+   * Mettre à jour le profil d'un candidat
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateCandidate$Response()` instead.
    *
@@ -61,6 +83,10 @@ export class CandidateService extends BaseService {
   static readonly ToggleCandidatePath = '/candidate/toggleCandidate/{email}';
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un candidat
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `toggleCandidate()` instead.
    *
@@ -71,6 +97,10 @@ export class CandidateService extends BaseService {
   }
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un candidat
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `toggleCandidate$Response()` instead.
    *
@@ -82,10 +112,146 @@ export class CandidateService extends BaseService {
     );
   }
 
+  /** Path part for operation `reactivateCandidate()` */
+  static readonly ReactivateCandidatePath = '/candidate/reactivate/{email}';
+
+  /**
+   * Réactiver un candidat.
+   *
+   * Réactiver un candidat désactivé
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `reactivateCandidate()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateCandidate$Response(params: ReactivateCandidate$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reactivateCandidate(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Réactiver un candidat.
+   *
+   * Réactiver un candidat désactivé
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `reactivateCandidate$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reactivateCandidate(params: ReactivateCandidate$Params, context?: HttpContext): Observable<void> {
+    return this.reactivateCandidate$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deactivateCandidate()` */
+  static readonly DeactivateCandidatePath = '/candidate/deactivate/{email}';
+
+  /**
+   * Désactiver un candidat.
+   *
+   * Désactiver un candidat (soft delete)
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deactivateCandidate()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateCandidate$Response(params: DeactivateCandidate$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deactivateCandidate(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Désactiver un candidat.
+   *
+   * Désactiver un candidat (soft delete)
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deactivateCandidate$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivateCandidate(params: DeactivateCandidate$Params, context?: HttpContext): Observable<void> {
+    return this.deactivateCandidate$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getCandidateById()` */
+  static readonly GetCandidateByIdPath = '/candidate/{candidateId}';
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un candidat par son ID
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getCandidateById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCandidateById$Response(params: GetCandidateById$Params, context?: HttpContext): Observable<StrictHttpResponse<CandidateResponse>> {
+    return getCandidateById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un candidat par son ID
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getCandidateById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getCandidateById(params: GetCandidateById$Params, context?: HttpContext): Observable<CandidateResponse> {
+    return this.getCandidateById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<CandidateResponse>): CandidateResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `searchCandidatesByName()` */
+  static readonly SearchCandidatesByNamePath = '/candidate/search';
+
+  /**
+   * Rechercher par nom.
+   *
+   * Rechercher des candidats par nom ou prénom
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `searchCandidatesByName()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchCandidatesByName$Response(params: SearchCandidatesByName$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CandidateResponse>>> {
+    return searchCandidatesByName(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Rechercher par nom.
+   *
+   * Rechercher des candidats par nom ou prénom
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `searchCandidatesByName$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchCandidatesByName(params: SearchCandidatesByName$Params, context?: HttpContext): Observable<Array<CandidateResponse>> {
+    return this.searchCandidatesByName$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<CandidateResponse>>): Array<CandidateResponse> => r.body)
+    );
+  }
+
   /** Path part for operation `getCandidatesOfConnectedpromoterid()` */
   static readonly GetCandidatesOfConnectedpromoteridPath = '/candidate/get-promoter-candidates/{year}';
 
   /**
+   * Candidats du promoteur.
+   *
+   * Récupérer les candidats d'un promoteur connecté pour une année donnée
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getCandidatesOfConnectedpromoterid()` instead.
    *
@@ -96,6 +262,10 @@ export class CandidateService extends BaseService {
   }
 
   /**
+   * Candidats du promoteur.
+   *
+   * Récupérer les candidats d'un promoteur connecté pour une année donnée
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getCandidatesOfConnectedpromoterid$Response()` instead.
    *
@@ -111,6 +281,10 @@ export class CandidateService extends BaseService {
   static readonly GetAllCandidatesPath = '/candidate/get-all';
 
   /**
+   * Récupérer tous les candidats.
+   *
+   * Récupérer tous les candidats avec pagination et tri
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getAllCandidates()` instead.
    *
@@ -121,6 +295,10 @@ export class CandidateService extends BaseService {
   }
 
   /**
+   * Récupérer tous les candidats.
+   *
+   * Récupérer tous les candidats avec pagination et tri
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getAllCandidates$Response()` instead.
    *
@@ -136,6 +314,10 @@ export class CandidateService extends BaseService {
   static readonly FindCandidatePath = '/candidate/find';
 
   /**
+   * Trouver par nom.
+   *
+   * Trouver un candidat par nom dans les centres du promoteur
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `findCandidate()` instead.
    *
@@ -146,6 +328,10 @@ export class CandidateService extends BaseService {
   }
 
   /**
+   * Trouver par nom.
+   *
+   * Trouver un candidat par nom dans les centres du promoteur
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `findCandidate$Response()` instead.
    *
@@ -161,6 +347,10 @@ export class CandidateService extends BaseService {
   static readonly FindCandidateByEmailPath = '/candidate/find-by-email';
 
   /**
+   * Trouver par email.
+   *
+   * Trouver un candidat par son email
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `findCandidateByEmail()` instead.
    *
@@ -171,6 +361,10 @@ export class CandidateService extends BaseService {
   }
 
   /**
+   * Trouver par email.
+   *
+   * Trouver un candidat par son email
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `findCandidateByEmail$Response()` instead.
    *
@@ -179,6 +373,39 @@ export class CandidateService extends BaseService {
   findCandidateByEmail(params?: FindCandidateByEmail$Params, context?: HttpContext): Observable<CandidateResponse> {
     return this.findCandidateByEmail$Response(params, context).pipe(
       map((r: StrictHttpResponse<CandidateResponse>): CandidateResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteCandidatePermanently()` */
+  static readonly DeleteCandidatePermanentlyPath = '/candidate/{email}';
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un candidat
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteCandidatePermanently()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteCandidatePermanently$Response(params: DeleteCandidatePermanently$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteCandidatePermanently(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un candidat
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteCandidatePermanently$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteCandidatePermanently(params: DeleteCandidatePermanently$Params, context?: HttpContext): Observable<void> {
+    return this.deleteCandidatePermanently$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

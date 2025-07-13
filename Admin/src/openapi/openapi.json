@@ -30,12 +30,44 @@
       "bearerAuth": []
     }
   ],
+  "tags": [
+    {
+      "name": "trainingcenter",
+      "description": "API de gestion des centres de formation"
+    },
+    {
+      "name": "course",
+      "description": "API de gestion des cours"
+    },
+    {
+      "name": "application",
+      "description": "API de gestion des candidatures"
+    },
+    {
+      "name": "staff",
+      "description": "API de gestion du personnel"
+    },
+    {
+      "name": "promoter",
+      "description": "API de gestion des promoteurs"
+    },
+    {
+      "name": "candidate",
+      "description": "API de gestion des candidats"
+    },
+    {
+      "name": "session",
+      "description": "API de gestion des sessions"
+    }
+  ],
   "paths": {
     "/trainingcenter/create-training-center": {
       "post": {
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Créer un centre de formation",
+        "description": "Créer un nouveau centre de formation",
         "operationId": "createTrainingCenter",
         "requestBody": {
           "content": {
@@ -66,11 +98,14 @@
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Télécharger un fichier d'accord",
+        "description": "Télécharger un fichier d'accord pour un centre de formation",
         "operationId": "uploadAgreementFile",
         "parameters": [
           {
             "name": "agreement-number",
             "in": "path",
+            "description": "Numéro d'accord",
             "required": true,
             "schema": {
               "type": "string"
@@ -96,7 +131,7 @@
                 "properties": {
                   "file": {
                     "type": "string",
-                    "description": "Agreement file to upload",
+                    "description": "Fichier d'accord à télécharger",
                     "format": "binary"
                   }
                 }
@@ -178,17 +213,19 @@
         }
       }
     },
-    "/staff/create-staff": {
+    "/staff/create": {
       "post": {
         "tags": [
           "staff"
         ],
+        "summary": "Créer un membre du staff",
+        "description": "Créer un nouveau membre du personnel",
         "operationId": "createStaff",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateStaffRequest"
+                "$ref": "#/components/schemas/StaffRequest"
               }
             }
           },
@@ -288,6 +325,8 @@
         "tags": [
           "session"
         ],
+        "summary": "Créer une session",
+        "description": "Créer une nouvelle session",
         "operationId": "createSession",
         "requestBody": {
           "content": {
@@ -348,11 +387,14 @@
         "tags": [
           "course"
         ],
+        "summary": "Ajouter à une session",
+        "description": "Ajouter des cours à une session",
         "operationId": "addCourses",
         "parameters": [
           {
             "name": "sessionId",
             "in": "path",
+            "description": "ID de la session",
             "required": true,
             "schema": {
               "type": "integer",
@@ -393,6 +435,8 @@
         "tags": [
           "course"
         ],
+        "summary": "Créer un cours",
+        "description": "Créer un nouveau cours",
         "operationId": "createCourse",
         "requestBody": {
           "content": {
@@ -423,6 +467,8 @@
         "tags": [
           "course"
         ],
+        "summary": "Créer et assigner",
+        "description": "Créer un cours et l'assigner à un secteur d'activité",
         "operationId": "createAndAssignCourseToActivitySector",
         "requestBody": {
           "content": {
@@ -808,11 +854,14 @@
         "tags": [
           "application"
         ],
+        "summary": "Rejeter une candidature",
+        "description": "Rejeter une candidature avec un commentaire",
         "operationId": "rejectApplication",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID de la candidature",
             "required": true,
             "schema": {
               "type": "integer",
@@ -822,6 +871,7 @@
           {
             "name": "comment",
             "in": "query",
+            "description": "Commentaire de rejet",
             "required": true,
             "schema": {
               "type": "string"
@@ -847,6 +897,8 @@
         "tags": [
           "application"
         ],
+        "summary": "Créer une candidature",
+        "description": "Créer une nouvelle candidature avec les informations personnelles",
         "operationId": "candidateAppliance",
         "requestBody": {
           "content": {
@@ -951,11 +1003,14 @@
         "tags": [
           "trainingcenter"
         ],
-        "operationId": "updatePromoter",
+        "summary": "Mettre à jour un centre",
+        "description": "Mettre à jour un centre de formation existant",
+        "operationId": "updateTrainingCenter",
         "parameters": [
           {
             "name": "fullname",
             "in": "path",
+            "description": "Nom complet du centre",
             "required": true,
             "schema": {
               "type": "string"
@@ -991,11 +1046,14 @@
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Changer le statut",
+        "description": "Changer le statut d'un centre de formation",
         "operationId": "changeStatus",
         "parameters": [
           {
             "name": "agreementNumber",
             "in": "path",
+            "description": "Numéro d'accord",
             "required": true,
             "schema": {
               "type": "string"
@@ -1040,6 +1098,84 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/trainingcenter/reactivate/{agreementNumber}": {
+      "patch": {
+        "tags": [
+          "trainingcenter"
+        ],
+        "summary": "Réactiver un centre",
+        "description": "Réactiver un centre de formation désactivé",
+        "operationId": "reactivateTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "description": "Numéro d'accord",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/trainingcenter/delete/{agreementNumber}": {
+      "patch": {
+        "tags": [
+          "trainingcenter"
+        ],
+        "summary": "Changer le statut",
+        "description": "Désactiver ou réactiver un centre de formation",
+        "operationId": "deleteTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "description": "Numéro d'accord",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/trainingcenter/deactivate/{agreementNumber}": {
+      "patch": {
+        "tags": [
+          "trainingcenter"
+        ],
+        "summary": "Désactiver un centre",
+        "description": "Désactiver un centre de formation (soft delete)",
+        "operationId": "deactivateTrainingCenter",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "description": "Numéro d'accord",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1104,17 +1240,19 @@
         }
       }
     },
-    "/staff/update-staff/": {
+    "/staff/update-staff": {
       "patch": {
         "tags": [
           "staff"
         ],
+        "summary": "Mettre à jour un membre du staff",
+        "description": "Mettre à jour un membre du personnel existant",
         "operationId": "updateStaff",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateStaffRequest"
+                "$ref": "#/components/schemas/StaffRequest"
               }
             }
           },
@@ -1126,7 +1264,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "integer",
+                  "format": "int64"
                 }
               }
             }
@@ -1134,32 +1273,83 @@
         }
       }
     },
-    "/staff/toggle-staff/{fullName}": {
+    "/staff/reactivate/{staffId}": {
       "patch": {
         "tags": [
           "staff"
         ],
-        "operationId": "toogleStaff",
+        "summary": "Réactiver un membre du staff",
+        "description": "Réactiver un membre du staff désactivé",
+        "operationId": "reactivateStaff",
         "parameters": [
           {
-            "name": "fullName",
+            "name": "staffId",
             "in": "path",
+            "description": "ID du membre du staff",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/staff/delete-staff/{staffId}": {
+      "patch": {
+        "tags": [
+          "staff"
+        ],
+        "summary": "Changer le statut",
+        "description": "Désactiver ou réactiver un membre du staff",
+        "operationId": "deleteStaff",
+        "parameters": [
+          {
+            "name": "staffId",
+            "in": "path",
+            "description": "ID du membre du staff",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/staff/deactivate/{staffId}": {
+      "patch": {
+        "tags": [
+          "staff"
+        ],
+        "summary": "Désactiver un membre du staff",
+        "description": "Désactiver un membre du staff (soft delete)",
+        "operationId": "deactivateStaff",
+        "parameters": [
+          {
+            "name": "staffId",
+            "in": "path",
+            "description": "ID du membre du staff",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1333,6 +1523,8 @@
         "tags": [
           "session"
         ],
+        "summary": "Mettre à jour une session",
+        "description": "Mettre à jour une session existante",
         "operationId": "updateSession",
         "requestBody": {
           "content": {
@@ -1359,16 +1551,19 @@
         }
       }
     },
-    "/session/delete-session/{sessionId}": {
+    "/session/reactivate/{sessionId}": {
       "patch": {
         "tags": [
           "session"
         ],
-        "operationId": "deleteSession",
+        "summary": "Réactiver une session",
+        "description": "Réactiver une session désactivée",
+        "operationId": "reactivateSession",
         "parameters": [
           {
             "name": "sessionId",
             "in": "path",
+            "description": "ID de la session",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1378,14 +1573,61 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/session/delete-session/{sessionId}": {
+      "patch": {
+        "tags": [
+          "session"
+        ],
+        "summary": "Changer le statut",
+        "description": "Désactiver ou réactiver une session",
+        "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "ID de la session",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/session/deactivate/{sessionId}": {
+      "patch": {
+        "tags": [
+          "session"
+        ],
+        "summary": "Désactiver une session",
+        "description": "Désactiver une session (soft delete)",
+        "operationId": "deactivateSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "ID de la session",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1395,11 +1637,14 @@
         "tags": [
           "promoter"
         ],
+        "summary": "Valider un promoteur",
+        "description": "Valider un promoteur et envoyer un email de confirmation",
         "operationId": "changeStatus_1",
         "parameters": [
           {
             "name": "email",
             "in": "path",
+            "description": "Email du promoteur",
             "required": true,
             "schema": {
               "type": "string"
@@ -1425,11 +1670,14 @@
         "tags": [
           "promoter"
         ],
-        "operationId": "updatePromoter_1",
+        "summary": "Mettre à jour le profil",
+        "description": "Mettre à jour le profil d'un promoteur",
+        "operationId": "updatePromoter",
         "parameters": [
           {
             "name": "email",
             "in": "path",
+            "description": "Email du promoteur",
             "required": true,
             "schema": {
               "type": "string"
@@ -1465,11 +1713,14 @@
         "tags": [
           "promoter"
         ],
+        "summary": "Changer le statut",
+        "description": "Désactiver ou réactiver un promoteur",
         "operationId": "togglePromoter",
         "parameters": [
           {
             "name": "email",
             "in": "path",
+            "description": "Email du promoteur",
             "required": true,
             "schema": {
               "type": "string"
@@ -1488,11 +1739,14 @@
         "tags": [
           "promoter"
         ],
+        "summary": "Réinitialiser le mot de passe",
+        "description": "Réinitialiser le mot de passe d'un promoteur",
         "operationId": "resetPassword",
         "parameters": [
           {
             "name": "email",
             "in": "path",
+            "description": "Email du promoteur",
             "required": true,
             "schema": {
               "type": "string"
@@ -1509,6 +1763,58 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/promoter/reactivate/{email}": {
+      "patch": {
+        "tags": [
+          "promoter"
+        ],
+        "summary": "Réactiver un promoteur",
+        "description": "Réactiver un promoteur désactivé",
+        "operationId": "reactivatePromoter",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email du promoteur",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/promoter/deactivate/{email}": {
+      "patch": {
+        "tags": [
+          "promoter"
+        ],
+        "summary": "Désactiver un promoteur",
+        "description": "Désactiver un promoteur (soft delete)",
+        "operationId": "deactivatePromoter",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email du promoteur",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1559,6 +1865,8 @@
         "tags": [
           "course"
         ],
+        "summary": "Mettre à jour un cours",
+        "description": "Mettre à jour un cours existant",
         "operationId": "updateCourse_1",
         "requestBody": {
           "content": {
@@ -1589,11 +1897,14 @@
         "tags": [
           "course"
         ],
+        "summary": "Changer le statut",
+        "description": "Désactiver ou réactiver un cours",
         "operationId": "toogleCourse_2",
         "parameters": [
           {
             "name": "name",
             "in": "path",
+            "description": "Nom du cours",
             "required": true,
             "schema": {
               "type": "string"
@@ -1602,14 +1913,59 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/course-management/reactivate/{name}": {
+      "patch": {
+        "tags": [
+          "course"
+        ],
+        "summary": "Réactiver un cours",
+        "description": "Réactiver un cours désactivé",
+        "operationId": "reactivateCourse",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Nom du cours",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/course-management/deactivate/{name}": {
+      "patch": {
+        "tags": [
+          "course"
+        ],
+        "summary": "Désactiver un cours",
+        "description": "Désactiver un cours (soft delete)",
+        "operationId": "deactivateCourse",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Nom du cours",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1619,11 +1975,14 @@
         "tags": [
           "candidate"
         ],
+        "summary": "Mettre à jour le profil",
+        "description": "Mettre à jour le profil d'un candidat",
         "operationId": "updateCandidate",
         "parameters": [
           {
             "name": "email",
             "in": "path",
+            "description": "Email du candidat",
             "required": true,
             "schema": {
               "type": "string"
@@ -1659,11 +2018,66 @@
         "tags": [
           "candidate"
         ],
+        "summary": "Changer le statut",
+        "description": "Désactiver ou réactiver un candidat",
         "operationId": "toggleCandidate",
         "parameters": [
           {
             "name": "email",
             "in": "path",
+            "description": "Email du candidat",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/candidate/reactivate/{email}": {
+      "patch": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Réactiver un candidat",
+        "description": "Réactiver un candidat désactivé",
+        "operationId": "reactivateCandidate",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email du candidat",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/candidate/deactivate/{email}": {
+      "patch": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Désactiver un candidat",
+        "description": "Désactiver un candidat (soft delete)",
+        "operationId": "deactivateCandidate",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email du candidat",
             "required": true,
             "schema": {
               "type": "string"
@@ -1848,11 +2262,14 @@
         "tags": [
           "application"
         ],
+        "summary": "Valider une candidature",
+        "description": "Valider une candidature et assigner un centre d'examen",
         "operationId": "validateApplication",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID de la candidature",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1874,16 +2291,46 @@
         }
       }
     },
-    "/application/delete/{applicationId}": {
+    "/application/reactivate/{applicationId}": {
       "patch": {
         "tags": [
           "application"
         ],
-        "operationId": "deleteApplication",
+        "summary": "Réactiver une candidature",
+        "description": "Réactiver une candidature désactivée",
+        "operationId": "reactivateApplication",
         "parameters": [
           {
             "name": "applicationId",
             "in": "path",
+            "description": "ID de la candidature",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/application/deactivate/{applicationId}": {
+      "patch": {
+        "tags": [
+          "application"
+        ],
+        "summary": "Désactiver une candidature",
+        "description": "Désactiver une candidature (soft delete)",
+        "operationId": "deactivateApplication",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "description": "ID de la candidature",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1903,6 +2350,8 @@
         "tags": [
           "application"
         ],
+        "summary": "Upload des fichiers",
+        "description": "Upload des documents de candidature",
         "operationId": "uploadCandidateFile",
         "requestBody": {
           "content": {
@@ -1918,38 +2367,47 @@
                 "properties": {
                   "cniFile": {
                     "type": "string",
+                    "description": "Fichier CNI",
                     "format": "binary"
                   },
                   "birthCertificate": {
                     "type": "string",
+                    "description": "Certificat de naissance",
                     "format": "binary"
                   },
                   "diplomFile": {
                     "type": "string",
+                    "description": "Diplôme",
                     "format": "binary"
                   },
                   "photo": {
                     "type": "string",
+                    "description": "Photo",
                     "format": "binary"
                   },
                   "oldApplyanceFile": {
                     "type": "string",
+                    "description": "Ancienne candidature",
                     "format": "binary"
                   },
                   "stageCertificate": {
                     "type": "string",
+                    "description": "Certificat de stage",
                     "format": "binary"
                   },
                   "cv": {
                     "type": "string",
+                    "description": "CV",
                     "format": "binary"
                   },
                   "financialJustification": {
                     "type": "string",
+                    "description": "Justification financière",
                     "format": "binary"
                   },
                   "letter": {
                     "type": "string",
+                    "description": "Lettre de motivation",
                     "format": "binary"
                   }
                 }
@@ -2054,16 +2512,44 @@
         }
       }
     },
+    "/trainingcenter/statistics": {
+      "get": {
+        "tags": [
+          "trainingcenter"
+        ],
+        "summary": "Statistiques",
+        "description": "Récupérer les statistiques sur les centres de formation",
+        "operationId": "getTrainingCenterStatistics",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/trainingcenter/getAgreementStatus/{agreement-number}": {
       "get": {
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Statut d'accord",
+        "description": "Obtenir le statut d'un accord",
         "operationId": "getAgreementStatus",
         "parameters": [
           {
             "name": "agreement-number",
             "in": "path",
+            "description": "Numéro d'accord",
             "required": true,
             "schema": {
               "type": "string"
@@ -2089,6 +2575,8 @@
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Centres du promoteur connecté",
+        "description": "Récupérer tous les centres de formation du promoteur connecté",
         "operationId": "getTrainingCenterOfConnectedPromoter",
         "responses": {
           "200": {
@@ -2112,11 +2600,14 @@
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Récupérer par numéro d'accord",
+        "description": "Récupérer un centre de formation par son numéro d'accord",
         "operationId": "getTrainingCenterByAgreementNumber",
         "parameters": [
           {
             "name": "agreementNumber",
             "in": "query",
+            "description": "Numéro d'accord",
             "required": true,
             "schema": {
               "type": "string"
@@ -2142,11 +2633,14 @@
         "tags": [
           "trainingcenter"
         ],
+        "summary": "Récupérer tous les centres",
+        "description": "Récupérer tous les centres de formation avec pagination et tri",
         "operationId": "getAllTrainingCenters",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2157,6 +2651,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2167,6 +2662,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -2176,6 +2672,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -2295,16 +2792,139 @@
         }
       }
     },
-    "/staff/getAll": {
+    "/staff/{staffId}": {
       "get": {
         "tags": [
           "staff"
         ],
-        "operationId": "getAllStaffs",
+        "summary": "Récupérer par ID",
+        "description": "Récupérer un membre du staff par son ID",
+        "operationId": "getStaffById",
+        "parameters": [
+          {
+            "name": "staffId",
+            "in": "path",
+            "description": "ID du membre du staff",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "staff"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement un membre du staff",
+        "operationId": "deleteStaffPermanently",
+        "parameters": [
+          {
+            "name": "staffId",
+            "in": "path",
+            "description": "ID du membre du staff",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/staff/statistics": {
+      "get": {
+        "tags": [
+          "staff"
+        ],
+        "summary": "Statistiques du staff",
+        "description": "Récupérer les statistiques sur les membres du staff",
+        "operationId": "getStaffStatistics",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/search": {
+      "get": {
+        "tags": [
+          "staff"
+        ],
+        "summary": "Rechercher par nom",
+        "description": "Rechercher des membres du staff par nom ou prénom",
+        "operationId": "searchStaffByName",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Nom à rechercher",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StaffResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/get-all": {
+      "get": {
+        "tags": [
+          "staff"
+        ],
+        "summary": "Récupérer tous les membres du staff",
+        "description": "Récupérer tous les membres du personnel avec pagination et tri",
+        "operationId": "getAllStaff",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2315,6 +2935,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2325,15 +2946,17 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
-              "default": "name"
+              "default": "firstName"
             }
           },
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -2348,36 +2971,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageResponseStaffResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/staff/find-by-email": {
-      "get": {
-        "tags": [
-          "staff"
-        ],
-        "operationId": "findStaffByEmail",
-        "parameters": [
-          {
-            "name": "email",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StaffResponse"
                 }
               }
             }
@@ -2714,16 +3307,78 @@
         }
       }
     },
+    "/session/{sessionId}": {
+      "get": {
+        "tags": [
+          "session"
+        ],
+        "summary": "Récupérer par ID",
+        "description": "Récupérer une session par son ID",
+        "operationId": "getSessionById",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "ID de la session",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "session"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement une session",
+        "operationId": "deleteSessionPermanently",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "ID de la session",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/session/list-details/{id}": {
       "get": {
         "tags": [
           "session"
         ],
+        "summary": "Détails de session",
+        "description": "Récupérer les détails d'une session",
         "operationId": "getSessionDetailsList",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID de la session",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2750,11 +3405,14 @@
         "tags": [
           "session"
         ],
+        "summary": "Rechercher par année",
+        "description": "Récupérer des sessions par année",
         "operationId": "findSessionByYear",
         "parameters": [
           {
             "name": "sessionYear",
             "in": "path",
+            "description": "Année de session",
             "required": true,
             "schema": {
               "type": "string"
@@ -2763,6 +3421,7 @@
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2773,6 +3432,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2783,6 +3443,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -2792,6 +3453,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -2818,11 +3480,14 @@
         "tags": [
           "session"
         ],
+        "summary": "Récupérer toutes les sessions",
+        "description": "Récupérer toutes les sessions avec pagination et tri",
         "operationId": "getall",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2833,6 +3498,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2843,6 +3509,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -2852,6 +3519,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -2878,11 +3546,14 @@
         "tags": [
           "session"
         ],
+        "summary": "Rechercher par date",
+        "description": "Trouver des sessions par date d'examen",
         "operationId": "findByName_2",
         "parameters": [
           {
             "name": "examDate",
             "in": "path",
+            "description": "Date d'examen",
             "required": true,
             "schema": {
               "type": "string",
@@ -2907,16 +3578,53 @@
         }
       }
     },
+    "/promoter/{promoterId}": {
+      "get": {
+        "tags": [
+          "promoter"
+        ],
+        "summary": "Récupérer par ID",
+        "description": "Récupérer un promoteur par son ID",
+        "operationId": "getPromoterById",
+        "parameters": [
+          {
+            "name": "promoterId",
+            "in": "path",
+            "description": "ID du promoteur",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromoterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/promoter/get-all": {
       "get": {
         "tags": [
           "promoter"
         ],
-        "operationId": "getAllStaffs_1",
+        "summary": "Récupérer tous les promoteurs",
+        "description": "Récupérer tous les promoteurs avec pagination et tri",
+        "operationId": "getAllStaffs",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2927,6 +3635,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -2937,6 +3646,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -2946,6 +3656,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -2972,11 +3683,14 @@
         "tags": [
           "promoter"
         ],
-        "operationId": "findStaffByEmail_1",
+        "summary": "Trouver par email",
+        "description": "Trouver un promoteur par son email",
+        "operationId": "findStaffByEmail",
         "parameters": [
           {
             "name": "email",
             "in": "query",
+            "description": "Email du promoteur",
             "required": true,
             "schema": {
               "type": "string"
@@ -3218,16 +3932,89 @@
         }
       }
     },
+    "/course-management/{courseId}": {
+      "get": {
+        "tags": [
+          "course"
+        ],
+        "summary": "Récupérer par ID",
+        "description": "Récupérer un cours par son ID",
+        "operationId": "getCourseById",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "description": "ID du cours",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/course-management/search": {
+      "get": {
+        "tags": [
+          "course"
+        ],
+        "summary": "Rechercher par nom",
+        "description": "Rechercher des cours par nom",
+        "operationId": "searchCoursesByName",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Nom à rechercher",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CourseResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/course-management/get-all": {
       "get": {
         "tags": [
           "course"
         ],
+        "summary": "Récupérer tous les cours",
+        "description": "Récupérer tous les cours avec pagination et tri",
         "operationId": "getCourses",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -3238,6 +4025,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -3248,6 +4036,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -3257,6 +4046,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -3283,11 +4073,14 @@
         "tags": [
           "course"
         ],
+        "summary": "Trouver par nom",
+        "description": "Trouver un cours par son nom",
         "operationId": "findByName_3",
         "parameters": [
           {
             "name": "name",
             "in": "path",
+            "description": "Nom du cours",
             "required": true,
             "schema": {
               "type": "string"
@@ -3308,16 +4101,89 @@
         }
       }
     },
+    "/candidate/{candidateId}": {
+      "get": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Récupérer par ID",
+        "description": "Récupérer un candidat par son ID",
+        "operationId": "getCandidateById",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "in": "path",
+            "description": "ID du candidat",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidate/search": {
+      "get": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Rechercher par nom",
+        "description": "Rechercher des candidats par nom ou prénom",
+        "operationId": "searchCandidatesByName",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Nom à rechercher",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CandidateResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/candidate/get-promoter-candidates/{year}": {
       "get": {
         "tags": [
           "candidate"
         ],
+        "summary": "Candidats du promoteur",
+        "description": "Récupérer les candidats d'un promoteur connecté pour une année donnée",
         "operationId": "getCandidatesOfConnectedpromoterid",
         "parameters": [
           {
             "name": "year",
             "in": "path",
+            "description": "Année",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3327,6 +4193,7 @@
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -3337,6 +4204,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -3347,6 +4215,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -3356,6 +4225,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -3382,11 +4252,14 @@
         "tags": [
           "candidate"
         ],
+        "summary": "Récupérer tous les candidats",
+        "description": "Récupérer tous les candidats avec pagination et tri",
         "operationId": "getAllCandidates",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -3397,6 +4270,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -3407,6 +4281,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -3416,6 +4291,7 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -3442,11 +4318,14 @@
         "tags": [
           "candidate"
         ],
+        "summary": "Trouver par nom",
+        "description": "Trouver un candidat par nom dans les centres du promoteur",
         "operationId": "findCandidate",
         "parameters": [
           {
             "name": "promoterId",
             "in": "query",
+            "description": "ID du promoteur",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3456,6 +4335,7 @@
           {
             "name": "name",
             "in": "query",
+            "description": "Nom du candidat",
             "required": true,
             "schema": {
               "type": "string"
@@ -3481,11 +4361,14 @@
         "tags": [
           "candidate"
         ],
+        "summary": "Trouver par email",
+        "description": "Trouver un candidat par son email",
         "operationId": "findCandidateByEmail",
         "parameters": [
           {
             "name": "email",
             "in": "query",
+            "description": "Email du candidat",
             "required": false,
             "schema": {
               "type": "string"
@@ -3991,11 +4874,97 @@
         }
       }
     },
+    "/application/{applicationId}": {
+      "get": {
+        "tags": [
+          "application"
+        ],
+        "summary": "Récupérer une candidature",
+        "description": "Récupérer une candidature par son ID",
+        "operationId": "getApplicationById",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "description": "ID de la candidature",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "application"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement une candidature",
+        "operationId": "deleteApplicationPermanently",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "description": "ID de la candidature",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/application/statistics": {
+      "get": {
+        "tags": [
+          "application"
+        ],
+        "summary": "Statistiques",
+        "description": "Récupérer les statistiques des candidatures",
+        "operationId": "getApplicationStatistics",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/application/my-applications": {
       "get": {
         "tags": [
           "application"
         ],
+        "summary": "Mes candidatures",
+        "description": "Récupérer les candidatures du candidat connecté",
         "operationId": "getMyApplications",
         "responses": {
           "200": {
@@ -4019,11 +4988,14 @@
         "tags": [
           "application"
         ],
+        "summary": "Rechercher par nom",
+        "description": "Rechercher des candidatures par nom de candidat",
         "operationId": "searchApplicationsByCandidateName",
         "parameters": [
           {
             "name": "name",
             "in": "query",
+            "description": "Nom du candidat",
             "required": true,
             "schema": {
               "type": "string"
@@ -4052,11 +5024,14 @@
         "tags": [
           "application"
         ],
+        "summary": "Récupérer toutes les candidatures",
+        "description": "Récupérer toutes les candidatures avec pagination et filtres",
         "operationId": "getAllApplications",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
+            "description": "Offset de pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -4067,6 +5042,7 @@
           {
             "name": "pageSize",
             "in": "query",
+            "description": "Taille de page",
             "required": false,
             "schema": {
               "type": "integer",
@@ -4077,6 +5053,7 @@
           {
             "name": "field",
             "in": "query",
+            "description": "Champ de tri",
             "required": false,
             "schema": {
               "type": "string",
@@ -4086,6 +5063,109 @@
           {
             "name": "order",
             "in": "query",
+            "description": "Ordre de tri",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Statut de filtrage",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "examType",
+            "in": "query",
+            "description": "Type d'examen",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Région",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "description": "Année",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseApplicationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/application/get-all-debug": {
+      "get": {
+        "tags": [
+          "application"
+        ],
+        "summary": "Debug - Récupérer toutes les candidatures",
+        "description": "Récupérer toutes les candidatures sans filtre isActived pour debug",
+        "operationId": "getAllApplicationsDebug",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Offset de pagination",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Taille de page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "description": "Champ de tri",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "id"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Ordre de tri",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -4163,6 +5243,32 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/trainingcenter/{agreementNumber}": {
+      "delete": {
+        "tags": [
+          "trainingcenter"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement un centre de formation",
+        "operationId": "deleteTrainingCenterPermanently",
+        "parameters": [
+          {
+            "name": "agreementNumber",
+            "in": "path",
+            "description": "Numéro d'accord",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -4255,6 +5361,32 @@
         }
       }
     },
+    "/promoter/{email}": {
+      "delete": {
+        "tags": [
+          "promoter"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement un promoteur",
+        "operationId": "deletePromoterPermanently",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email du promoteur",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/payment/delete/{id}": {
       "delete": {
         "tags": [
@@ -4279,16 +5411,45 @@
         }
       }
     },
+    "/course-management/{name}": {
+      "delete": {
+        "tags": [
+          "course"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement un cours",
+        "operationId": "deleteCoursePermanently",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Nom du cours",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/course-management/courses/{agreementNumber}": {
       "delete": {
         "tags": [
           "course"
         ],
+        "summary": "Supprimer du centre",
+        "description": "Supprimer des cours d'un centre de formation",
         "operationId": "removeCoursesFromTrainingCenter",
         "parameters": [
           {
             "name": "agreementNumber",
             "in": "path",
+            "description": "Numéro d'agrément du centre",
             "required": true,
             "schema": {
               "type": "string"
@@ -4319,6 +5480,32 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/candidate/{email}": {
+      "delete": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Supprimer définitivement",
+        "description": "Supprimer définitivement un candidat",
+        "operationId": "deleteCandidatePermanently",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email du candidat",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -4422,7 +5609,7 @@
           }
         }
       },
-      "CreateStaffRequest": {
+      "StaffRequest": {
         "required": [
           "dateOfBirth",
           "email",
@@ -4434,6 +5621,10 @@
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
           "firstname": {
             "type": "string"
           },
@@ -5421,10 +6612,10 @@
             "type": "number",
             "format": "double"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -5455,10 +6646,10 @@
           "agreement": {
             "type": "string"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -5627,6 +6818,36 @@
           }
         }
       },
+      "StaffResponse": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "nationalIdNumber": {
+            "type": "string"
+          },
+          "accountLocked": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      },
       "PageResponseStaffResponse": {
         "type": "object",
         "properties": {
@@ -5656,36 +6877,6 @@
             "type": "boolean"
           },
           "last": {
-            "type": "boolean"
-          }
-        }
-      },
-      "StaffResponse": {
-        "type": "object",
-        "properties": {
-          "firstname": {
-            "type": "string"
-          },
-          "lastname": {
-            "type": "string"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "nationalIdNumber": {
-            "type": "string"
-          },
-          "accountLocked": {
-            "type": "boolean"
-          },
-          "enabled": {
             "type": "boolean"
           }
         }
@@ -5766,6 +6957,25 @@
           }
         }
       },
+      "SessionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "examType": {
+            "type": "string"
+          },
+          "examDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "sessionYear": {
+            "type": "string"
+          }
+        }
+      },
       "CourseResponse": {
         "type": "object",
         "properties": {
@@ -5834,22 +7044,37 @@
           }
         }
       },
-      "SessionResponse": {
+      "PromoterResponse": {
         "type": "object",
         "properties": {
-          "id": {
+          "idUser": {
             "type": "integer",
             "format": "int64"
           },
-          "examType": {
+          "firstname": {
             "type": "string"
           },
-          "examDate": {
+          "lastname": {
+            "type": "string"
+          },
+          "dateOfBirth": {
             "type": "string",
             "format": "date"
           },
-          "sessionYear": {
+          "email": {
             "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "nationalIdNumber": {
+            "type": "string"
+          },
+          "accountLocked": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
           }
         }
       },
@@ -5882,40 +7107,6 @@
             "type": "boolean"
           },
           "last": {
-            "type": "boolean"
-          }
-        }
-      },
-      "PromoterResponse": {
-        "type": "object",
-        "properties": {
-          "idUser": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "firstname": {
-            "type": "string"
-          },
-          "lastname": {
-            "type": "string"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "nationalIdNumber": {
-            "type": "string"
-          },
-          "accountLocked": {
-            "type": "boolean"
-          },
-          "enabled": {
             "type": "boolean"
           }
         }
@@ -6162,10 +7353,10 @@
               "PENDING"
             ]
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -6247,10 +7438,10 @@
               "$ref": "#/components/schemas/TrainingCenter"
             }
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -6286,10 +7477,10 @@
             "type": "string",
             "format": "date"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -6354,10 +7545,10 @@
               "$ref": "#/components/schemas/Subject"
             }
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -6400,10 +7591,10 @@
               "$ref": "#/components/schemas/Speciality"
             }
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -6524,10 +7715,10 @@
           "internalRegulationFileUrl": {
             "type": "string"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }
@@ -6573,10 +7764,10 @@
           "comment": {
             "type": "string"
           },
-          "archived": {
+          "actived": {
             "type": "boolean"
           },
-          "actived": {
+          "archived": {
             "type": "boolean"
           }
         }

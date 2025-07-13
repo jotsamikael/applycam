@@ -365,8 +365,12 @@ export class RegisterComponent implements OnInit {
     }
 
     const formValue = this.newSpecialityForm.value;
+    
+    // Générer automatiquement le code de la spécialité
+    const generatedCode = this.generateSpecialityCode(formValue.name);
+    
     const createSpecialityRequest = {
-      code: formValue.code,
+      code: generatedCode, // Utilise le code généré automatiquement
       name: formValue.name,
       description: formValue.description || '',
       examType: formValue.examType
@@ -374,8 +378,21 @@ export class RegisterComponent implements OnInit {
 
     console.log('Création spécialité pour filière:', createSpecialityRequest);
 
+    // Nettoyer et valider le nom de la filière
+    const courseName = this.currentCourseForSpeciality?.courseName || '';
+    const validation = this.validateAndCleanCourseName(courseName);
+    if (!validation.isValid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Nom de filière invalide',
+        text: validation.errorMessage || 'Nom de filière invalide',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
     this.authService.createAndLinkSpecialityToTrainingCenter({
-      courseName: this.currentCourseForSpeciality.courseName || '',
+      courseName: validation.cleanName,
       agreementNumber: this.promoterForm.get('approvalNumber')?.value,
       body: createSpecialityRequest
     }).subscribe({
@@ -386,7 +403,7 @@ export class RegisterComponent implements OnInit {
         const newSpeciality: SpecialityResponse = {
           id: undefined,
           name: formValue.name,
-          code: formValue.code,
+          code: generatedCode, // Utilise le code généré
           description: formValue.description || '',
           examType: formValue.examType
         };
@@ -402,7 +419,7 @@ export class RegisterComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: 'Spécialité créée',
-          text: 'La spécialité a été créée et liée à votre centre avec succès.',
+          html: `<div class="text-center"><i class="bx bx-check-circle text-success" style="font-size: 2em;"></i><p class="mt-2"><strong>${formValue.name}</strong></p><p class="text-muted">Code: <strong>${generatedCode}</strong></p><p class="text-muted">La spécialité a été créée et liée à votre centre avec succès.</p></div>`,
           timer: 2000,
           showConfirmButton: false
         });
@@ -410,48 +427,32 @@ export class RegisterComponent implements OnInit {
       error: (err) => {
         console.error('Erreur création spécialité:', err);
         
-        // Si le statut est 200, considérer comme un succès malgré l'erreur
-        if (err.status === 200) {
-          console.log('Réponse avec statut 200, considérer comme succès');
-          
-          // Créer un objet spécialité temporaire pour l'ajouter à la sélection
-          const newSpeciality: SpecialityResponse = {
-            id: undefined,
-            name: formValue.name,
-            code: formValue.code,
-            description: formValue.description || '',
-            examType: formValue.examType
-          };
-          
-          // Ajouter la nouvelle spécialité à la filière sélectionnée
-          const courseName = this.currentCourseForSpeciality?.courseName || '';
-          if (!this.selectedCourseSpecialities[courseName]) {
-            this.selectedCourseSpecialities[courseName] = [];
-          }
-          this.selectedCourseSpecialities[courseName].push(newSpeciality);
-          
-          this.hideCreateSpecialityFormForCourse();
-          Swal.fire({
-            icon: 'success',
-            title: 'Spécialité créée',
-            text: 'La spécialité a été créée et liée à votre centre avec succès.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          return;
-        }
-        
+        // Gestion spécifique des erreurs
         let errorMessage = 'Erreur lors de la création de la spécialité.';
         
-        // Gestion spécifique des erreurs
-        if (err.error && err.error.message) {
+        if (err.status === 500) {
+          // Extraire les informations sur les filières disponibles du message d'erreur
+          let availableCoursesInfo = '';
+          if (err.error && err.error.message && err.error.message.includes('Available courses:')) {
+            const availableCoursesMatch = err.error.message.match(/Available courses: (.+)/);
+            if (availableCoursesMatch) {
+              availableCoursesInfo = availableCoursesMatch[1];
+            }
+          }
+          
+          if (availableCoursesInfo) {
+            errorMessage = `La filière demandée n'existe pas dans le système. Filières disponibles: ${availableCoursesInfo}`;
+          } else {
+            errorMessage = 'Erreur serveur. Vérifiez que la filière existe et que tous les champs sont corrects.';
+          }
+        } else if (err.status === 404) {
+          errorMessage = 'La filière sélectionnée n\'existe pas dans le système.';
+        } else if (err.status === 400) {
+          errorMessage = 'Données invalides. Vérifiez les informations saisies.';
+        } else if (err.error && err.error.message) {
           errorMessage = err.error.message;
         } else if (err.error && err.error.businessErrorDescription) {
           errorMessage = err.error.businessErrorDescription;
-        } else if (err.status === 400) {
-          errorMessage = 'Données invalides. Vérifiez les informations saisies.';
-        } else if (err.status === 409) {
-          errorMessage = 'Une spécialité avec ce nom existe déjà.';
         }
         
         Swal.fire({
@@ -732,7 +733,6 @@ export class RegisterComponent implements OnInit {
     return this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
-      code: ['', [Validators.required, Validators.maxLength(20)]],
       examType: ['', [Validators.required, this.examTypeValidator]]
     });
   }
@@ -1288,6 +1288,58 @@ export class RegisterComponent implements OnInit {
     return examTypes.join(', ');
   }
 
+  // Fonction utilitaire pour générer automatiquement le code de spécialité
+  private generateSpecialityCode(specialityName: string): string {
+    // Prendre les 2 premières lettres du nom de la spécialité
+    const firstTwoLetters = specialityName.substring(0, 2).toUpperCase();
+    
+    // Générer 3 chiffres aléatoires
+    const randomNumbers = Math.floor(Math.random() * 900) + 100; // Génère un nombre entre 100 et 999
+    
+    // Combiner les lettres et les chiffres
+    return `${firstTwoLetters}${randomNumbers}`;
+  }
+
+  // Fonction utilitaire pour nettoyer et valider le nom de filière
+  private validateAndCleanCourseName(courseName: string): { isValid: boolean; cleanName: string; errorMessage?: string } {
+    // Décoder l'URL si nécessaire et nettoyer le nom
+    let cleanName = courseName.trim();
+    
+    // Décoder les caractères encodés dans l'URL si présents
+    try {
+      cleanName = decodeURIComponent(cleanName);
+    } catch (e) {
+      // Si le décodage échoue, utiliser le nom original
+      console.warn('Erreur lors du décodage du nom de filière:', e);
+    }
+    
+    if (!cleanName || cleanName.length < 2) {
+      return {
+        isValid: false,
+        cleanName: '',
+        errorMessage: 'Le nom de la filière doit contenir au moins 2 caractères.'
+      };
+    }
+    
+    // Remplacer les espaces par des tirets pour éviter l'encodage URL
+    const urlSafeName = cleanName.replace(/\s+/g, '-');
+    
+    // Vérifier que la filière existe dans la liste des cours disponibles
+    const course = this.courses.find(c => c.courseName === cleanName);
+    if (!course) {
+      return {
+        isValid: false,
+        cleanName: '',
+        errorMessage: `La filière "${cleanName}" n'existe pas dans le système. Veuillez sélectionner une filière valide.`
+      };
+    }
+    
+    return {
+      isValid: true,
+      cleanName: urlSafeName // Retourner le nom avec des tirets pour l'URL
+    };
+  }
+
   // Création rapide d'une spécialité liée à la filière sélectionnée
   createQuickSpeciality(): void {
     const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
@@ -1400,13 +1452,17 @@ export class RegisterComponent implements OnInit {
         const { name, examTypes, selectedCourse } = result.value;
         const approvalNumber = this.promoterForm.get('approvalNumber')?.value;
         
+        // Générer automatiquement le code de la spécialité
+        const generatedCode = this.generateSpecialityCode(name);
+        
         // Créer une spécialité avec des valeurs par défaut
         const createSpecialityRequest = {
-          code: name.substring(0, 3).toUpperCase(),
+          code: generatedCode, // Utilise le code généré automatiquement
           name: name,
           description: `Spécialité en ${name}`,
           examType: examTypes
         };
+        
         // Vérification stricte des champs obligatoires
         if (!selectedCourse || !approvalNumber || !name || !createSpecialityRequest.code || !createSpecialityRequest.description || !createSpecialityRequest.examType) {
           Swal.fire({
@@ -1417,22 +1473,25 @@ export class RegisterComponent implements OnInit {
           });
           return;
         }
-        const courseExists = this.courses.some(c => c.courseName === selectedCourse);
-        if (!courseExists) {
+
+        console.log('Création rapide spécialité:', createSpecialityRequest);
+
+        // Nettoyer et valider le nom de la filière
+        const validation = this.validateAndCleanCourseName(selectedCourse);
+        if (!validation.isValid) {
           Swal.fire({
             icon: 'error',
-            title: 'Filière inconnue',
-            text: 'La filière sélectionnée n\'existe pas.',
+            title: 'Nom de filière invalide',
+            text: validation.errorMessage || 'Nom de filière invalide',
             confirmButtonText: 'OK'
           });
           return;
         }
 
-        console.log('Création rapide spécialité:', createSpecialityRequest);
-
         // Utilise createAndLinkSpecialityToTrainingCenter pour créer et lier la spécialité à la filière
+        console.log('Envoi au backend - courseName:', validation.cleanName, 'original:', selectedCourse);
         this.authService.createAndLinkSpecialityToTrainingCenter({
-          courseName: selectedCourse, // Ajouté !
+          courseName: validation.cleanName,
           agreementNumber: approvalNumber,
           body: createSpecialityRequest
         }).subscribe({
@@ -1466,7 +1525,7 @@ export class RegisterComponent implements OnInit {
             Swal.fire({
               icon: 'success',
               title: 'Spécialité créée avec succès !',
-              html: `<div class="text-center"><i class="bx bx-check-circle text-success" style="font-size: 3em;"></i><p class="mt-3"><strong>${name}</strong></p><p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p><p class="text-muted small">Types d'examen: ${examTypes}</p></div>`,
+              html: `<div class="text-center"><i class="bx bx-check-circle text-success" style="font-size: 3em;"></i><p class="mt-3"><strong>${name}</strong></p><p class="text-muted">Code: <strong>${generatedCode}</strong></p><p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p><p class="text-muted small">Types d'examen: ${examTypes}</p></div>`,
               timer: 3000,
               showConfirmButton: false,
               timerProgressBar: true
@@ -1475,59 +1534,29 @@ export class RegisterComponent implements OnInit {
           error: (err) => {
             console.error('Erreur création rapide spécialité:', err);
             
-            // Si le statut est 200, considérer comme un succès malgré l'erreur
-            if (err.status === 200) {
-              console.log('Réponse avec statut 200, considérer comme succès');
-              
-              // Créer un objet spécialité temporaire
-              const newSpeciality: SpecialityResponse = {
-                id: undefined,
-                name: name,
-                code: createSpecialityRequest.code,
-                description: createSpecialityRequest.description,
-                examType: examTypes
-              };
-              
-              // Ajouter la spécialité à la filière sélectionnée
-              const existingCourse = this.selectedCourses.find(c => c.courseName === selectedCourse);
-              if (existingCourse) {
-                // Ajouter la spécialité à la filière existante
-                if (!this.selectedCourseSpecialities[selectedCourse]) {
-                  this.selectedCourseSpecialities[selectedCourse] = [];
-                }
-                this.selectedCourseSpecialities[selectedCourse].push(newSpeciality);
-              } else {
-                // Ajouter la filière et la spécialité
-                const courseToAdd = this.courses.find(c => c.courseName === selectedCourse);
-                if (courseToAdd) {
-                  this.selectedCourses.push(courseToAdd);
-                  this.selectedCourseSpecialities[selectedCourse] = [newSpeciality];
+            // Gestion spécifique des erreurs
+            let errorMessage = 'Erreur lors de la création de la spécialité.';
+            
+            if (err.status === 500) {
+              // Extraire les informations sur les filières disponibles du message d'erreur
+              let availableCoursesInfo = '';
+              if (err.error && err.error.message && err.error.message.includes('Available courses:')) {
+                const availableCoursesMatch = err.error.message.match(/Available courses: (.+)/);
+                if (availableCoursesMatch) {
+                  availableCoursesInfo = availableCoursesMatch[1];
                 }
               }
               
-              // Vider le champ de recherche
-              this.specialitySearchTerm = '';
-              
-              Swal.fire({
-                icon: 'success',
-                title: 'Spécialité créée avec succès !',
-                html: `
-                  <div class="text-center">
-                    <i class="bx bx-check-circle text-success" style="font-size: 3em;"></i>
-                    <p class="mt-3"><strong>${name}</strong></p>
-                    <p class="text-muted">A été créée et liée à la filière <strong>${selectedCourse}</strong></p>
-                    <p class="text-muted small">Types d'examen: ${examTypes}</p>
-                  </div>
-                `,
-                timer: 3000,
-                showConfirmButton: false,
-                timerProgressBar: true
-              });
-              return;
-            }
-            
-            let errorMessage = 'Erreur lors de la création de la spécialité.';
-            if (err.error && err.error.message) {
+              if (availableCoursesInfo) {
+                errorMessage = `La filière "${selectedCourse}" n'existe pas dans le système. Filières disponibles: ${availableCoursesInfo}`;
+              } else {
+                errorMessage = 'Erreur serveur. Vérifiez que la filière existe et que tous les champs sont corrects.';
+              }
+            } else if (err.status === 404) {
+              errorMessage = 'La filière sélectionnée n\'existe pas dans le système.';
+            } else if (err.status === 400) {
+              errorMessage = 'Données invalides. Vérifiez les informations saisies.';
+            } else if (err.error && err.error.message) {
               errorMessage = err.error.message;
             } else if (err.error && err.error.businessErrorDescription) {
               errorMessage = err.error.businessErrorDescription;

@@ -11,14 +11,50 @@ import { RequestBuilder } from '../../request-builder';
 
 export interface UploadCandidateFile$Params {
       body?: {
+
+/**
+ * Fichier CNI
+ */
 'cniFile': Blob;
+
+/**
+ * Certificat de naissance
+ */
 'birthCertificate': Blob;
+
+/**
+ * Diplôme
+ */
 'diplomFile': Blob;
+
+/**
+ * Photo
+ */
 'photo': Blob;
+
+/**
+ * Ancienne candidature
+ */
 'oldApplyanceFile'?: Blob;
+
+/**
+ * Certificat de stage
+ */
 'stageCertificate'?: Blob;
+
+/**
+ * CV
+ */
 'cv'?: Blob;
+
+/**
+ * Justification financière
+ */
 'financialJustification'?: Blob;
+
+/**
+ * Lettre de motivation
+ */
 'letter'?: Blob;
 }
 }

@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface RemoveCoursesFromTrainingCenter$Params {
+
+/**
+ * Numéro d'agrément du centre
+ */
   agreementNumber: string;
       body: Array<number>
 }

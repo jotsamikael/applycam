@@ -11,10 +11,30 @@ import { RequestBuilder } from '../../request-builder';
 import { PageResponseSessionResponse } from '../../models/page-response-session-response';
 
 export interface FindSessionByYear$Params {
+
+/**
+ * Année de session
+ */
   sessionYear: string;
+
+/**
+ * Offset de pagination
+ */
   offset?: number;
+
+/**
+ * Taille de page
+ */
   pageSize?: number;
+
+/**
+ * Champ de tri
+ */
   field?: string;
+
+/**
+ * Ordre de tri
+ */
   order?: boolean;
 }
 

@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { CandidateRequest } from '../../models/candidate-request';
 
 export interface UpdateCandidate$Params {
+
+/**
+ * Email du candidat
+ */
   email: string;
       body: CandidateRequest
 }

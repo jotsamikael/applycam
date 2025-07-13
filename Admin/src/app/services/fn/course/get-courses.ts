@@ -11,9 +11,25 @@ import { RequestBuilder } from '../../request-builder';
 import { PageResponseCourseResponse } from '../../models/page-response-course-response';
 
 export interface GetCourses$Params {
+
+/**
+ * Offset de pagination
+ */
   offset?: number;
+
+/**
+ * Taille de page
+ */
   pageSize?: number;
+
+/**
+ * Champ de tri
+ */
   field?: string;
+
+/**
+ * Ordre de tri
+ */
   order?: boolean;
 }
 

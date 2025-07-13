@@ -13,19 +13,31 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { changeStatus1 } from '../fn/promoter/change-status-1';
 import { ChangeStatus1$Params } from '../fn/promoter/change-status-1';
-import { findStaffByEmail1 } from '../fn/promoter/find-staff-by-email-1';
-import { FindStaffByEmail1$Params } from '../fn/promoter/find-staff-by-email-1';
-import { getAllStaffs1 } from '../fn/promoter/get-all-staffs-1';
-import { GetAllStaffs1$Params } from '../fn/promoter/get-all-staffs-1';
+import { deactivatePromoter } from '../fn/promoter/deactivate-promoter';
+import { DeactivatePromoter$Params } from '../fn/promoter/deactivate-promoter';
+import { deletePromoterPermanently } from '../fn/promoter/delete-promoter-permanently';
+import { DeletePromoterPermanently$Params } from '../fn/promoter/delete-promoter-permanently';
+import { findStaffByEmail } from '../fn/promoter/find-staff-by-email';
+import { FindStaffByEmail$Params } from '../fn/promoter/find-staff-by-email';
+import { getAllStaffs } from '../fn/promoter/get-all-staffs';
+import { GetAllStaffs$Params } from '../fn/promoter/get-all-staffs';
+import { getPromoterById } from '../fn/promoter/get-promoter-by-id';
+import { GetPromoterById$Params } from '../fn/promoter/get-promoter-by-id';
 import { PageResponsePromoterResponse } from '../models/page-response-promoter-response';
 import { PromoterResponse } from '../models/promoter-response';
+import { reactivatePromoter } from '../fn/promoter/reactivate-promoter';
+import { ReactivatePromoter$Params } from '../fn/promoter/reactivate-promoter';
 import { resetPassword } from '../fn/promoter/reset-password';
 import { ResetPassword$Params } from '../fn/promoter/reset-password';
 import { togglePromoter } from '../fn/promoter/toggle-promoter';
 import { TogglePromoter$Params } from '../fn/promoter/toggle-promoter';
-import { updatePromoter1 } from '../fn/promoter/update-promoter-1';
-import { UpdatePromoter1$Params } from '../fn/promoter/update-promoter-1';
+import { updatePromoter } from '../fn/promoter/update-promoter';
+import { UpdatePromoter$Params } from '../fn/promoter/update-promoter';
 
+
+/**
+ * API de gestion des promoteurs
+ */
 @Injectable({ providedIn: 'root' })
 export class PromoterService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
@@ -36,6 +48,10 @@ export class PromoterService extends BaseService {
   static readonly ChangeStatus1Path = '/promoter/validate-promoter/{email}';
 
   /**
+   * Valider un promoteur.
+   *
+   * Valider un promoteur et envoyer un email de confirmation
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `changeStatus1()` instead.
    *
@@ -46,6 +62,10 @@ export class PromoterService extends BaseService {
   }
 
   /**
+   * Valider un promoteur.
+   *
+   * Valider un promoteur et envoyer un email de confirmation
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `changeStatus1$Response()` instead.
    *
@@ -57,27 +77,35 @@ export class PromoterService extends BaseService {
     );
   }
 
-  /** Path part for operation `updatePromoter1()` */
-  static readonly UpdatePromoter1Path = '/promoter/update-promoter/{email}';
+  /** Path part for operation `updatePromoter()` */
+  static readonly UpdatePromoterPath = '/promoter/update-promoter/{email}';
 
   /**
+   * Mettre à jour le profil.
+   *
+   * Mettre à jour le profil d'un promoteur
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `updatePromoter1()` instead.
+   * To access only the response body, use `updatePromoter()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updatePromoter1$Response(params: UpdatePromoter1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-    return updatePromoter1(this.http, this.rootUrl, params, context);
+  updatePromoter$Response(params: UpdatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+    return updatePromoter(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Mettre à jour le profil.
+   *
+   * Mettre à jour le profil d'un promoteur
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `updatePromoter1$Response()` instead.
+   * To access the full response (for headers, for example), `updatePromoter$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  updatePromoter1(params: UpdatePromoter1$Params, context?: HttpContext): Observable<string> {
-    return this.updatePromoter1$Response(params, context).pipe(
+  updatePromoter(params: UpdatePromoter$Params, context?: HttpContext): Observable<string> {
+    return this.updatePromoter$Response(params, context).pipe(
       map((r: StrictHttpResponse<string>): string => r.body)
     );
   }
@@ -86,6 +114,10 @@ export class PromoterService extends BaseService {
   static readonly TogglePromoterPath = '/promoter/togglePromoterActivation/{email}';
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un promoteur
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `togglePromoter()` instead.
    *
@@ -96,6 +128,10 @@ export class PromoterService extends BaseService {
   }
 
   /**
+   * Changer le statut.
+   *
+   * Désactiver ou réactiver un promoteur
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `togglePromoter$Response()` instead.
    *
@@ -111,6 +147,10 @@ export class PromoterService extends BaseService {
   static readonly ResetPasswordPath = '/promoter/reset-password/{email}';
 
   /**
+   * Réinitialiser le mot de passe.
+   *
+   * Réinitialiser le mot de passe d'un promoteur
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `resetPassword()` instead.
    *
@@ -121,6 +161,10 @@ export class PromoterService extends BaseService {
   }
 
   /**
+   * Réinitialiser le mot de passe.
+   *
+   * Réinitialiser le mot de passe d'un promoteur
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `resetPassword$Response()` instead.
    *
@@ -132,53 +176,201 @@ export class PromoterService extends BaseService {
     );
   }
 
-  /** Path part for operation `getAllStaffs1()` */
-  static readonly GetAllStaffs1Path = '/promoter/get-all';
+  /** Path part for operation `reactivatePromoter()` */
+  static readonly ReactivatePromoterPath = '/promoter/reactivate/{email}';
 
   /**
+   * Réactiver un promoteur.
+   *
+   * Réactiver un promoteur désactivé
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `getAllStaffs1()` instead.
+   * To access only the response body, use `reactivatePromoter()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getAllStaffs1$Response(params?: GetAllStaffs1$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponsePromoterResponse>> {
-    return getAllStaffs1(this.http, this.rootUrl, params, context);
+  reactivatePromoter$Response(params: ReactivatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reactivatePromoter(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Réactiver un promoteur.
+   *
+   * Réactiver un promoteur désactivé
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `getAllStaffs1$Response()` instead.
+   * To access the full response (for headers, for example), `reactivatePromoter$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getAllStaffs1(params?: GetAllStaffs1$Params, context?: HttpContext): Observable<PageResponsePromoterResponse> {
-    return this.getAllStaffs1$Response(params, context).pipe(
+  reactivatePromoter(params: ReactivatePromoter$Params, context?: HttpContext): Observable<void> {
+    return this.reactivatePromoter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `deactivatePromoter()` */
+  static readonly DeactivatePromoterPath = '/promoter/deactivate/{email}';
+
+  /**
+   * Désactiver un promoteur.
+   *
+   * Désactiver un promoteur (soft delete)
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deactivatePromoter()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivatePromoter$Response(params: DeactivatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deactivatePromoter(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Désactiver un promoteur.
+   *
+   * Désactiver un promoteur (soft delete)
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deactivatePromoter$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deactivatePromoter(params: DeactivatePromoter$Params, context?: HttpContext): Observable<void> {
+    return this.deactivatePromoter$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getPromoterById()` */
+  static readonly GetPromoterByIdPath = '/promoter/{promoterId}';
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un promoteur par son ID
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getPromoterById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getPromoterById$Response(params: GetPromoterById$Params, context?: HttpContext): Observable<StrictHttpResponse<PromoterResponse>> {
+    return getPromoterById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Récupérer par ID.
+   *
+   * Récupérer un promoteur par son ID
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getPromoterById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getPromoterById(params: GetPromoterById$Params, context?: HttpContext): Observable<PromoterResponse> {
+    return this.getPromoterById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PromoterResponse>): PromoterResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getAllStaffs()` */
+  static readonly GetAllStaffsPath = '/promoter/get-all';
+
+  /**
+   * Récupérer tous les promoteurs.
+   *
+   * Récupérer tous les promoteurs avec pagination et tri
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAllStaffs()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllStaffs$Response(params?: GetAllStaffs$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponsePromoterResponse>> {
+    return getAllStaffs(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Récupérer tous les promoteurs.
+   *
+   * Récupérer tous les promoteurs avec pagination et tri
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAllStaffs$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAllStaffs(params?: GetAllStaffs$Params, context?: HttpContext): Observable<PageResponsePromoterResponse> {
+    return this.getAllStaffs$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponsePromoterResponse>): PageResponsePromoterResponse => r.body)
     );
   }
 
-  /** Path part for operation `findStaffByEmail1()` */
-  static readonly FindStaffByEmail1Path = '/promoter/find-by-email';
+  /** Path part for operation `findStaffByEmail()` */
+  static readonly FindStaffByEmailPath = '/promoter/find-by-email';
 
   /**
+   * Trouver par email.
+   *
+   * Trouver un promoteur par son email
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `findStaffByEmail1()` instead.
+   * To access only the response body, use `findStaffByEmail()` instead.
    *
    * This method doesn't expect any request body.
    */
-  findStaffByEmail1$Response(params: FindStaffByEmail1$Params, context?: HttpContext): Observable<StrictHttpResponse<PromoterResponse>> {
-    return findStaffByEmail1(this.http, this.rootUrl, params, context);
+  findStaffByEmail$Response(params: FindStaffByEmail$Params, context?: HttpContext): Observable<StrictHttpResponse<PromoterResponse>> {
+    return findStaffByEmail(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Trouver par email.
+   *
+   * Trouver un promoteur par son email
+   *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `findStaffByEmail1$Response()` instead.
+   * To access the full response (for headers, for example), `findStaffByEmail$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  findStaffByEmail1(params: FindStaffByEmail1$Params, context?: HttpContext): Observable<PromoterResponse> {
-    return this.findStaffByEmail1$Response(params, context).pipe(
+  findStaffByEmail(params: FindStaffByEmail$Params, context?: HttpContext): Observable<PromoterResponse> {
+    return this.findStaffByEmail$Response(params, context).pipe(
       map((r: StrictHttpResponse<PromoterResponse>): PromoterResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `deletePromoterPermanently()` */
+  static readonly DeletePromoterPermanentlyPath = '/promoter/{email}';
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un promoteur
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deletePromoterPermanently()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deletePromoterPermanently$Response(params: DeletePromoterPermanently$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deletePromoterPermanently(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Supprimer définitivement.
+   *
+   * Supprimer définitivement un promoteur
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deletePromoterPermanently$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deletePromoterPermanently(params: DeletePromoterPermanently$Params, context?: HttpContext): Observable<void> {
+    return this.deletePromoterPermanently$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

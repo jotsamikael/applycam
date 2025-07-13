@@ -8,18 +8,20 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { CreatePromoterRequest } from '../../models/create-promoter-request';
+import { PromoterResponse } from '../../models/promoter-response';
 
-export interface UpdatePromoter1$Params {
+export interface FindStaffByEmail$Params {
+
+/**
+ * Email du promoteur
+ */
   email: string;
-      body: CreatePromoterRequest
 }
 
-export function updatePromoter1(http: HttpClient, rootUrl: string, params: UpdatePromoter1$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-  const rb = new RequestBuilder(rootUrl, updatePromoter1.PATH, 'patch');
+export function findStaffByEmail(http: HttpClient, rootUrl: string, params: FindStaffByEmail$Params, context?: HttpContext): Observable<StrictHttpResponse<PromoterResponse>> {
+  const rb = new RequestBuilder(rootUrl, findStaffByEmail.PATH, 'get');
   if (params) {
-    rb.path('email', params.email, {});
-    rb.body(params.body, 'application/json');
+    rb.query('email', params.email, {});
   }
 
   return http.request(
@@ -27,9 +29,9 @@ export function updatePromoter1(http: HttpClient, rootUrl: string, params: Updat
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return r as StrictHttpResponse<PromoterResponse>;
     })
   );
 }
 
-updatePromoter1.PATH = '/promoter/update-promoter/{email}';
+findStaffByEmail.PATH = '/promoter/find-by-email';

@@ -10,12 +10,16 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface UploadAgreementFile$Params {
+
+/**
+ * Numéro d'accord
+ */
   'agreement-number': string;
   fileType: string;
       body?: {
 
 /**
- * Agreement file to upload
+ * Fichier d'accord à télécharger
  */
 'file': Blob;
 }

@@ -19,4 +19,15 @@ public interface CourseRepository extends JpaRepository<Course, Long>{
 	Optional<Course> findByName(String name);
 	
 	boolean existsByName(String name);
+	
+	// Méthode pour rechercher une filière de manière flexible
+	@Query("SELECT c FROM Course c WHERE LOWER(c.name) = LOWER(:name) OR LOWER(c.name) = LOWER(:nameWithSpaces) OR LOWER(c.name) = LOWER(:nameWithDashes)")
+	Optional<Course> findByNameFlexible(@Param("name") String name, 
+	                                   @Param("nameWithSpaces") String nameWithSpaces, 
+	                                   @Param("nameWithDashes") String nameWithDashes);
+	
+	/**
+	 * Rechercher des cours par nom contenant le texte (insensible à la casse)
+	 */
+	List<Course> findByNameContainingIgnoreCase(String name);
 }

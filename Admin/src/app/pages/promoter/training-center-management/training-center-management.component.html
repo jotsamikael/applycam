@@ -1,13 +1,29 @@
 <div class="container-fluid">
-    <app-page-title title="My Training Centers" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+    <app-page-title title="Mes centres de formation" [breadcrumbItems]="breadCrumbItems"></app-page-title>
 
-    <div class="row justify-content-end mb-3">
-        <div class="col-md-4 text-end">
-            <button class="btn btn-soft-primary  waves-effect waves-light mx-2" (click)="openCreateNewModal(addNew)"
-                data-bs-target=".bs-example-modal-xl">Create Training Center</button>
-            <button class="btn btn-soft-primary  waves-effect waves-light">Export Data</button>
+    <!-- Barre d’outils harmonisée -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" (click)="refreshTrainingCenters()">
+                    <i class="bx bx-refresh"></i> Actualiser
+                </button>
+                <button class="btn btn-outline-info" (click)="exportData()">
+                    <i class="bx bx-export"></i> Exporter
+                </button>
+            </div>
         </div>
-
+        <div class="col-md-6 text-end">
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" (click)="showAdvancedFilters = !showAdvancedFilters">
+                    <i class="bx bx-filter-alt"></i>
+                    {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} les filtres
+                </button>
+                <button class="btn btn-soft-primary waves-effect waves-light" (click)="openCreateNewModal(addNew)">
+                    <i class="bx bx-plus"></i> Nouveau centre
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -16,114 +32,130 @@
         </div>
     </div>
 
+    <!-- Filtres avancés harmonisés -->
+    <div class="row mb-2">
+        <div class="col-12" *ngIf="showAdvancedFilters">
+            <div class="card card-body mb-2 shadow-sm border">
+                <form class="row align-items-end g-2">
+                    <div class="col-md-4">
+                        <mat-form-field appearance="fill" class="w-100">
+                            <mat-label>Région</mat-label>
+                            <mat-select [(ngModel)]="filterRegion" name="filterRegion">
+                                <mat-option value="">Toutes</mat-option>
+                                <mat-option *ngFor="let region of regions" [value]="region">{{region}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-4">
+                        <mat-form-field appearance="fill" class="w-100">
+                            <mat-label>Division</mat-label>
+                            <mat-select [(ngModel)]="filterDivision" name="filterDivision">
+                                <mat-option value="">Toutes</mat-option>
+                                <mat-option *ngFor="let division of divisions" [value]="division.department">{{division.department}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="button" class="btn btn-primary me-2" (click)="applyAdvancedFilters()">
+                            <i class="bx bx-search"></i> Appliquer
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+                            <i class="bx bx-eraser"></i> Réinitialiser
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="row justify-content-end">
         <div class="col-md-3">
             <mat-form-field>
-                <mat-label>Filter</mat-label>
-                <input matInput (keyup)="applyFilter($event)" #input>
+                <mat-label>Filtrer</mat-label>
+                <input matInput (keyup)="applyFilter($event)" #input placeholder="Recherche rapide...">
             </mat-form-field>
         </div>
         <div class="mat-elevation-z8">
             <table mat-table [dataSource]="dataSource" matSort>
-
-                <!-- ID Column -->
+                <!-- fullName Column -->
                 <ng-container matColumnDef="fullName">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> fullName </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom complet </th>
                     <td mat-cell *matCellDef="let row"> {{row.fullName}} </td>
                 </ng-container>
-
-
                 <!-- acronym Column -->
                 <ng-container matColumnDef="acronym">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> acronym </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Acronyme </th>
                     <td mat-cell *matCellDef="let row"> {{row.acronym}} </td>
                 </ng-container>
-
                 <!-- agreementNumber Column -->
                 <ng-container matColumnDef="agreementNumber">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> agreementNumber </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> N° d'accord </th>
                     <td mat-cell *matCellDef="let row"> {{row.agreementNumber}} </td>
                 </ng-container>
-
                 <!-- centerPresentCandidateForCqp Column -->
                 <ng-container matColumnDef="centerPresentCandidateForCqp">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> centerPresentCandidateForCqp </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Présente CQP </th>
                     <td mat-cell *matCellDef="let row">
                         <mat-icon *ngIf="row.centerPresentCandidateForCqp" class="text-success">check_circle</mat-icon>
                         <mat-icon *ngIf="!row.centerPresentCandidateForCqp" class="text-danger">cancel</mat-icon>
-
                     </td>
                 </ng-container>
-
                 <!-- centerPresentCandidateForDqp Column -->
                 <ng-container matColumnDef="centerPresentCandidateForDqp">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> centerPresentCandidateForDqp </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Présente DQP </th>
                     <td mat-cell *matCellDef="let row">
                         <mat-icon *ngIf="row.centerPresentCandidateForDqp" class="text-success">check_circle</mat-icon>
                         <mat-icon *ngIf="!row.centerPresentCandidateForDqp" class="text-danger">cancel</mat-icon>
                     </td>
                 </ng-container>
-
                 <!-- division Column -->
                 <ng-container matColumnDef="division">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> division </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Division </th>
                     <td mat-cell *matCellDef="let row"> {{row.division}} </td>
                 </ng-container>
-
-
-
                 <!-- actions Column -->
                 <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> actions </th>
-                    <td mat-cell *matCellDef="let row">
-
-                        <button mat-button [matMenuTriggerFor]="menu" #menuTrigger>
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <mat-menu #menu="matMenu">
-                            <button mat-menu-item (click)="goToTrainingCenterDetails(row)">
-                                <i class="bx bx-book-open"></i> details
+                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                        <i class="bx bx-cog me-1"></i>Actions
+                    </th>
+                    <td mat-cell *matCellDef="let row" class="text-end">
+                        <div class="d-flex justify-content-end gap-1">
+                            <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="showDetails(row)">
+                                <mat-icon>visibility</mat-icon>
                             </button>
-
-                            <button mat-menu-item (click)="edit(row)">
-                                <i class="bx bx-edit"></i> edit
+                            <button mat-icon-button color="accent" matTooltip="Éditer" (click)="edit(row)">
+                                <mat-icon>edit</mat-icon>
                             </button>
-                            <button mat-menu-item (click)="delete(row)">
-                                <i class="bx bx-trash"></i> delete
+                            <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="delete(row)">
+                                <mat-icon>delete</mat-icon>
                             </button>
-                        </mat-menu>
+                        </div>
                     </td>
                 </ng-container>
-
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
                 <!-- Row shown when there is no matching data. -->
                 <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+                    <td class="mat-cell" colspan="4">Aucune donnée ne correspond au filtre "{{input.value}}"</td>
                 </tr>
             </table>
-
-            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of clients"></mat-paginator>
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Sélectionner la page"></mat-paginator>
         </div>
-
-
-
     </div>
     <!-- end row -->
 
 </div>
 
-<!--  Add new modal example -->
+<!--  Add new modal example -->
 <ng-template #addNew let-modal>
-      <div class="modal-header">
-            <h5 class="modal-title" id="myLargeModalLabel">Create client</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"      
+     <div class="modal-header">
+         <h5 class="modal-title" id="myLargeModalLabel">{{ isEditMode ? 'Modifier le centre de formation' : 'Créer un centre de formation' }}</h5>
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"       
             (click)="modalRef?.hide()"></button>
-          </div>
-      <form [formGroup]="CreateTrainingCenterForm" (ngSubmit)="createNewTrainingCenter()">
+     </div>
+     <form [formGroup]="CreateTrainingCenterForm" (ngSubmit)="isEditMode ? updateTrainingCenter() : createNewTrainingCenter()">
 
-          <div class="modal-body">
+         <div class="modal-body">
 
             <div class="row">
                 <div class="col-md-6">
@@ -279,10 +311,10 @@
                 <mat-spinner [diameter]="25" *ngIf="this.processing"></mat-spinner>
 
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                (click)="modalRef?.hide()">Close</button>
+                (click)="modalRef?.hide()">Fermer</button>
                 <button type="submit" class="btn btn-soft-primary  waves-effect waves-light mx-2" mat-raised-button
-                [disabled]="!CreateTrainingCenterForm.valid  || (processing)"      
-                class="btn btn-primary">Submit</button>
+                [disabled]="!CreateTrainingCenterForm.valid  || (processing)"       
+                class="btn btn-primary">{{ isEditMode ? 'Mettre à jour' : 'Créer' }}</button>
               </div>
     </form>
 </ng-template><!-- /.modal -->

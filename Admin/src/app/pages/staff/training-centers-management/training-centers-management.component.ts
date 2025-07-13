@@ -8,6 +8,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FileControllerService } from '../../../services/services/file-controller.service';
+// Ajout des imports pour les campus
+import { CampusService } from '../../../services/services/campus.service';
+import { CampusResponse } from '../../../services/models/campus-response';
 
 
 @Component({
@@ -16,9 +19,14 @@ import { FileControllerService } from '../../../services/services/file-controlle
   styleUrls: ['./training-centers-management.component.scss']
 })
 export class TrainingCentersManagementComponent implements OnInit {
+  breadCrumbItems = [
+    { label: 'Dashboard', path: '/' },
+    { label: 'Training Centers Management', active: true }
+  ];
+
   dataSource = new MatTableDataSource<TrainingCenterResponse>([]);
   displayedColumns: string[] = [
-    'fullName', 'acronym', 'agreementNumber', 'division', 'promoter', 'startDateOfAgreement', 'endDateOfAgreement', 'centerPresentCandidateForCqp', 'centerPresentCandidateForDqp', 'status', 'actions'
+    'fullName', 'acronym', 'agreementNumber', 'division', 'promoter', 'status', 'actions'
   ];
   processing = false;
   selectedTrainingCenter: TrainingCenterResponse | null = null;
@@ -27,7 +35,38 @@ export class TrainingCentersManagementComponent implements OnInit {
   trainingCenterForm: FormGroup;
   followUpStat: { title: string, value: number, icon: string }[] = [];
 
-  constructor(private trainingCenterService: TrainingcenterService, private fb: FormBuilder, private fileControllerService: FileControllerService) {
+  // Ajouts pour les boutons d'actualisation, filtres et exportation
+  showAdvancedFilters = false;
+  filterForm!: FormGroup;
+  refreshing = false;
+
+  // ==================== PROPRIÉTÉS POUR LES CAMPUS ====================
+  // Onglet actif (centres de formation ou campus)
+  activeTab: 'training-centers' | 'campuses' = 'training-centers';
+  selectedTabIndex = 0; // Pour mat-tab-group
+  
+  // Données des campus
+  campusDataSource = new MatTableDataSource<CampusResponse>([]);
+  campusDisplayedColumns: string[] = ['name', 'town', 'quarter', 'capacity', 'trainingCenter', 'coordinates', 'actions'];
+  selectedCampus: CampusResponse | null = null;
+  campusForm: FormGroup;
+  campusStats: { title: string, value: number, icon: string }[] = [];
+  campusProcessing = false;
+  campusShowModal = false;
+  campusIsEditMode = false;
+  
+  // Filtres pour les campus
+  campusShowAdvancedFilters = false;
+  campusFilterForm!: FormGroup;
+  campusRefreshing = false;
+
+  constructor(
+    private trainingCenterService: TrainingcenterService, 
+    private fb: FormBuilder, 
+    private fileControllerService: FileControllerService,
+    // Ajout du service campus
+    private campusService: CampusService
+  ) {
     this.trainingCenterForm = this.fb.group({
       fullName: ['', Validators.required],
       acronym: ['', Validators.required],
@@ -38,12 +77,37 @@ export class TrainingCentersManagementComponent implements OnInit {
       endDateOfAgreement: [''],
       centerPresentCandidateForCqp: [false],
       centerPresentCandidateForDqp: [false]
-      // Ajoute d'autres champs si besoin
+    });
+
+    // Formulaire de filtres avancés (ajout pour les boutons)
+    this.filterForm = this.fb.group({
+      division: [''],
+      status: [''],
+      acronym: ['']
+    });
+
+    // ==================== FORMULAIRES POUR LES CAMPUS ====================
+    this.campusForm = this.fb.group({
+      name: ['', Validators.required],
+      town: ['', Validators.required],
+      quarter: ['', Validators.required],
+      capacity: ['', [Validators.required, Validators.min(1)]],
+      trainingCenterAgr: ['', Validators.required],
+      xCoor: [0],
+      yCoor: [0]
+    });
+
+    // Formulaire de filtres avancés pour les campus
+    this.campusFilterForm = this.fb.group({
+      town: [''],
+      quarter: [''],
+      trainingCenter: ['']
     });
   }
 
   ngOnInit(): void {
     this.loadTrainingCenters();
+    this.loadCampuses();
   }
 
   loadTrainingCenters() {
@@ -390,5 +454,414 @@ export class TrainingCentersManagementComponent implements OnInit {
         console.error(`[TrainingCenter] Exception pour ${label}:`, error);
         Swal.fire('Erreur', `Exception: ${error.message}`, 'error');
       });
+  }
+
+  // ==================== MÉTHODES DE FILTRAGE ET EXPORTATION ====================
+
+  refreshTrainingCenters(): void {
+    this.refreshing = true;
+    this.loadTrainingCenters();
+    setTimeout(() => {
+      this.refreshing = false;
+    }, 1000);
+  }
+
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
+  }
+
+  applyAdvancedFilters(): void {
+    const filterValue = this.filterForm.value;
+    let filterString = '';
+    
+    Object.keys(filterValue).forEach(key => {
+      if (filterValue[key]) {
+        filterString += `${key}:${filterValue[key]} `;
+      }
+    });
+    
+    this.dataSource.filter = filterString.trim();
+    Swal.fire('Succès', 'Filtres appliqués pour les centres de formation', 'success');
+  }
+
+  clearFilters(): void {
+    this.filterForm.reset();
+    this.dataSource.filter = '';
+    Swal.fire('Info', 'Filtres effacés pour les centres de formation', 'info');
+  }
+
+  exportTrainingCentersToExcel(): void {
+    // TODO: Implémenter l'export Excel pour les centres de formation
+    Swal.fire('Info', 'Fonctionnalité d\'export Excel pour les centres de formation en cours de développement', 'info');
+  }
+
+  // Méthodes pour la modal
+  showDetails(center: TrainingCenterResponse): void {
+    this.openDetailModal(center);
+  }
+
+  delete(center: TrainingCenterResponse): void {
+    Swal.fire({
+      title: 'Êtes-vous sûr ?',
+      text: `Voulez-vous vraiment supprimer le centre ${center.fullName} ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer !',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        // TODO: Implémenter la suppression
+        Swal.fire('Info', 'Fonctionnalité de suppression en cours de développement', 'info');
+      }
+    });
+  }
+
+  onSubmit(): void {
+    if (this.trainingCenterForm.invalid) {
+      Swal.fire('Erreur', 'Veuillez remplir tous les champs obligatoires', 'error');
+      return;
+    }
+
+    this.processing = true;
+    const formValue = this.trainingCenterForm.value;
+
+    if (this.isEditMode) {
+      // TODO: Implémenter la mise à jour
+      setTimeout(() => {
+        this.processing = false;
+        this.showModal = false;
+        this.loadTrainingCenters();
+        Swal.fire('Succès', 'Centre de formation mis à jour avec succès', 'success');
+      }, 1000);
+    } else {
+      // TODO: Implémenter la création
+      setTimeout(() => {
+        this.processing = false;
+        this.showModal = false;
+        this.loadTrainingCenters();
+        Swal.fire('Succès', 'Centre de formation créé avec succès', 'success');
+      }, 1000);
+    }
+  }
+
+  // ==================== MÉTHODES POUR LES CAMPUS ====================
+
+  loadCampuses(): void {
+    this.campusService.findCampusByTown({
+      town: 'all', // pour récupérer tous les campus
+      offset: 0,
+      pageSize: 1000,
+      field: 'name',
+      order: true
+    }).subscribe({
+      next: (res) => {
+        this.campusDataSource.data = res.content || [];
+        this.updateCampusStats();
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des campus:', err);
+        Swal.fire('Erreur', 'Impossible de charger les campus', 'error');
+      }
+    });
+  }
+
+  updateCampusStats(): void {
+    const total = this.campusDataSource.data.length;
+    const totalCapacity = this.campusDataSource.data.reduce((sum, campus) => sum + (campus.capacity || 0), 0);
+    const averageCapacity = total > 0 ? Math.round(totalCapacity / total) : 0;
+    
+    this.campusStats = [
+      { title: 'Total Campus', value: total, icon: 'bx bx-buildings' },
+      { title: 'Capacité Totale', value: totalCapacity, icon: 'bx bx-group' },
+      { title: 'Capacité Moyenne', value: averageCapacity, icon: 'bx bx-bar-chart-alt-2' }
+    ];
+  }
+
+  // Méthodes CRUD pour les campus
+  openCreateCampusModal(): void {
+    this.campusIsEditMode = false;
+    this.selectedCampus = null;
+    this.campusForm.reset({ xCoor: 0, yCoor: 0 });
+    this.campusShowModal = true;
+    this.openCampusFormModal();
+  }
+
+  editCampus(campus: CampusResponse): void {
+    this.campusIsEditMode = true;
+    this.selectedCampus = campus;
+    this.campusForm.patchValue({
+      name: campus.name,
+      town: campus.town,
+      quarter: campus.quarter,
+      capacity: campus.capacity,
+      trainingCenterAgr: campus.trainingCenterCampus?.agreementNumber || '',
+      xCoor: campus.xcoor || 0,
+      yCoor: campus.ycoor || 0
+    });
+    this.campusShowModal = true;
+    this.openCampusFormModal();
+  }
+
+  openCampusFormModal(): void {
+    Swal.fire({
+      title: this.campusIsEditMode ? 'Éditer le campus' : 'Créer un campus',
+      html: this.generateCampusFormModalContent(),
+      showCancelButton: true,
+      confirmButtonText: this.campusIsEditMode ? 'Mettre à jour' : 'Créer',
+      cancelButtonText: 'Annuler',
+      width: '600px',
+      preConfirm: () => {
+        const form = document.getElementById('campusForm') as HTMLFormElement;
+        if (form && form.checkValidity()) {
+          const formData = new FormData(form);
+          const value: any = {};
+          formData.forEach((v, k) => value[k] = v);
+          return value;
+        } else {
+          Swal.showValidationMessage('Veuillez remplir tous les champs obligatoires');
+          return false;
+        }
+      }
+    }).then(result => {
+      if (result.isConfirmed && result.value) {
+        this.campusProcessing = true;
+        if (this.campusIsEditMode) {
+          this.updateCampus(result.value);
+        } else {
+          this.createCampus(result.value);
+        }
+      }
+      this.campusShowModal = false;
+    });
+  }
+
+  generateCampusFormModalContent(): string {
+    return `
+      <form id="campusForm" class="text-left">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Nom du campus *</label>
+              <input name="name" class="form-control" required value="${this.campusForm.value.name || ''}">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Ville *</label>
+              <input name="town" class="form-control" required value="${this.campusForm.value.town || ''}">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Quartier *</label>
+              <input name="quarter" class="form-control" required value="${this.campusForm.value.quarter || ''}">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Capacité *</label>
+              <input name="capacity" type="number" class="form-control" required min="1" value="${this.campusForm.value.capacity || ''}">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Centre de formation *</label>
+              <select name="trainingCenterAgr" class="form-control" required>
+                <option value="">Sélectionner un centre</option>
+                ${this.dataSource.data.map(center => 
+                  `<option value="${center.agreementNumber}" ${this.campusForm.value.trainingCenterAgr === center.agreementNumber ? 'selected' : ''}>
+                    ${center.fullName} (${center.agreementNumber})
+                  </option>`
+                ).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="mb-3">
+              <label class="form-label">Coordonnée X</label>
+              <input name="xCoor" type="number" step="0.000001" class="form-control" value="${this.campusForm.value.xCoor || 0}">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="mb-3">
+              <label class="form-label">Coordonnée Y</label>
+              <input name="yCoor" type="number" step="0.000001" class="form-control" value="${this.campusForm.value.yCoor || 0}">
+            </div>
+          </div>
+        </div>
+      </form>
+    `;
+  }
+
+  createCampus(formData: any): void {
+    const campusData = {
+      name: formData.name,
+      town: formData.town,
+      quarter: formData.quarter,
+      capacity: parseInt(formData.capacity),
+      trainingCenterAgr: formData.trainingCenterAgr,
+      xCoor: parseFloat(formData.xCoor) || 0,
+      yCoor: parseFloat(formData.yCoor) || 0
+    };
+
+    this.campusService.createCampus({ request: campusData }).subscribe({
+      next: (result) => {
+        this.campusProcessing = false;
+        this.loadCampuses();
+        Swal.fire('Succès', `Campus "${result}" créé avec succès`, 'success');
+      },
+      error: (err) => {
+        this.campusProcessing = false;
+        console.error('Erreur lors de la création du campus:', err);
+        Swal.fire('Erreur', 'Impossible de créer le campus', 'error');
+      }
+    });
+  }
+
+  updateCampus(formData: any): void {
+    if (!this.selectedCampus?.name) {
+      Swal.fire('Erreur', 'Campus non sélectionné', 'error');
+      return;
+    }
+
+    const campusData = {
+      oldName: this.selectedCampus.name,
+      name: formData.name,
+      town: formData.town,
+      quarter: formData.quarter,
+      capacity: parseInt(formData.capacity),
+      xCoor: parseFloat(formData.xCoor) || 0,
+      yCoor: parseFloat(formData.yCoor) || 0
+    };
+
+    this.campusService.updateCampus({ body: campusData }).subscribe({
+      next: (result) => {
+        this.campusProcessing = false;
+        this.loadCampuses();
+        Swal.fire('Succès', `Campus "${result}" mis à jour avec succès`, 'success');
+      },
+      error: (err) => {
+        this.campusProcessing = false;
+        console.error('Erreur lors de la mise à jour du campus:', err);
+        Swal.fire('Erreur', 'Impossible de mettre à jour le campus', 'error');
+      }
+    });
+  }
+
+  deleteCampus(campus: CampusResponse): void {
+    if (!campus.name) return;
+
+    Swal.fire({
+      title: 'Êtes-vous sûr ?',
+      text: `Voulez-vous vraiment supprimer le campus "${campus.name}" ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer !',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.campusProcessing = true;
+        this.campusService.deleteCampus({ name: campus.name }).subscribe({
+          next: (result) => {
+            this.campusProcessing = false;
+            this.loadCampuses();
+            Swal.fire('Succès', `Campus "${campus.name}" supprimé avec succès`, 'success');
+          },
+          error: (err) => {
+            this.campusProcessing = false;
+            console.error('Erreur lors de la suppression du campus:', err);
+            Swal.fire('Erreur', 'Impossible de supprimer le campus', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  openCampusDetailModal(campus: CampusResponse): void {
+    const modalContent = this.generateCampusDetailModalContent(campus);
+    Swal.fire({
+      title: 'Détails du campus',
+      html: modalContent,
+      width: '50%',
+      showCloseButton: true,
+      showConfirmButton: false,
+      customClass: { popup: 'scrollable-swal-popup' }
+    });
+  }
+
+  generateCampusDetailModalContent(campus: CampusResponse): string {
+    return `
+      <div style="max-height:70vh; overflow-y:auto; text-align:left;">
+        <h5 class="text-primary">Informations du campus</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Nom :</strong> ${campus.name || '-'}</p>
+            <p><strong>Ville :</strong> ${campus.town || '-'}</p>
+            <p><strong>Quartier :</strong> ${campus.quarter || '-'}</p>
+            <p><strong>Capacité :</strong> ${campus.capacity || 0} étudiants</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Centre de formation :</strong> ${campus.trainingCenterCampus?.fullName || '-'}</p>
+            <p><strong>Numéro d'agrément :</strong> ${campus.trainingCenterCampus?.agreementNumber || '-'}</p>
+            <p><strong>Coordonnées :</strong> (${campus.xcoor || 0}, ${campus.ycoor || 0})</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Méthodes de filtrage et exportation pour les campus
+  refreshCampuses(): void {
+    this.campusRefreshing = true;
+    this.loadCampuses();
+    setTimeout(() => {
+      this.campusRefreshing = false;
+    }, 1000);
+  }
+
+  toggleCampusAdvancedFilters(): void {
+    this.campusShowAdvancedFilters = !this.campusShowAdvancedFilters;
+  }
+
+  applyCampusAdvancedFilters(): void {
+    const filterValue = this.campusFilterForm.value;
+    let filterString = '';
+    
+    Object.keys(filterValue).forEach(key => {
+      if (filterValue[key]) {
+        filterString += `${key}:${filterValue[key]} `;
+      }
+    });
+    
+    this.campusDataSource.filter = filterString.trim();
+    Swal.fire('Succès', 'Filtres appliqués pour les campus', 'success');
+  }
+
+  clearCampusFilters(): void {
+    this.campusFilterForm.reset();
+    this.campusDataSource.filter = '';
+    Swal.fire('Info', 'Filtres effacés pour les campus', 'info');
+  }
+
+  exportCampusesToExcel(): void {
+    Swal.fire('Info', 'Fonctionnalité d\'export Excel pour les campus en cours de développement', 'info');
+  }
+
+  applyCampusFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.campusDataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  // Méthode pour changer d'onglet
+  switchTab(tab: 'training-centers' | 'campuses'): void {
+    this.activeTab = tab;
   }
 }

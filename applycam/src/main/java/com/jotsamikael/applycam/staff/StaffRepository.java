@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,14 @@ public interface StaffRepository extends JpaRepository<Staff,Long> {
     
     @Query("SELECT u FROM User u WHERE CONCAT(u.firstname,'', u.lastname) = :fullName")
     Optional<Staff> findByFullName(@Param("fullName") String fullName);
+    
+    // Méthode pour rechercher par nom ou prénom
+    List<Staff> findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(String firstname, String lastname);
+    
+    // Méthode pour vérifier l'existence par email
+    boolean existsByEmail(String email);
+    
+    // Méthodes de comptage
+    long countByActivedTrue();
+    long countByActivedFalse();
 }

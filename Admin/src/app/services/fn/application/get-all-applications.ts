@@ -11,10 +11,46 @@ import { RequestBuilder } from '../../request-builder';
 import { PageResponseApplicationResponse } from '../../models/page-response-application-response';
 
 export interface GetAllApplications$Params {
+
+/**
+ * Offset de pagination
+ */
   offset?: number;
+
+/**
+ * Taille de page
+ */
   pageSize?: number;
+
+/**
+ * Champ de tri
+ */
   field?: string;
+
+/**
+ * Ordre de tri
+ */
   order?: boolean;
+
+/**
+ * Statut de filtrage
+ */
+  status?: string;
+
+/**
+ * Type d'examen
+ */
+  examType?: string;
+
+/**
+ * Région
+ */
+  region?: string;
+
+/**
+ * Année
+ */
+  year?: string;
 }
 
 export function getAllApplications(http: HttpClient, rootUrl: string, params?: GetAllApplications$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseApplicationResponse>> {
@@ -24,6 +60,10 @@ export function getAllApplications(http: HttpClient, rootUrl: string, params?: G
     rb.query('pageSize', params.pageSize, {});
     rb.query('field', params.field, {});
     rb.query('order', params.order, {});
+    rb.query('status', params.status, {});
+    rb.query('examType', params.examType, {});
+    rb.query('region', params.region, {});
+    rb.query('year', params.year, {});
   }
 
   return http.request(

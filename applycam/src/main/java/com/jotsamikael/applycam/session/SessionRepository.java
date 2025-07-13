@@ -20,9 +20,20 @@ public interface SessionRepository  extends JpaRepository<Session, Long>{
 	            """ 
 	              SELECT se
 	              FROM Session se
+	              WHERE se.isActived = true
+	              ORDER BY se.sessionYear DESC, se.examType ASC
 	            """
 	    )
 	    Page<Session> findAllSession(Pageable pageable);
+
+	@Query(
+	            """ 
+	              SELECT se
+	              FROM Session se
+	              ORDER BY se.sessionYear DESC, se.examType ASC
+	            """
+	    )
+	    Page<Session> findAllSessionsIncludingInactive(Pageable pageable);
 
 	    Page<Session> findAllBySessionYear(String sessionYear,Pageable pageable);
 	    

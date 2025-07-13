@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface ValidateApplication$Params {
+
+/**
+ * ID de la candidature
+ */
   id: number;
 }
 

@@ -7,5 +7,6 @@ public enum ContentStatus {
     VALIDATED,
     INCOMPLETED,
     REJECTED,
-    PENDING
+    PENDING,
+    APPROVED
 }

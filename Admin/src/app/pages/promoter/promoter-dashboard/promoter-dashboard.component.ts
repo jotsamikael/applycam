@@ -79,7 +79,7 @@ export class PromoterDashboardComponent implements OnInit {
   ngOnInit(): void {
     const email = this.tokenService.getEmail();
     if (email) {
-      this.promoterService.findStaffByEmail1({ email }).subscribe({
+      this.promoterService.findStaffByEmail({ email }).subscribe({
         next: (data) => {
           this.promoter = data;
           // Ici, tu peux charger d'autres stats ou activités liées au promoteur

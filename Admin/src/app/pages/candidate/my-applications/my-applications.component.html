@@ -1,138 +1,707 @@
 <div class="container-fluid">
-  <app-page-title title="My Applications" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+    <app-page-title title="Mes Candidatures" [breadcrumbItems]="breadCrumbItems"></app-page-title>
 
-  <div class="row justify-content-end mb-3">
-    <div class="col-md-4 text-end">
-      <button class="btn btn-soft-primary waves-effect waves-light mx-2" 
-              (click)="openCreateModal()"
-              matTooltip="Create new application">
-        <i class="bx bx-plus"></i> New Application
-      </button>
-      <button class="btn btn-soft-primary waves-effect waves-light" matTooltip="Export data">
-        <i class="bx bx-export"></i> Export
-      </button>
-    </div>
-  </div>
-
-  <div class="row">
-    <div *ngFor="let stat of followUpStat" class="col-md-4">
-      <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
-    </div>
-  </div>
-
-  <div class="row mt-3">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-body">
-          <div class="row justify-content-between mb-3">
-            <div class="col-md-4">
-              <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Filter applications</mat-label>
-                <input matInput 
-                      (keyup)="applyFilter($event)" 
-                      #input
-                      placeholder="Search by speciality or year">
-                <mat-icon matSuffix>search</mat-icon>
-              </mat-form-field>
-            </div>
-            <div class="col-md-2 text-end">
-              <button mat-icon-button matTooltip="Refresh list" (click)="loadApplications()" [disabled]="processing">
-                <mat-icon>refresh</mat-icon>
-              </button>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table mat-table [dataSource]="dataSource" matSort class="w-100">
-              <!-- Speciality Column -->
-              <ng-container matColumnDef="speciality">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Spécialité </th>
-                <td mat-cell *matCellDef="let application"> 
-                  <span class="fw-semibold">{{application.speciality || 'N/A'}}</span>
-                </td>
-              </ng-container>
-
-              <!-- Application Year Column -->
-              <ng-container matColumnDef="applicationYear">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Année </th>
-                <td mat-cell *matCellDef="let application"> 
-                  {{application.applicationYear || 'N/A'}}
-                </td>
-              </ng-container>
-
-              <!-- Status Column -->
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Statut </th>
-                <td mat-cell *matCellDef="let application"> 
-                  <span class="badge" [ngClass]="getStatusBadgeClass(application.status)">
-                    {{getStatusDisplayText(application.status)}}
-                  </span>
-                </td>
-              </ng-container>
-
-              <!-- Actions Column -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="text-end"> Actions </th>
-                <td mat-cell *matCellDef="let application" class="text-end">
-                  <div class="d-flex justify-content-end">
-                    <button mat-icon-button color="primary"
-                            matTooltip="View details"
-                            (click)="viewApplicationDetails(application)">
-                      <mat-icon>visibility</mat-icon>
-                    </button>
-                    <button mat-icon-button color="accent"
-                            matTooltip="Edit"
-                            (click)="openEditModal(application)"
-                            [disabled]="application.status === 'VALIDATED' || application.status === 'PAID'">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn"
-                            matTooltip="Delete"
-                            (click)="deleteApplication(application)"
-                            [disabled]="processing || application.status === 'VALIDATED' || application.status === 'PAID'">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-              <!-- Row shown when there is no matching data. -->
-              <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell text-center py-4" colspan="4">
-                  <div class="d-flex flex-column align-items-center">
-                    <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">search_off</mat-icon>
-                    <h4 class="text-muted">Aucune application trouvée</h4>
-                    <p *ngIf="input.value" class="text-muted">
-                      Aucun résultat pour "{{input.value}}"
-                    </p>
-                    <button mat-raised-button color="primary" 
-                            class="mt-2"
-                            (click)="openCreateModal()"
-                            *ngIf="!input.value">
-                      Créer votre première application
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
-                        showFirstLastButtons
-                        aria-label="Select page of applications"
-                        class="mt-3">
-          </mat-paginator>
+    <!-- Statistiques -->
+    <div class="row mb-3">
+        <div *ngFor="let stat of followUpStat" class="col-md-4">
+            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Create/Edit Modal -->
-  <!-- SUPPRIMÉ : tout le bloc modal de création/édition -->
+    <!-- Barre d'outils -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" (click)="refreshWithConfirmation()" [disabled]="processing">
+                    <i class="bx bx-refresh" [class.bx-spin]="processing"></i>
+                    {{ processing ? 'Actualisation...' : 'Actualiser' }}
+                </button>
+                <button class="btn btn-outline-info" (click)="exportMyApplications()">
+                    <i class="bx bx-export"></i>
+                    Exporter
+                </button>
+                <button class="btn btn-outline-success" (click)="showStatisticsPopup()" [disabled]="loadingStatistics">
+                    <i class="bx bx-bar-chart-alt-2" [class.bx-spin]="loadingStatistics"></i>
+                    {{ loadingStatistics ? 'Chargement...' : 'Statistiques' }}
+                </button>
+                <button class="btn btn-outline-secondary" (click)="loadAllMyApplicationsIncludingInactive()" [disabled]="processing">
+                    <i class="bx bx-list-ul"></i>
+                    Toutes (actives/inactives)
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" (click)="toggleAdvancedOptions()">
+                    <i class="bx bx-filter-alt"></i>
+                    {{ showAdvancedOptions ? 'Masquer' : 'Afficher' }} les options
+                </button>
+                <button class="btn btn-soft-primary waves-effect waves-light" 
+                        (click)="openCreateModal()">
+                    <i class="bx bx-plus"></i> Nouvelle Candidature
+                </button>
+            </div>
+        </div>
+    </div>
 
-  <!-- Détail Application Modal -->
-  <!-- SUPPRIMÉ : tout le bloc modal de détail -->
+    <!-- Recherche par nom de candidat -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bx bx-search me-2"></i>
+                        Recherche dans mes candidatures
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="searchForm" class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Terme de recherche</label>
+                            <input type="text" class="form-control" formControlName="searchTerm" 
+                                   placeholder="Rechercher par spécialité, année, statut...">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" (click)="searchInMyApplications()" 
+                                        [disabled]="searchForm.invalid || processing">
+                                    <i class="bx bx-search"></i>
+                                    Rechercher
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" (click)="clearSearch()">
+                                    <i class="bx bx-x"></i>
+                                    Effacer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Options avancées -->
+    <div class="row mb-3" *ngIf="showAdvancedOptions">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bx bx-cog me-2"></i>
+                        Options avancées
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100" (click)="loadPersonalStatistics()">
+                                <i class="bx bx-bar-chart-alt-2"></i>
+                                Statistiques personnelles
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100" (click)="loadAllMyApplicationsIncludingInactive()">
+                                <i class="bx bx-list-ul"></i>
+                                Voir toutes les candidatures
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-success w-100" (click)="exportMyApplications()">
+                                <i class="bx bx-export"></i>
+                                Exporter mes données
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100" (click)="openCreateModal()">
+                                <i class="bx bx-plus"></i>
+                                Nouvelle candidature
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100" (click)="reloadFormLists()">
+                                <i class="bx bx-refresh"></i>
+                                Recharger les listes
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100" (click)="diagnoseSessions()">
+                                <i class="bx bx-bug"></i>
+                                Diagnostiquer sessions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des candidatures -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-between mb-3">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filtrer mes candidatures</mat-label>
+                                <input matInput (keyup)="applyFilter($event)" #input placeholder="Rechercher par spécialité ou année">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button mat-icon-button matTooltip="Refresh list" (click)="loadApplications()" [disabled]="processing">
+                                <mat-icon>refresh</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                            <!-- Speciality Column -->
+                            <ng-container matColumnDef="speciality">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                                    <i class="bx bx-book me-1"></i>Spécialité 
+                                </th>
+                                <td mat-cell *matCellDef="let application"> 
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <div class="avatar-title bg-light rounded-circle">
+                                                <i class="bx bx-book"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{application.speciality || 'N/A'}}</div>
+                                            <small class="text-muted">Type: {{application.examType || 'N/A'}}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <!-- Application Year Column -->
+                            <ng-container matColumnDef="applicationYear">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                                    <i class="bx bx-calendar me-1"></i>Année 
+                                </th>
+                                <td mat-cell *matCellDef="let application"> 
+                                    <span class="badge bg-info">{{application.applicationYear || 'N/A'}}</span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Status Column -->
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                                    <i class="bx bx-info-circle me-1"></i>Statut 
+                                </th>
+                                <td mat-cell *matCellDef="let application"> 
+                                    <span class="badge" [ngClass]="getStatusBadgeClass(application.status)">
+                                        <i class="bx" [ngClass]="getStatusIcon(application.status)"></i>
+                                        {{getStatusDisplayText(application.status)}}
+                                    </span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="text-end">
+                                    <i class="bx bx-cog me-1"></i>Actions
+                                </th>
+                                <td mat-cell *matCellDef="let application" class="text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="viewApplicationDetails(application)">
+                                            <mat-icon>visibility</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="accent" matTooltip="Modifier" (click)="openEditModal(application)" [disabled]="application.status === 'VALIDATED' || application.status === 'PAID'">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <!--
+                                        <button mat-icon-button color="success" matTooltip="Valider" (click)="validateMyApplication(application)" [disabled]="application.status === 'VALIDATED'">
+                                            <mat-icon>check</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warning" matTooltip="Annuler" (click)="cancelApplication(application)" [disabled]="application.status === 'VALIDATED' || application.status === 'PAID'">
+                                            <mat-icon>cancel</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteApplication(application)" [disabled]="processing || application.status === 'VALIDATED' || application.status === 'PAID'">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                        -->
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                            <!-- Row shown when there is no matching data. -->
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4" colspan="4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <mat-icon class="mb-2" style="font-size: 48px;">search_off</mat-icon>
+                                        <h4 class="text-muted">Aucune candidature trouvée</h4>
+                                        <p *ngIf="input.value" class="text-muted">
+                                            Aucun résultat pour "{{input.value}}"
+                                        </p>
+                                        <button mat-raised-button color="primary" 
+                                                class="mt-2"
+                                                (click)="openCreateModal()"
+                                                *ngIf="!input.value">
+                                            <i class="bx bx-plus me-1"></i>
+                                            Créer votre première candidature
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Paginator -->
+                    <mat-paginator
+                        [length]="dataSource.data.length"
+                        [pageSize]="10"
+                        [pageSizeOptions]="[5, 10, 25, 100]"
+                        showFirstLastButtons
+                        aria-label="Select page of applications">
+                    </mat-paginator>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de création/édition -->
+<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bx bx-edit me-2"></i>
+                    {{isEditMode ? 'Modifier la Candidature' : 'Nouvelle Candidature'}}
+                </h5>
+                <button type="button" class="btn-close" (click)="closeModal()"></button>
+            </div>
+            <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
+                <div class="modal-body">
+                    <!-- Informations personnelles -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bx bx-user me-2"></i>Informations personnelles</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="sex">
+                                        <option value="">Sélectionner</option>
+                                        <option value="M">Masculin</option>
+                                        <option value="F">Féminin</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="email" type="email" [value]="currentUser?.email" readonly>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Numéro CNI <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="nationIdNumber" type="text">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Niveau académique <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="academicLevel">
+                                        <option value="">Sélectionner</option>
+                                        <option value="BAC">BAC</option>
+                                        <option value="LICENCE">Licence</option>
+                                        <option value="MASTER">Master</option>
+                                        <option value="DOCTORAT">Doctorat</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="dateOfBirth" type="date">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Lieu de naissance <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="placeOfBirth" type="text">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nationalité <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="nationality" type="text">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Région d'origine <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="regionOrigins">
+                                        <option value="">Sélectionner</option>
+                                        <option *ngFor="let region of cameroonRegions" [value]="region">{{region}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Département d'origine <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="departmentOfOrigin" type="text">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Situation matrimoniale <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="matrimonialSituation">
+                                        <option value="">Sélectionner</option>
+                                        <option value="CELIBATAIRE">Célibataire</option>
+                                        <option value="MARIE">Marié(e)</option>
+                                        <option value="DIVORCE">Divorcé(e)</option>
+                                        <option value="VEUF">Veuf/Veuve</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre d'enfants <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="numberOfKid" type="number" min="0">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Langue d'apprentissage <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="learningLanguage">
+                                        <option value="">Sélectionner</option>
+                                        <option value="FRANCAIS">Français</option>
+                                        <option value="ANGLAIS">Anglais</option>
+                                        <option value="BILINGUE">Bilingue</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Candidat libre <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="freeCandidate">
+                                        <option value="">Sélectionner</option>
+                                        <option [value]="true">Oui</option>
+                                        <option [value]="false">Non</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Candidat répétiteur <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="repeatCandidate">
+                                        <option value="">Sélectionner</option>
+                                        <option [value]="true">Oui</option>
+                                        <option [value]="false">Non</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mode de formation <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="formationMode">
+                                        <option value="">Sélectionner</option>
+                                        <option value="PRESENTIEL">Présentiel</option>
+                                        <option value="DISTANCE">À distance</option>
+                                        <option value="HYBRIDE">Hybride</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ressource financière <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="financialRessource">
+                                        <option value="">Sélectionner</option>
+                                        <option value="PERSONNELLE">Personnelle</option>
+                                        <option value="FAMILLE">Famille</option>
+                                        <option value="EMPLOYEUR">Employeur</option>
+                                        <option value="BOURSE">Bourse</option>
+                                        <option value="AUTRE">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations de candidature -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bx bx-book me-2"></i>Informations de candidature</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Spécialité <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="speciality">
+                                        <option value="">Sélectionner une spécialité</option>
+                                        <option *ngFor="let spec of specialities" [value]="spec.name">{{spec.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom du cours (si CQP)</label>
+                                    <input class="form-control" formControlName="courseName" type="text">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Type d'examen <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="examType">
+                                        <option value="">Sélectionner</option>
+                                        <option value="DQP">DQP</option>
+                                        <option value="CQP">CQP</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Région de candidature <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="applicationRegion">
+                                        <option value="">Sélectionner</option>
+                                        <option *ngFor="let region of cameroonRegions" [value]="region">{{region}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Année de session <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="sessionYear">
+                                        <option value="">Sélectionner</option>
+                                        <option *ngFor="let session of sessions" [value]="session.sessionYear">{{session.sessionYear}} - {{session.examType}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Centre de formation <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="trainingCenterAcronym">
+                                        <option value="">Sélectionner</option>
+                                        <option *ngFor="let center of trainingCenters" [value]="center.acronym">{{center.fullName}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations de paiement -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bx bx-credit-card me-2"></i>Informations de paiement</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Méthode de paiement <span class="text-danger">*</span></label>
+                                    <select class="form-select" formControlName="paymentMethod">
+                                        <option value="">Sélectionner</option>
+                                        <option value="MOBILE_MONEY">Mobile Money</option>
+                                        <option value="BANK_TRANSFER">Virement bancaire</option>
+                                        <option value="CASH">Espèces</option>
+                                        <option value="CHECK">Chèque</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Montant (FCFA) <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="amount" type="number" min="0" placeholder="0">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Code secret <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="secretCode" type="number" min="0" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pièces jointes -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bx bx-paperclip me-2"></i>Pièces jointes</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Carte nationale d'identité</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-cniFile" 
+                                               (change)="onFileChange($event, 'cniFile')" accept=".pdf,.jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('cniFile')" 
+                                                [disabled]="!isFileSelected('cniFile')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('cniFile')">
+                                        Fichier sélectionné: {{getFileName('cniFile')}}
+                                    </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Certificat de naissance</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-birthCertificate" 
+                                               (change)="onFileChange($event, 'birthCertificate')" accept=".pdf,.jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('birthCertificate')" 
+                                                [disabled]="!isFileSelected('birthCertificate')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('birthCertificate')">
+                                        Fichier sélectionné: {{getFileName('birthCertificate')}}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Diplôme</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-diplomFile" 
+                                               (change)="onFileChange($event, 'diplomFile')" accept=".pdf,.jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('diplomFile')" 
+                                                [disabled]="!isFileSelected('diplomFile')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('diplomFile')">
+                                        Fichier sélectionné: {{getFileName('diplomFile')}}
+                                    </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Photo</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-photo" 
+                                               (change)="onFileChange($event, 'photo')" accept=".jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('photo')" 
+                                                [disabled]="!isFileSelected('photo')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('photo')">
+                                        Fichier sélectionné: {{getFileName('photo')}}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ancienne candidature (optionnel)</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-oldApplyanceFile" 
+                                               (change)="onFileChange($event, 'oldApplyanceFile')" accept=".pdf,.jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('oldApplyanceFile')" 
+                                                [disabled]="!isFileSelected('oldApplyanceFile')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('oldApplyanceFile')">
+                                        Fichier sélectionné: {{getFileName('oldApplyanceFile')}}
+                                    </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Certificat de stage (optionnel)</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-stageCertificate" 
+                                               (change)="onFileChange($event, 'stageCertificate')" accept=".pdf,.jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('stageCertificate')" 
+                                                [disabled]="!isFileSelected('stageCertificate')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('stageCertificate')">
+                                        Fichier sélectionné: {{getFileName('stageCertificate')}}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">CV (optionnel)</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-cv" 
+                                               (change)="onFileChange($event, 'cv')" accept=".pdf,.doc,.docx">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('cv')" 
+                                                [disabled]="!isFileSelected('cv')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('cv')">
+                                        Fichier sélectionné: {{getFileName('cv')}}
+                                    </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Justification financière (optionnel)</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-financialJustification" 
+                                               (change)="onFileChange($event, 'financialJustification')" accept=".pdf,.jpg,.jpeg,.png">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('financialJustification')" 
+                                                [disabled]="!isFileSelected('financialJustification')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('financialJustification')">
+                                        Fichier sélectionné: {{getFileName('financialJustification')}}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Lettre de motivation (optionnel)</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="file-letter" 
+                                               (change)="onFileChange($event, 'letter')" accept=".pdf,.doc,.docx">
+                                        <button class="btn btn-outline-danger" type="button" 
+                                                (click)="removeFile('letter')" 
+                                                [disabled]="!isFileSelected('letter')">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" *ngIf="isFileSelected('letter')">
+                                        Fichier sélectionné: {{getFileName('letter')}}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="applicationForm.invalid || processing">
+                        <span *ngIf="!processing">
+                            <i class="bx bx-save me-1"></i>
+                            {{isEditMode ? 'Mettre à jour' : 'Créer'}}
+                        </span>
+                        <span *ngIf="processing" class="d-flex align-items-center">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            {{isEditMode ? 'Mise à jour...' : 'Création...'}}
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de détails -->
+<div class="modal fade" [class.show]="showDetailsModal" [style.display]="showDetailsModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bx bx-info-circle me-2"></i>
+                    Détails de la Candidature
+                </h5>
+                <button type="button" class="btn-close" (click)="closeDetailsModal()"></button>
+            </div>
+            <div class="modal-body" *ngIf="selectedApplication">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>ID:</strong> {{selectedApplication.id || 'N/A'}}</p>
+                        <p><strong>Spécialité:</strong> {{selectedApplication.speciality || 'N/A'}}</p>
+                        <p><strong>Type d'examen:</strong> {{selectedApplication.examType || 'N/A'}}</p>
+                        <p><strong>Région:</strong> {{selectedApplication.applicationRegion || 'N/A'}}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Année:</strong> {{selectedApplication.applicationYear || 'N/A'}}</p>
+                        <p><strong>Statut:</strong> 
+                            <span class="badge" [ngClass]="getStatusBadgeClass(selectedApplication.status)">
+                                {{getStatusDisplayText(selectedApplication.status)}}
+                            </span>
+                        </p>
+                        <p><strong>Méthode de paiement:</strong> {{selectedApplication.paymentMethod || 'N/A'}}</p>
+                        <p><strong>Montant:</strong> {{selectedApplication.amount ? selectedApplication.amount + ' FCFA' : 'N/A'}}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
 </div>

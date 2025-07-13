@@ -1,154 +1,418 @@
 package com.jotsamikael.applycam.staff;
 
-import com.jotsamikael.applycam.common.PageResponse;
-import com.jotsamikael.applycam.role.RoleRepository;
-import com.jotsamikael.applycam.user.User;
-import com.jotsamikael.applycam.user.UserRepository;
-
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.user.User;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class StaffService {
-    private final StaffRepository repository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final StaffMapper mapper;
-    private final UserRepository userRepository;
 
-    public StaffResponse findStaffByEmail(String email) {
-    	
-    	
-        //get staff by email of throw exception
-        Staff staff = repository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No Staff Member found with email: "+email));
-        return mapper.toStaffResponse(staff);
-    }
+	private final StaffRepository staffRepository;
+	private final StaffMapper staffMapper;
 
-    public PageResponse<StaffResponse> getAllStaff(int offset, int pageSize, String field, boolean order) {
-        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+	/**
+	 * Créer un nouveau membre du staff avec validation complète
+	 */
+	@Transactional
+	public String createStaff(StaffRequest staffRequest, Authentication connectedUser) {
+		try {
+			log.info("Début de création du membre du staff: {}", staffRequest.getFirstname());
+			
+			User user = validateAndGetUser(connectedUser);
+			
+			// Validation des données
+			validateStaffData(staffRequest);
+			
+			// Vérification de l'unicité
+			if (staffRepository.existsByEmail(staffRequest.getEmail())) {
+				throw new DataIntegrityViolationException(
+					"Un membre du staff avec cet email existe déjà");
+			}
 
-        Page<Staff> list = repository.getAllStaff(
-                PageRequest.of(offset, pageSize, sort));
+			var staff = Staff.builder()
+				.firstname(staffRequest.getFirstname())
+				.lastname(staffRequest.getLastname())
+				.email(staffRequest.getEmail())
+				.phoneNumber(staffRequest.getPhoneNumber())
+				.nationalIdNumber(staffRequest.getNationalIdNumber())
+				.positionName(staffRequest.getPositionName())
+				.dateOfBirth(LocalDate.parse(staffRequest.getDateOfBirth()))
+				.createdBy(user.getIdUser())
+				.createdDate(LocalDateTime.now())
+				.actived(true)
+				.enabled(true)
+				.accountLocked(false)
+				.archived(false)
+				.build();
 
-        List<StaffResponse> responses = list.stream().map(mapper::toStaffResponse).toList();
-        return new PageResponse<>(
-                responses,
-                list.getNumber(),
-                list.getSize(),
-                list.getTotalElements(),
-                list.getTotalPages(),
-                list.isFirst(),
-                list.isLast()
-        );
-    }
+			staffRepository.save(staff);
+			log.info("Membre du staff créé avec succès: {}", staff.getEmail());
+			return staff.getEmail();
+			
+		} catch (DataIntegrityViolationException e) {
+			log.error("Erreur de contrainte lors de la création du staff: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.CONFLICT, 
+				"Erreur de contrainte: " + e.getMessage());
+		} catch (Exception e) {
+			log.error("Erreur lors de la création du staff: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la création du staff: " + e.getMessage());
+		}
+	}
 
-    public String createStaff(CreateStaffRequest request, Authentication connectedUser) {
-        var userRole = roleRepository.findByName("STAFF")
-                //todo - better exception handling
-                .orElseThrow(() -> new IllegalStateException("ROLE STAFF was not initialized"));
-        
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DataIntegrityViolationException("Email already taken");
-        }
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new DataIntegrityViolationException("Phone number already taken");
-        }
-        if (userRepository.existsByNationalIdNumber(request.getNationalIdNumber())) {
-            throw new DataIntegrityViolationException("National ID already taken");
-        }
+	/**
+	 * Mettre à jour un membre du staff avec validation
+	 */
+	@Transactional
+	public Long updateStaff(StaffRequest staffRequest, Authentication connectedUser) {
+		try {
+			log.info("Début de mise à jour du membre du staff ID: {}", staffRequest.getId());
+			
+			User user = validateAndGetUser(connectedUser);
+			Staff staff = validateAndGetStaff(staffRequest.getId());
+			
+			// Vérification que le staff peut être mis à jour
+			if (!staff.isActived()) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+					"Ce membre du staff ne peut pas être mis à jour car il a été supprimé");
+			}
 
-        //get connected user and date time for audit purpose
-        User user = ((User) connectedUser.getPrincipal());
-        System.out.println("connected user is: "+user.getEmail());
+			// Validation des données
+			validateStaffUpdateData(staffRequest);
 
-        var staff = Staff.builder()
-                .firstname(request.getFirstname())
-                .lastname(request.getLastname())
-                .email(request.getEmail())
-                .dateOfBirth(LocalDate.parse(request.getDateOfBirth()))
-                .phoneNumber(request.getPhoneNumber())
-                .nationalIdNumber(request.getNationalIdNumber())
-                .positionName(request.getPositionName())
-                .lastModifiedBy(user.getLastModifiedBy())
-                .createdDate(LocalDateTime.now())
-                .createdBy(user.getIdUser())
-                .roles(List.of(userRole))
-                .enabled(true)
-                .accountLocked(false)
-                .password(passwordEncoder.encode("11111111")) //by default when a staff member is created password is 11111111
-                .build();
-        System.out.println("date time is "+LocalDateTime.now());
-               return repository.save(staff).getEmail();
-    }
+			staff.setFirstname(staffRequest.getFirstname());
+			staff.setLastname(staffRequest.getLastname());
+			staff.setEmail(staffRequest.getEmail());
+			staff.setPhoneNumber(staffRequest.getPhoneNumber());
+			staff.setNationalIdNumber(staffRequest.getNationalIdNumber());
+			staff.setPositionName(staffRequest.getPositionName());
+			staff.setDateOfBirth(LocalDate.parse(staffRequest.getDateOfBirth()));
+			staff.setLastModifiedBy(user.getIdUser());
+			staff.setLastModifiedDate(LocalDateTime.now());
 
-    public String updateProfile( CreateStaffRequest request, Authentication connectedUser) {
-        //start by getting the staff by email or throw an exception
-        Staff staff = repository.findByEmail(request.getEmail()).orElseThrow(()-> new EntityNotFoundException("No staff with found email"+ request.getEmail()));
-        
-        if (!staff.isEnabled() ) {
-           	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Staff cannot be updated.");
-           }
-        //modify the staff object using the request data
-        staff.setFirstname(request.getFirstname());
-        staff.setLastname(request.getLastname());
-        staff.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
-        staff.setPhoneNumber(request.getPhoneNumber());
-        staff.setNationalIdNumber(request.getNationalIdNumber());
-        staff.setPositionName(request.getPositionName());
-        staff.setLastModifiedDate(LocalDateTime.now());
+			staffRepository.save(staff);
+			log.info("Membre du staff mis à jour avec succès: {}", staff.getEmail());
+			return staff.getIdUser();
+			
+		} catch (Exception e) {
+			log.error("Erreur lors de la mise à jour du staff: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la mise à jour: " + e.getMessage());
+		}
+	}
 
+	/**
+	 * Récupérer tous les membres du staff avec pagination
+	 */
+	public PageResponse<StaffResponse> getAllStaff(int offset, int pageSize, String field, boolean order) {
+		try {
+			log.info("Récupération des membres du staff - offset: {}, pageSize: {}", offset, pageSize);
+			
+			Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+			Page<Staff> staffMembers = staffRepository.findAll(PageRequest.of(offset, pageSize, sort));
 
-        //get connected user and date time for audit purpose
-        User user = ((User) connectedUser.getPrincipal());
-        staff.setLastModifiedBy(user.getIdUser());
+			List<StaffResponse> responses = staffMembers.getContent().stream()
+				.map(staff -> {
+					if (!staff.isActived()) {
+						return StaffResponse.builder()
+							.firstname("Ce membre du staff a été supprimé.")
+							.build();
+					} else {
+						return staffMapper.toStaffResponse(staff);
+					}
+				})
+				.toList();
 
-        //save the modified candidate object
-        repository.save(staff);
+			return new PageResponse<>(
+				responses,
+				staffMembers.getNumber(),
+				staffMembers.getSize(),
+				staffMembers.getTotalElements(),
+				staffMembers.getTotalPages(),
+				staffMembers.isFirst(),
+				staffMembers.isLast()
+			);
+		} catch (Exception e) {
+			log.error("Erreur lors de la récupération des membres du staff: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la récupération des membres du staff");
+		}
+	}
 
-        //return
-        return request.getEmail();
-    }
-    
-    public void deleteStaff(String fullName, Authentication connectedUser){
-        User user =(User) connectedUser.getPrincipal();
-        Staff staff= repository.findByFullName(fullName)
-        .orElseThrow(()->new EntityNotFoundException("Staff Not found"));
+	/**
+	 * Rechercher des membres du staff par nom
+	 */
+	public List<StaffResponse> searchStaffByName(String name) {
+		try {
+			log.info("Recherche des membres du staff par nom: {}", name);
+			
+			if (name == null || name.trim().isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom de recherche est requis");
+			}
 
-        if(staff.isActived()){
-        	staff.setEnabled(false);
-        	staff.setActived(false);
-        	staff.setArchived(true);
-            
-        }else{
-        	staff.setEnabled(true);
-        	staff.setActived(true);
-        	staff.setArchived(false);
-        }
-        staff.setLastModifiedBy(user.getIdUser());
-        staff.setLastModifiedDate(LocalDateTime.now());
+			List<Staff> staffMembers = staffRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(
+				name.trim(), name.trim());
 
-        repository.save(staff);
-    }
+			List<StaffResponse> responses = staffMembers.stream()
+				.filter(staff -> staff.isActived())
+				.map(staffMapper::toStaffResponse)
+				.toList();
 
-    
-    
+			return responses;
+		} catch (ResponseStatusException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("Erreur lors de la recherche par nom: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la recherche par nom");
+		}
+	}
 
+	/**
+	 * Désactiver/réactiver un membre du staff
+	 */
+	@Transactional
+	public void deleteStaff(Long staffId, Authentication connectedUser) {
+		try {
+			log.info("Changement de statut du membre du staff ID: {}", staffId);
+			
+			User user = validateAndGetUser(connectedUser);
+			Staff staff = validateAndGetStaff(staffId);
+			
+			if (staff.isActived()) {
+				// Désactivation
+				staff.setActived(false);
+				staff.setArchived(true);
+				log.info("Membre du staff désactivé: {}", staffId);
+			} else {
+				// Réactivation
+				staff.setActived(true);
+				staff.setArchived(false);
+				log.info("Membre du staff réactivé: {}", staffId);
+			}
+			
+			// Audit
+			staff.setLastModifiedBy(user.getIdUser());
+			staff.setLastModifiedDate(LocalDateTime.now());
 
+			staffRepository.save(staff);
+		} catch (Exception e) {
+			log.error("Erreur lors du changement de statut du staff: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors du changement de statut: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Supprimer définitivement un membre du staff
+	 */
+	@Transactional
+	public void deleteStaffPermanently(Long staffId, Authentication connectedUser) {
+		try {
+			log.info("Suppression définitive du membre du staff ID: {}", staffId);
+			
+			User user = validateAndGetUser(connectedUser);
+			Staff staff = validateAndGetStaff(staffId);
+			
+			// Vérification des droits (seul le STAFF peut supprimer définitivement)
+			boolean isStaff = user.getRoles().stream()
+				.anyMatch(role -> "STAFF".equals(role.getName()));
+			
+			if (!isStaff) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+					"Seuls les membres du staff peuvent supprimer définitivement un membre du staff");
+			}
+			
+			// Suppression définitive
+			staffRepository.delete(staff);
+			log.info("Membre du staff supprimé définitivement: {}", staffId);
+		} catch (Exception e) {
+			log.error("Erreur lors de la suppression définitive: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la suppression: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Désactiver un membre du staff (soft delete)
+	 */
+	@Transactional
+	public void deactivateStaff(Long staffId, Authentication connectedUser) {
+		try {
+			log.info("Désactivation du membre du staff ID: {}", staffId);
+			
+			User user = validateAndGetUser(connectedUser);
+			Staff staff = validateAndGetStaff(staffId);
+			
+			// Vérification des droits
+			boolean isStaff = user.getRoles().stream()
+				.anyMatch(role -> "STAFF".equals(role.getName()));
+			
+			if (!isStaff) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+					"Seuls les membres du staff peuvent désactiver un membre du staff");
+			}
+			
+			// Désactivation
+			staff.setActived(false);
+			staff.setArchived(true);
+			staff.setLastModifiedBy(user.getIdUser());
+			staff.setLastModifiedDate(LocalDateTime.now());
+			
+			staffRepository.save(staff);
+			log.info("Membre du staff désactivé avec succès: {}", staffId);
+		} catch (Exception e) {
+			log.error("Erreur lors de la désactivation: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la désactivation: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Réactiver un membre du staff
+	 */
+	@Transactional
+	public void reactivateStaff(Long staffId, Authentication connectedUser) {
+		try {
+			log.info("Réactivation du membre du staff ID: {}", staffId);
+			
+			User user = validateAndGetUser(connectedUser);
+			Staff staff = validateAndGetStaff(staffId);
+			
+			// Vérification des droits (seul le STAFF peut réactiver)
+			boolean isStaff = user.getRoles().stream()
+				.anyMatch(role -> "STAFF".equals(role.getName()));
+			
+			if (!isStaff) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+					"Seuls les membres du staff peuvent réactiver un membre du staff");
+			}
+			
+			// Réactivation
+			staff.setActived(true);
+			staff.setArchived(false);
+			staff.setLastModifiedBy(user.getIdUser());
+			staff.setLastModifiedDate(LocalDateTime.now());
+			
+			staffRepository.save(staff);
+			log.info("Membre du staff réactivé avec succès: {}", staffId);
+		} catch (Exception e) {
+			log.error("Erreur lors de la réactivation: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la réactivation: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Récupérer un membre du staff par ID
+	 */
+	public StaffResponse getStaffById(Long staffId) {
+		try {
+			log.info("Récupération du membre du staff ID: {}", staffId);
+			
+			Staff staff = staffRepository.findById(staffId)
+				.orElseThrow(() -> new EntityNotFoundException("Membre du staff non trouvé avec l'ID: " + staffId));
+				
+			return staffMapper.toStaffResponse(staff);
+		} catch (EntityNotFoundException e) {
+			log.warn("Membre du staff non trouvé: {}", e.getMessage());
+			throw e;
+		} catch (Exception e) {
+			log.error("Erreur lors de la récupération du membre du staff: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la récupération du membre du staff");
+		}
+	}
+
+	/**
+	 * Récupérer des statistiques sur les membres du staff
+	 */
+	public Map<String, Object> getStaffStatistics() {
+		try {
+			log.info("Récupération des statistiques du staff");
+			
+			long totalStaff = staffRepository.count();
+			long activeStaff = staffRepository.countByActivedTrue();
+			long inactiveStaff = staffRepository.countByActivedFalse();
+			
+			Map<String, Object> statistics = new HashMap<>();
+			statistics.put("totalStaff", totalStaff);
+			statistics.put("activeStaff", activeStaff);
+			statistics.put("inactiveStaff", inactiveStaff);
+			statistics.put("activationRate", totalStaff > 0 ? (double) activeStaff / totalStaff * 100 : 0);
+			
+			return statistics;
+		} catch (Exception e) {
+			log.error("Erreur lors de la récupération des statistiques: {}", e.getMessage(), e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+				"Erreur lors de la récupération des statistiques");
+		}
+	}
+
+	// ==================== MÉTHODES PRIVÉES D'AIDE ====================
+	
+	private User validateAndGetUser(Authentication connectedUser) {
+		if (connectedUser == null || connectedUser.getPrincipal() == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié");
+		}
+		return (User) connectedUser.getPrincipal();
+	}
+	
+	private Staff validateAndGetStaff(Long staffId) {
+		return staffRepository.findById(staffId)
+			.orElseThrow(() -> new EntityNotFoundException("Membre du staff non trouvé avec l'ID: " + staffId));
+	}
+	
+	private void validateStaffData(StaffRequest request) {
+		if (request.getFirstname() == null || request.getFirstname().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le prénom est requis");
+		}
+		if (request.getLastname() == null || request.getLastname().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom de famille est requis");
+		}
+		if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'email est requis");
+		}
+		if (request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le numéro de téléphone est requis");
+		}
+		if (request.getNationalIdNumber() == null || request.getNationalIdNumber().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le numéro d'identité nationale est requis");
+		}
+		if (request.getPositionName() == null || request.getPositionName().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom du poste est requis");
+		}
+		if (request.getDateOfBirth() == null || request.getDateOfBirth().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de naissance est requise");
+		}
+	}
+	
+	private void validateStaffUpdateData(StaffRequest request) {
+		if (request.getId() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'ID du membre du staff est requis");
+		}
+		validateStaffData(request);
+	}
 }

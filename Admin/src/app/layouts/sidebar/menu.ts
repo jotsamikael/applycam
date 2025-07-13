@@ -69,18 +69,18 @@ export const MENU: MenuItem[] = [
     },
     {
         id: 36,
-        label: 'Specialities',
+        label: 'Specialites & Filieres',
         link: 'specialities-management',
         icon: 'bxs-award',
         roles: ['super_admin', 'STAFF'],
     },
-    {
-        id: 35,
-        label: 'Results Management',
-        icon: 'bx-table',
-        link: 'results-management',
-        roles: ['super_admin', 'STAFF']
-    },
+    // {
+    //     id: 35,
+    //     label: 'Results Management',
+    //     icon: 'bx-table',
+    //     link: 'results-management',
+    //     roles: ['super_admin', 'STAFF']
+    // },
     // Paiements
     {
         id: 6,
@@ -104,13 +104,13 @@ export const MENU: MenuItem[] = [
         icon: 'bx-file',
         roles: ['super_admin', 'STAFF'],
     },
-    {
-        id: 47,
-        label: 'Backups',
-        link: 'system-backups',
-        icon: 'bx-cloud-upload',
-        roles: ['super_admin', 'STAFF'],
-    },
+    // {
+    //     id: 47,
+    //     label: 'Backups',
+    //     link: 'system-backups',
+    //     icon: 'bx-cloud-upload',
+    //     roles: ['super_admin', 'STAFF'],
+    // },
     
 
     // APP SETTINGS
@@ -143,20 +143,20 @@ export const MENU: MenuItem[] = [
         link: 'training-center-management',
         roles: ['PROMOTER']
     },
-    {
-        id: 2001,
-        label: 'Courses Management',
-        icon: 'bxs-book',
-        link: 'courses-management',
-        roles: ['PROMOTER']
-    },
-    {
-        id: 2002,
-        label: 'Campus Management',
-        icon: 'bxs-building',
-        link: 'campus-management',
-        roles: ['PROMOTER']
-    },
+    // {
+    //     id: 2001,
+    //     label: 'Filieres',
+    //     icon: 'bxs-book',
+    //     link: 'courses-management',
+    //     roles: ['PROMOTER']
+    // },
+    // {
+    //     id: 2002,
+    //     label: 'Campus Management',
+    //     icon: 'bxs-building',
+    //     link: 'campus-management',
+    //     roles: ['PROMOTER']
+    // },
     {
         id: 21,
         label: 'Campus',
@@ -166,7 +166,7 @@ export const MENU: MenuItem[] = [
     },
     {
         id: 22,
-        label: 'Courses',
+        label: 'Filiers',
         icon: 'bxs-book',
         link: 'promoter/courses',
         roles: ['PROMOTER']

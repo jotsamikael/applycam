@@ -8,16 +8,20 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { CandidateResponse } from '../../models/candidate-response';
 
-export interface ToogleStaff$Params {
-  fullName: string;
+export interface GetCandidateById$Params {
+
+/**
+ * ID du candidat
+ */
+  candidateId: number;
 }
 
-export function toogleStaff(http: HttpClient, rootUrl: string, params: ToogleStaff$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
-  const rb = new RequestBuilder(rootUrl, toogleStaff.PATH, 'patch');
+export function getCandidateById(http: HttpClient, rootUrl: string, params: GetCandidateById$Params, context?: HttpContext): Observable<StrictHttpResponse<CandidateResponse>> {
+  const rb = new RequestBuilder(rootUrl, getCandidateById.PATH, 'get');
   if (params) {
-    rb.path('fullName', params.fullName, {});
+    rb.path('candidateId', params.candidateId, {});
   }
 
   return http.request(
@@ -25,10 +29,9 @@ export function toogleStaff(http: HttpClient, rootUrl: string, params: ToogleSta
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      }>;
+      return r as StrictHttpResponse<CandidateResponse>;
     })
   );
 }
 
-toogleStaff.PATH = '/staff/toggle-staff/{fullName}';
+getCandidateById.PATH = '/candidate/{candidateId}';

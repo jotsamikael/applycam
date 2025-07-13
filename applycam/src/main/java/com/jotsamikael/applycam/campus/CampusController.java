@@ -38,9 +38,10 @@ public class CampusController {
                                                                          @RequestParam(defaultValue = "10", required = false) int pageSize,
                                                                          @RequestParam(defaultValue = "name", required = false) String field,
                                                                          @RequestParam(defaultValue = "true", required = false) boolean order) {
+        if ("all".equalsIgnoreCase(town) || "_".equals(town)) {
+            return ResponseEntity.ok(campusService.getAllCampuses(offset, pageSize, field, order));
+        }
         return ResponseEntity.ok(campusService.findCampusByTown(offset, pageSize, field, order));
-
-
     }
     
     @PatchMapping("/update-campus")

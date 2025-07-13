@@ -20,6 +20,8 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
     { label: 'Applications Management', active: true }
   ];
 
+  showAdvancedFilters = false;
+
   followUpStat = [
     { title: 'Total Applications', value: 0, icon: 'assignment' },
     { title: 'Validées', value: 0, icon: 'check-circle' },
@@ -84,7 +86,7 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
     const pageSize = event?.pageSize ?? this.pageSize;
     console.log('[Application] Chargement des applications avec offset:', offset, 'pageSize:', pageSize);
 
-    this.applicationService.getAllApplications({
+    this.applicationService.getAllApplicationsIncludingInactive({
       offset,
       pageSize,
       field: 'id',
@@ -172,20 +174,21 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
 
   delete(row: ApplicationResponse) {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action cannot be undone!',
+      title: 'Êtes-vous sûr ?',
+      text: 'Cette action ne peut pas être annulée !',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'Oui, supprimer !',
+      cancelButtonText: 'Annuler'
     }).then(result => {
       if (result.isConfirmed && row.id) {
-        this.applicationService.deleteApplication({ applicationId: row.id }).subscribe({
+        this.applicationService.deleteApplicationPermanently({ applicationId: row.id }).subscribe({
           next: () => {
             this.loadApplications();
-            Swal.fire('Deleted!', 'Application has been deleted.', 'success');
+            Swal.fire('Supprimé !', 'La candidature a été supprimée définitivement.', 'success');
           },
           error: () => {
-            Swal.fire('Error', 'Failed to delete application', 'error');
+            Swal.fire('Erreur', 'Échec de la suppression de la candidature', 'error');
           }
         });
       }
@@ -271,6 +274,54 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
           },
           error: () => {
             Swal.fire('Erreur', 'Échec du rejet', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  deactivate(app: ApplicationResponse) {
+    if (!app.id) return;
+    Swal.fire({
+      title: 'Désactiver la candidature',
+      text: 'Voulez-vous désactiver cette candidature ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, désactiver',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.applicationService.deactivateApplication({ applicationId: app.id }).subscribe({
+          next: () => {
+            this.loadApplications();
+            Swal.fire('Succès', 'Candidature désactivée', 'success');
+          },
+          error: () => {
+            Swal.fire('Erreur', 'Échec de la désactivation', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  reactivate(app: ApplicationResponse) {
+    if (!app.id) return;
+    Swal.fire({
+      title: 'Réactiver la candidature',
+      text: 'Voulez-vous réactiver cette candidature ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, réactiver',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.applicationService.reactivateApplication({ applicationId: app.id }).subscribe({
+          next: () => {
+            this.loadApplications();
+            Swal.fire('Succès', 'Candidature réactivée', 'success');
+          },
+          error: () => {
+            Swal.fire('Erreur', 'Échec de la réactivation', 'error');
           }
         });
       }

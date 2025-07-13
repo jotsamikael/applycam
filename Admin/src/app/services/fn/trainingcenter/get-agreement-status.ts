@@ -10,6 +10,10 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface GetAgreementStatus$Params {
+
+/**
+ * Numéro d'accord
+ */
   'agreement-number': string;
 }
 

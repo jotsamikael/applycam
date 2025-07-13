@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { SessionDetailsListResponse } from '../../models/session-details-list-response';
 
 export interface GetSessionDetailsList$Params {
+
+/**
+ * ID de la session
+ */
   id: number;
 }
 

@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { ApplicationResponse } from '../../models/application-response';
 
 export interface SearchApplicationsByCandidateName$Params {
+
+/**
+ * Nom du candidat
+ */
   name: string;
 }
 

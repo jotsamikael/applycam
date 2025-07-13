@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { CandidateResponse } from '../../models/candidate-response';
 
 export interface FindCandidateByEmail$Params {
+
+/**
+ * Email du candidat
+ */
   email?: string;
 }
 

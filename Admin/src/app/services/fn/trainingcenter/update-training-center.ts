@@ -10,13 +10,17 @@ import { RequestBuilder } from '../../request-builder';
 
 import { UpdateTrainingCenterRequest } from '../../models/update-training-center-request';
 
-export interface UpdatePromoter$Params {
+export interface UpdateTrainingCenter$Params {
+
+/**
+ * Nom complet du centre
+ */
   fullname: string;
       body: UpdateTrainingCenterRequest
 }
 
-export function updatePromoter(http: HttpClient, rootUrl: string, params: UpdatePromoter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
-  const rb = new RequestBuilder(rootUrl, updatePromoter.PATH, 'patch');
+export function updateTrainingCenter(http: HttpClient, rootUrl: string, params: UpdateTrainingCenter$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+  const rb = new RequestBuilder(rootUrl, updateTrainingCenter.PATH, 'patch');
   if (params) {
     rb.path('fullname', params.fullname, {});
     rb.body(params.body, 'application/json');
@@ -32,4 +36,4 @@ export function updatePromoter(http: HttpClient, rootUrl: string, params: Update
   );
 }
 
-updatePromoter.PATH = '/trainingcenter/update-trainingCenter/{fullname}';
+updateTrainingCenter.PATH = '/trainingcenter/update-trainingCenter/{fullname}';

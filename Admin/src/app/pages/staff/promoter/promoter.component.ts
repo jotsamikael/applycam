@@ -21,6 +21,12 @@ export class PromoterComponent implements OnInit {
   promoterForm: FormGroup;
   selectedPromoter: PromoterResponse | null = null;
 
+  // Ajouts pour les boutons d'actualisation, filtres et exportation
+  showAdvancedFilters = false;
+  filterForm!: FormGroup;
+  refreshing = false;
+  stats: { title: string, value: number, icon: string }[] = [];
+
   breadCrumbItems = [
     { label: 'Dashboard', url: '/' },
     { label: 'Promoters', url: '/staff/promoter' }
@@ -51,6 +57,13 @@ export class PromoterComponent implements OnInit {
       accountLocked: [false],
       enabled: [true]
     });
+
+    // Formulaire de filtres avancés
+    this.filterForm = this.fb.group({
+      status: [''],
+      email: [''],
+      phone: ['']
+    });
   }
 
   ngOnInit(): void {
@@ -61,11 +74,21 @@ export class PromoterComponent implements OnInit {
   get f() { return this.promoterForm.controls; }
 
   loadPromoters() {
-    this.promoterService.getAllStaffs1({ offset: 0, pageSize: 1000 }).subscribe({
+    this.promoterService.getAllStaffs({ offset: 0, pageSize: 1000 }).subscribe({
       next: (res: PageResponsePromoterResponse) => {
         this.dataSource.data = res.content || [];
+        this.updateStats();
       }
     });
+  }
+
+  updateStats() {
+    const all = this.dataSource.data;
+    this.stats = [
+      { title: 'Total Promoteurs', value: all.length, icon: 'bx bx-user' },
+      { title: 'Actifs', value: all.filter(p => p.enabled).length, icon: 'bx bx-check-circle' },
+      { title: 'Inactifs', value: all.filter(p => !p.enabled).length, icon: 'bx bx-block' }
+    ];
   }
 
   applyFilter(event: Event) {
@@ -110,7 +133,7 @@ export class PromoterComponent implements OnInit {
         const formValue = this.promoterForm.value;
 
         if (this.isEditMode && this.selectedPromoter?.email) {
-          this.promoterService.updatePromoter1({
+          this.promoterService.updatePromoter({
             email: this.selectedPromoter.email,
             body: formValue
           }).subscribe({
@@ -351,5 +374,44 @@ private generateDetailModalContent(promoter: PromoterResponse, files: { [key: st
         });
       }
     });
+  }
+
+  // ==================== MÉTHODES POUR LES BOUTONS D'ACTUALISATION, FILTRES ET EXPORTATION ====================
+
+  refreshPromoters(): void {
+    this.refreshing = true;
+    this.loadPromoters();
+    setTimeout(() => {
+      this.refreshing = false;
+    }, 1000);
+  }
+
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
+  }
+
+  applyAdvancedFilters(): void {
+    const filterValue = this.filterForm.value;
+    let filterString = '';
+    
+    Object.keys(filterValue).forEach(key => {
+      if (filterValue[key]) {
+        filterString += `${key}:${filterValue[key]} `;
+      }
+    });
+    
+    this.dataSource.filter = filterString.trim();
+    Swal.fire('Succès', 'Filtres appliqués pour les promoteurs', 'success');
+  }
+
+  clearFilters(): void {
+    this.filterForm.reset();
+    this.dataSource.filter = '';
+    Swal.fire('Info', 'Filtres effacés pour les promoteurs', 'info');
+  }
+
+  exportPromotersToExcel(): void {
+    // TODO: Implémenter l'export Excel pour les promoteurs
+    Swal.fire('Info', 'Fonctionnalité d\'export Excel pour les promoteurs en cours de développement', 'info');
   }
 }

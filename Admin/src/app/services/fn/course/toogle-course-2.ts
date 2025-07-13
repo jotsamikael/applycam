@@ -10,23 +10,25 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface ToogleCourse2$Params {
+
+/**
+ * Nom du cours
+ */
   name: string;
 }
 
-export function toogleCourse2(http: HttpClient, rootUrl: string, params: ToogleCourse2$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
+export function toogleCourse2(http: HttpClient, rootUrl: string, params: ToogleCourse2$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
   const rb = new RequestBuilder(rootUrl, toogleCourse2.PATH, 'patch');
   if (params) {
     rb.path('name', params.name, {});
   }
 
   return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
+    rb.build({ responseType: 'text', accept: '*/*', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      }>;
+      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
     })
   );
 }

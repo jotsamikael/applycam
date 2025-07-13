@@ -6,34 +6,45 @@ import com.jotsamikael.applycam.promoter.PromoterRepository;
 import com.jotsamikael.applycam.user.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class CandidateService {
 
     private final CandidateRepository candidateRepository;
     private final CandidateMapper mapper;
     private final PromoterRepository promoterRepository;
 
-
+    /**
+     * Récupérer tous les candidats avec pagination
+     */
     public PageResponse<CandidateResponse> getAllCandidates(int offset, int pageSize, String field, boolean order) {
+        try {
+            log.info("Récupération des candidats - offset: {}, pageSize: {}", offset, pageSize);
+            
         Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+            Page<Candidate> list = candidateRepository.getAllCandidate(PageRequest.of(offset, pageSize, sort));
 
-        Page<Candidate> list = candidateRepository.getAllCandidate(
-                PageRequest.of(offset, pageSize, sort));
+            List<CandidateResponse> responses = list.stream()
+                .map(mapper::toCandidateResponse)
+                .toList();
 
-        List<CandidateResponse> responses = list.stream().map(mapper::toCandidateResponse).toList();
         return new PageResponse<>(
                 responses,
                 list.getNumber(),
@@ -43,66 +54,97 @@ public class CandidateService {
                 list.isFirst(),
                 list.isLast()
         );
-    }
-
-    public CandidateResponse findCandidateByEmail(String email) {
-      Candidate candidate =  candidateRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No candidate with found email"+ email));
-        return mapper.toCandidateResponse(candidate);
-    }
-
-    public String updateProfile(String email, CandidateRequest request, Authentication connectedUser) {
-        //start by getting the candidate by email or throw an exception
-        Candidate candidate = candidateRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("No candidate with found email"+ email));
-        
-        if (!candidate.isActived() ) {
-        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Candidate cannot be updated.");
+        } catch (Exception e) {
+            log.error("Erreur lors de la récupération des candidats: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la récupération des candidats");
         }
+    }
 
-        //modify the candidate object using the request data
-        candidate.setFirstname(request.firstname());
-        candidate.setLastname(request.lastname());
-        candidate.setDateOfBirth(request.dateOfBirth());
-        candidate.setEmail(request.email());
-        candidate.setPhoneNumber(request.phoneNumber());
-        candidate.setNationalIdNumber(request.nationalIdNumber());
-        candidate.setSex(request.sex());
-        candidate.setPlaceOfBirth(request.placeOfBirth());
-        candidate.setMotherFullName(request.motherFullName());
-        candidate.setFatherFullName(request.fatherFullName());
-        candidate.setMotherProfession(request.motherProfession());
-        candidate.setFatherProfession(request.fatherProfession());
-        candidate.setHighestSchoolLevel(request.highestSchoolLevel());
-        candidate.setNationality(request.nationality());
-        candidate.setTownOfResidence(request.townOfResidence());
+    /**
+     * Trouver un candidat par email
+     */
+    public CandidateResponse findCandidateByEmail(String email) {
+        try {
+            log.info("Recherche du candidat par email: {}", email);
+            
+            if (email == null || email.trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'email est requis");
+            }
+            
+            Candidate candidate = candidateRepository.findByEmail(email.trim())
+                .orElseThrow(() -> new EntityNotFoundException("Aucun candidat trouvé avec l'email: " + email));
+                
+        return mapper.toCandidateResponse(candidate);
+        } catch (EntityNotFoundException e) {
+            log.warn("Candidat non trouvé: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur lors de la recherche du candidat: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la recherche du candidat");
+        }
+    }
 
-        //get connected user and date time for audit purpose
-        User user = ((User) connectedUser.getPrincipal());
+    /**
+     * Mettre à jour le profil d'un candidat
+     */
+    @Transactional
+    public String updateProfile(String email, CandidateRequest request, Authentication connectedUser) {
+        try {
+            log.info("Mise à jour du profil du candidat: {}", email);
+            
+            User user = validateAndGetUser(connectedUser);
+            Candidate candidate = validateAndGetCandidate(email);
+            
+            // Vérification que le candidat peut être mis à jour
+            if (!candidate.isActived()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Ce candidat ne peut pas être mis à jour car il a été supprimé");
+            }
+
+            // Mise à jour des informations du candidat
+            updateCandidateInfo(candidate, request);
+            
+            // Audit
         candidate.setLastModifiedDate(LocalDateTime.now());
         candidate.setLastModifiedBy(user.getIdUser());
 
-        //save the modified candidate object
         candidateRepository.save(candidate);
 
-        //return
+            log.info("Profil du candidat mis à jour avec succès: {}", email);
         return email;
+        } catch (Exception e) {
+            log.error("Erreur lors de la mise à jour du profil: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la mise à jour du profil: " + e.getMessage());
+        }
     }
-    public PageResponse<CandidateResponse> getCandidatesOfConnectedPromoter(Authentication connectedUser, int year, int offset, int pageSize, String field, boolean order) {
-
-        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
-        
+    
+    /**
+     * Récupérer les candidats d'un promoteur connecté
+     */
+    public PageResponse<CandidateResponse> getCandidatesOfConnectedPromoter(
+            Authentication connectedUser, int year, int offset, int pageSize, String field, boolean order) {
+        try {
+            log.info("Récupération des candidats du promoteur connecté pour l'année: {}", year);
+            
+            User user = validateAndGetUser(connectedUser);
+            Promoter promoter = validateAndGetPromoter(user.getEmail());
+            
+            // Validation de l'année
         int currentYear = Year.now().getValue();
         if (year <= 1900 || year > 2100) {
-            System.out.println("The year given is not correct (" + year + "). We use the current date : " + currentYear);
+                log.warn("Année invalide ({}) utilisée, utilisation de l'année courante: {}", year, currentYear);
             year = currentYear;
         }
-        User user = (User) connectedUser.getPrincipal();
-        Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(()-> new EntityNotFoundException("You are not a promoter or you are not connected"));
 
-
-        Page<Candidate> candidates = candidateRepository.findAllBypromoterId(user.getIdUser(), year, PageRequest.of(offset,pageSize,sort));
+            Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+            Page<Candidate> candidates = candidateRepository.findAllBypromoterId(
+                user.getIdUser(), year, PageRequest.of(offset, pageSize, sort));
 
         List<CandidateResponse> candidateResponses = candidates.getContent().stream()
-                                                    .map(candidate->CandidateResponse.builder()
+                .map(candidate -> CandidateResponse.builder()
                                                     .firstname(candidate.getFirstname())
                                                     .lastname(candidate.getLastname())
                                                      .dateOfBirth(candidate.getDateOfBirth())
@@ -119,45 +161,268 @@ public class CandidateService {
             candidates.isFirst(),
             candidates.isLast()
         );
-    }
-    
-    public CandidateResponse findByName(Long promoterId, String name ){
-        Candidate candidate_finded = candidateRepository.findCandidateByName(promoterId,name).orElseThrow(()-> new EntityNotFoundException("the candidate is not in one of your training Center or does not exist"));
-        
-        if (!candidate_finded.isActived() ) {
-        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This Candidate has been deleted.");
+        } catch (Exception e) {
+            log.error("Erreur lors de la récupération des candidats du promoteur: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la récupération des candidats");
         }
-        
-         return mapper.toCandidateResponse(candidate_finded);
     }
     
-   
+    /**
+     * Trouver un candidat par nom dans les centres du promoteur
+     */
+    public CandidateResponse findByName(Long promoterId, String name) {
+        try {
+            log.info("Recherche du candidat '{}' pour le promoteur ID: {}", name, promoterId);
+            
+            if (name == null || name.trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom du candidat est requis");
+            }
+            
+            Candidate candidate = candidateRepository.findCandidateByName(promoterId, name.trim())
+                .orElseThrow(() -> new EntityNotFoundException(
+                    "Le candidat n'est pas dans l'un de vos centres de formation ou n'existe pas"));
+            
+            if (!candidate.isActived()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Ce candidat a été supprimé");
+            }
+            
+            return mapper.toCandidateResponse(candidate);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (EntityNotFoundException e) {
+            log.warn("Candidat non trouvé: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur lors de la recherche du candidat: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la recherche du candidat");
+        }
+    }
     
+    /**
+     * Désactiver/réactiver un candidat
+     */
+    @Transactional
     public void toggleCandidate(String email, Authentication connectedUser) {
-        Candidate candidate = candidateRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("No promoter found with email: " + email));
-        
-        User user = (User) connectedUser.getPrincipal();
+        try {
+            log.info("Changement de statut du candidat: {}", email);
+            
+            User user = validateAndGetUser(connectedUser);
+            Candidate candidate = validateAndGetCandidate(email);
+            
         if (candidate.isActived()) {
             // Désactivation
         	candidate.setEnabled(false);
         	candidate.setActived(false);
         	candidate.setArchived(true);
+                log.info("Candidat désactivé: {}", email);
         } else {
             // Réactivation
         	candidate.setEnabled(true);
         	candidate.setActived(true);
         	candidate.setArchived(false);
+                log.info("Candidat réactivé: {}", email);
+            }
+            
+            // Audit
+            candidate.setLastModifiedBy(user.getIdUser());
+            candidate.setLastModifiedDate(LocalDateTime.now());
+            
+            candidateRepository.save(candidate);
+        } catch (Exception e) {
+            log.error("Erreur lors du changement de statut du candidat: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors du changement de statut: " + e.getMessage());
         }
-      //get connected user and date time for audit purpose
-        candidate.setLastModifiedBy(user.getIdUser());
-        candidate.setLastModifiedDate(LocalDateTime.now());
-        // saving the promoter and it status
-        candidateRepository.save(candidate);
-        
-        
     }
     
+    /**
+     * Supprimer définitivement un candidat
+     */
+    @Transactional
+    public void deleteCandidatePermanently(String email, Authentication connectedUser) {
+        try {
+            log.info("Suppression définitive du candidat: {}", email);
+            
+            User user = validateAndGetUser(connectedUser);
+            Candidate candidate = validateAndGetCandidate(email);
+            
+            // Vérification des droits (seul le STAFF peut supprimer définitivement)
+            boolean isStaff = user.getRoles().stream()
+                .anyMatch(role -> "STAFF".equals(role.getName()));
+            
+            if (!isStaff) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Seuls les membres du staff peuvent supprimer définitivement un candidat");
+            }
+            
+            // Suppression définitive
+            candidateRepository.delete(candidate);
+            log.info("Candidat supprimé définitivement: {}", email);
+        } catch (Exception e) {
+            log.error("Erreur lors de la suppression définitive: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la suppression: " + e.getMessage());
+        }
+    }
     
+    /**
+     * Désactiver un candidat (soft delete)
+     */
+    @Transactional
+    public void deactivateCandidate(String email, Authentication connectedUser) {
+        try {
+            log.info("Désactivation du candidat: {}", email);
+            
+            User user = validateAndGetUser(connectedUser);
+            Candidate candidate = validateAndGetCandidate(email);
+            
+            // Vérification des droits
+            boolean isStaff = user.getRoles().stream()
+                .anyMatch(role -> "STAFF".equals(role.getName()));
+            
+            if (!isStaff && !candidate.getEmail().equals(user.getEmail())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Vous ne pouvez pas désactiver ce candidat");
+            }
+            
+            // Désactivation
+            candidate.setEnabled(false);
+            candidate.setActived(false);
+            candidate.setArchived(true);
+            candidate.setLastModifiedBy(user.getIdUser());
+            candidate.setLastModifiedDate(LocalDateTime.now());
+            
+            candidateRepository.save(candidate);
+            log.info("Candidat désactivé avec succès: {}", email);
+        } catch (Exception e) {
+            log.error("Erreur lors de la désactivation: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la désactivation: " + e.getMessage());
+        }
+    }
     
+    /**
+     * Réactiver un candidat
+     */
+    @Transactional
+    public void reactivateCandidate(String email, Authentication connectedUser) {
+        try {
+            log.info("Réactivation du candidat: {}", email);
+            
+            User user = validateAndGetUser(connectedUser);
+            Candidate candidate = validateAndGetCandidate(email);
+            
+            // Vérification des droits (seul le STAFF peut réactiver)
+            boolean isStaff = user.getRoles().stream()
+                .anyMatch(role -> "STAFF".equals(role.getName()));
+            
+            if (!isStaff) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Seuls les membres du staff peuvent réactiver un candidat");
+            }
+            
+            // Réactivation
+            candidate.setEnabled(true);
+            candidate.setActived(true);
+            candidate.setArchived(false);
+        candidate.setLastModifiedBy(user.getIdUser());
+        candidate.setLastModifiedDate(LocalDateTime.now());
+            
+        candidateRepository.save(candidate);
+            log.info("Candidat réactivé avec succès: {}", email);
+        } catch (Exception e) {
+            log.error("Erreur lors de la réactivation: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la réactivation: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Récupérer un candidat par ID
+     */
+    public CandidateResponse getCandidateById(Long candidateId) {
+        try {
+            log.info("Récupération du candidat ID: {}", candidateId);
+            
+            Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new EntityNotFoundException("Candidat non trouvé avec l'ID: " + candidateId));
+                
+            return mapper.toCandidateResponse(candidate);
+        } catch (EntityNotFoundException e) {
+            log.warn("Candidat non trouvé: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur lors de la récupération du candidat: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la récupération du candidat");
+        }
+    }
+    
+    /**
+     * Rechercher des candidats par nom
+     */
+    public List<CandidateResponse> searchCandidatesByName(String name) {
+        try {
+            log.info("Recherche de candidats par nom: {}", name);
+            
+            if (name == null || name.trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est requis");
+            }
+            
+            // Implémentation de la recherche par nom
+            // Note: Cette méthode nécessite l'ajout d'une méthode dans le repository
+            List<Candidate> candidates = candidateRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(
+                name.trim(), name.trim());
+            
+            return candidates.stream()
+                .map(mapper::toCandidateResponse)
+                .toList();
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Erreur lors de la recherche par nom: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erreur lors de la recherche par nom");
+        }
+    }
+    
+    // ==================== MÉTHODES PRIVÉES D'AIDE ====================
+    
+    private User validateAndGetUser(Authentication connectedUser) {
+        if (connectedUser == null || connectedUser.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié");
+        }
+        return (User) connectedUser.getPrincipal();
+    }
+    
+    private Candidate validateAndGetCandidate(String email) {
+        return candidateRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Candidat non trouvé pour l'email: " + email));
+    }
+    
+    private Promoter validateAndGetPromoter(String email) {
+        return promoterRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Vous n'êtes pas un promoteur ou vous n'êtes pas connecté"));
+    }
+    
+    private void updateCandidateInfo(Candidate candidate, CandidateRequest request) {
+        candidate.setFirstname(request.firstname());
+        candidate.setLastname(request.lastname());
+        candidate.setDateOfBirth(request.dateOfBirth());
+        candidate.setEmail(request.email());
+        candidate.setPhoneNumber(request.phoneNumber());
+        candidate.setNationalIdNumber(request.nationalIdNumber());
+        candidate.setSex(request.sex());
+        candidate.setPlaceOfBirth(request.placeOfBirth());
+        candidate.setMotherFullName(request.motherFullName());
+        candidate.setFatherFullName(request.fatherFullName());
+        candidate.setMotherProfession(request.motherProfession());
+        candidate.setFatherProfession(request.fatherProfession());
+        candidate.setHighestSchoolLevel(request.highestSchoolLevel());
+        candidate.setNationality(request.nationality());
+        candidate.setTownOfResidence(request.townOfResidence());
+    }
 }

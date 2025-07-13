@@ -209,5 +209,19 @@ public class CampusService {
         }
     }
     
+    public PageResponse<CampusResponse> getAllCampuses(int offset, int pageSize, String field, boolean order) {
+        Sort sort = order ? Sort.by(field).ascending() : Sort.by(field).descending();
+        Page<Campus> list = campusRepository.getAll(PageRequest.of(offset, pageSize, sort));
+        List<CampusResponse> responses = list.stream().map(mapper::toCampusResponse).toList();
+        return new PageResponse<>(
+                responses,
+                list.getNumber(),
+                list.getSize(),
+                list.getTotalElements(),
+                list.getTotalPages(),
+                list.isFirst(),
+                list.isLast()
+        );
+    }
     
 }

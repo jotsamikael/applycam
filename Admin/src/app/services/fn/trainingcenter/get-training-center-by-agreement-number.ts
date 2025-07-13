@@ -11,6 +11,10 @@ import { RequestBuilder } from '../../request-builder';
 import { TrainingCenterResponse } from '../../models/training-center-response';
 
 export interface GetTrainingCenterByAgreementNumber$Params {
+
+/**
+ * Numéro d'accord
+ */
   agreementNumber: string;
 }
 

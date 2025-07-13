@@ -10,23 +10,25 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface DeleteSession$Params {
+
+/**
+ * ID de la session
+ */
   sessionId: number;
 }
 
-export function deleteSession(http: HttpClient, rootUrl: string, params: DeleteSession$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
+export function deleteSession(http: HttpClient, rootUrl: string, params: DeleteSession$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
   const rb = new RequestBuilder(rootUrl, deleteSession.PATH, 'patch');
   if (params) {
     rb.path('sessionId', params.sessionId, {});
   }
 
   return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
+    rb.build({ responseType: 'text', accept: '*/*', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      }>;
+      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
     })
   );
 }

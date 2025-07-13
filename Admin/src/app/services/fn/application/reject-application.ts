@@ -10,7 +10,15 @@ import { RequestBuilder } from '../../request-builder';
 
 
 export interface RejectApplication$Params {
+
+/**
+ * ID de la candidature
+ */
   id: number;
+
+/**
+ * Commentaire de rejet
+ */
   comment: string;
 }
 

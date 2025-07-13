@@ -42,4 +42,9 @@ public interface TrainingCenterRepository extends JpaRepository<TrainingCenter, 
     
         
     boolean existsByAgreementNumber(String agreementNumber);
+    
+    // Méthodes de comptage pour les statistiques
+    long countByIsActivedTrue();
+    long countByIsActivedFalse();
+    long countByAgreementStatus(AgreementStatus agreementStatus);
 }

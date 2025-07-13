@@ -8,16 +8,32 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { PageResponseStaffResponse } from '../../models/page-response-staff-response';
+import { PageResponsePromoterResponse } from '../../models/page-response-promoter-response';
 
 export interface GetAllStaffs$Params {
+
+/**
+ * Offset de pagination
+ */
   offset?: number;
+
+/**
+ * Taille de page
+ */
   pageSize?: number;
+
+/**
+ * Champ de tri
+ */
   field?: string;
+
+/**
+ * Ordre de tri
+ */
   order?: boolean;
 }
 
-export function getAllStaffs(http: HttpClient, rootUrl: string, params?: GetAllStaffs$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseStaffResponse>> {
+export function getAllStaffs(http: HttpClient, rootUrl: string, params?: GetAllStaffs$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponsePromoterResponse>> {
   const rb = new RequestBuilder(rootUrl, getAllStaffs.PATH, 'get');
   if (params) {
     rb.query('offset', params.offset, {});
@@ -31,9 +47,9 @@ export function getAllStaffs(http: HttpClient, rootUrl: string, params?: GetAllS
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<PageResponseStaffResponse>;
+      return r as StrictHttpResponse<PageResponsePromoterResponse>;
     })
   );
 }
 
-getAllStaffs.PATH = '/staff/getAll';
+getAllStaffs.PATH = '/promoter/get-all';
