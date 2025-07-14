@@ -3,6 +3,7 @@ package com.jotsamikael.applycam.session;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -60,6 +61,8 @@ public class SessionService {
 			var session = Session.builder()
 				.examType(createSessionRequest.getExamType())
 				.examDate(createSessionRequest.getExamDate())
+				.registrationStartDate(createSessionRequest.getRegistrationStartDate())
+				.registrationEndDate(createSessionRequest.getRegistrationEndDate())
 				.sessionYear(createSessionRequest.getSessionYear())
 				.createdBy(user.getIdUser())
 				.createdDate(LocalDateTime.now())
@@ -104,6 +107,8 @@ public class SessionService {
 
 			session.setExamType(updateSessionRequest.getExamType());
 			session.setExamDate(updateSessionRequest.getExamDate());
+			session.setRegistrationStartDate(updateSessionRequest.getRegistrationStartDate());
+			session.setRegistrationEndDate(updateSessionRequest.getRegistrationEndDate());
 			session.setSessionYear(updateSessionRequest.getSessionYear());
 			session.setLastModifiedBy(user.getIdUser());
 			session.setLastModifiedDate(LocalDateTime.now());
@@ -142,6 +147,8 @@ public class SessionService {
 							.examType(session.getExamType())
 							.examDate(session.getExamDate())
 							.sessionYear(session.getSessionYear())
+							.registrationStartDate(session.getRegistrationStartDate())
+							.registrationEndDate(session.getRegistrationEndDate())
 							.build();
 					}
 				})
@@ -179,6 +186,8 @@ public class SessionService {
 					.examType(session.getExamType())
 					.examDate(session.getExamDate())
 					.sessionYear(session.getSessionYear())
+					.registrationStartDate(session.getRegistrationStartDate())
+					.registrationEndDate(session.getRegistrationEndDate())
 					.build())
 				.toList();
 
@@ -225,6 +234,8 @@ public class SessionService {
 							.examType(session.getExamType())
 							.examDate(session.getExamDate())
 							.sessionYear(session.getSessionYear())
+							.registrationStartDate(session.getRegistrationStartDate())
+							.registrationEndDate(session.getRegistrationEndDate())
 							.build();
 					}
 				})
@@ -391,6 +402,8 @@ public class SessionService {
 				.examType(session.getExamType())
 				.examDate(session.getExamDate())
 				.sessionYear(session.getSessionYear())
+				.registrationStartDate(session.getRegistrationStartDate())
+				.registrationEndDate(session.getRegistrationEndDate())
 				.build();
 		} catch (EntityNotFoundException e) {
 			log.warn("Session non trouvée: {}", e.getMessage());
@@ -429,6 +442,8 @@ public class SessionService {
 							.examType(session.getExamType())
 							.examDate(session.getExamDate())
 							.sessionYear(session.getSessionYear())
+							.registrationStartDate(session.getRegistrationStartDate())
+							.registrationEndDate(session.getRegistrationEndDate())
 							.build();
 					}
 				})
@@ -492,6 +507,29 @@ public class SessionService {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
 				"Erreur lors de la récupération des détails");
 		}
+	}
+
+	/**
+	 * Récupérer les sessions ouvertes à l'inscription (pour le candidat)
+	 */
+	public List<SessionResponse> getOpenRegistrationSessions() {
+		LocalDate today = LocalDate.now();
+		List<Session> sessions = sessionRepository.findAll();
+		return sessions.stream()
+			.filter(s -> s.isActived() &&
+				s.getRegistrationStartDate() != null &&
+				s.getRegistrationEndDate() != null &&
+				!today.isBefore(s.getRegistrationStartDate()) &&
+				!today.isAfter(s.getRegistrationEndDate()))
+			.map(s -> SessionResponse.builder()
+				.id(s.getId())
+				.examType(s.getExamType())
+				.examDate(s.getExamDate())
+				.sessionYear(s.getSessionYear())
+				.registrationStartDate(s.getRegistrationStartDate())
+				.registrationEndDate(s.getRegistrationEndDate())
+				.build())
+			.collect(Collectors.toList());
 	}
 
 	// ==================== MÉTHODES PRIVÉES D'AIDE ====================

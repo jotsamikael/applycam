@@ -10,7 +10,7 @@ export const MENU: MenuItem[] = [
     },
     {
         id: 2,
-        label: 'Dashboard',
+        label: 'Tableau de bord',
         icon: 'bx-home',
         link: 'overview-staff',
         roles: ['super_admin', 'STAFF']
@@ -18,7 +18,7 @@ export const MENU: MenuItem[] = [
     // Gestion des centres et du personnel
     {
         id: 3,
-        label: 'Training Centers',
+        label: 'Centres de formation',
         icon: 'bx-building-house',
         link: 'training-centers-management',
         roles: ['super_admin', 'STAFF']
@@ -33,21 +33,21 @@ export const MENU: MenuItem[] = [
     // Gestion des candidats et applications
     {
         id: 4,
-        label: 'Candidates',
+        label: 'Candidats',
         icon: 'bx-user',
         link: 'candidates-management',
         roles: ['super_admin', 'STAFF']
     },
      {
         id: 49,
-        label: 'Promoter',
+        label: 'Promoteurs',
         icon: 'bx-user',
         link: 'promoter',
         roles: ['super_admin', 'STAFF']
     },
     {
         id: 48,
-        label: 'Applications',
+        label: 'Dossiers de candidature',
         icon: 'bxs-folder-open',
         link: 'application-management',
         roles: ['super_admin', 'STAFF']
@@ -55,21 +55,21 @@ export const MENU: MenuItem[] = [
     // Examens
     {
         id: 33,
-        label: 'Exam Centers',
+        label: 'Centres d\'examen',
         link: 'exams-centers-management',
         icon: 'bx-building',
         roles: ['super_admin', 'STAFF'],
     },
     {
         id: 34,
-        label: 'Exam Sessions',
+        label: 'Sessions d\'examen',
         link: 'session-management',
         icon: 'bx-calendar-event',
         roles: ['super_admin', 'STAFF'],
     },
     {
         id: 36,
-        label: 'Specialites & Filieres',
+        label: 'Spécialités & Filières',
         link: 'specialities-management',
         icon: 'bxs-award',
         roles: ['super_admin', 'STAFF'],
@@ -84,7 +84,7 @@ export const MENU: MenuItem[] = [
     // Paiements
     {
         id: 6,
-        label: 'Payment Gateways',
+        label: 'Historique de payemnt',
         icon: 'bx-credit-card',
         link: 'payment-gateway-management',
         roles: ['super_admin', 'STAFF']
@@ -92,14 +92,14 @@ export const MENU: MenuItem[] = [
     // Statistiques et logs
     {
         id: 45,
-        label: 'Statistics',
+        label: 'Statistiques',
         link: 'system-statistics',
         icon: 'bx-stats',
         roles: ['super_admin', 'STAFF'],
     },
     {
         id: 46,
-        label: 'Logs',
+        label: 'Journaux',
         link: 'system-logs',
         icon: 'bx-file',
         roles: ['super_admin', 'STAFF'],
@@ -116,7 +116,7 @@ export const MENU: MenuItem[] = [
     // APP SETTINGS
     {
         id: 9,
-        label: 'APP SETTINGS',
+        label: 'PARAMÈTRES DE L\'APPLICATION',
         isTitle: true,
         roles: ['super_admin', 'STAFF']
     },
@@ -125,20 +125,20 @@ export const MENU: MenuItem[] = [
     // Promoter -> Operational (EXISTANT)
     {
         id: 18,
-        label: 'OPERATIONAL',
+        label: 'OPÉRATIONNEL',
         isTitle: true,
         roles: ['PROMOTER']
     },
     {
         id: 19,
-        label: 'Dashboard',
+        label: 'Tableau de bord',
         icon: 'bxs-chart',
         link: 'promoter-dashboard',
         roles: ['PROMOTER']
     },
     {
         id: 20,
-        label: 'Training Centers',
+        label: 'Centres de formation',
         icon: 'bxs-school',
         link: 'training-center-management',
         roles: ['PROMOTER']
@@ -166,28 +166,28 @@ export const MENU: MenuItem[] = [
     },
     {
         id: 22,
-        label: 'Filiers',
+        label: 'Filières',
         icon: 'bxs-book',
         link: 'promoter/courses',
         roles: ['PROMOTER']
     },
     {
         id: 23,
-        label: 'Specialties',
+        label: 'Spécialités',
         icon: 'bxs-award',
         link: 'promoter/specialties',
         roles: ['PROMOTER']
     },
     {
         id: 24,
-        label: 'My Candidates',
+        label: 'Mes candidats',
         icon: 'bxs-graduation',
         link: 'my-candidates',
         roles: ['PROMOTER']
     },
 {
         id: 24,
-        label: 'Results',
+        label: 'Résultats',
         icon: 'bxs-report',
         link: 'promoter-results',
         roles: ['PROMOTER']
@@ -195,7 +195,7 @@ export const MENU: MenuItem[] = [
     // Promoter -> Settings (EXISTANT)
     {
         id: 25,
-        label: 'SETTINGS',
+        label: 'PARAMÈTRES',
         isTitle: true,
         roles: ['PROMOTER']
     },
@@ -203,20 +203,20 @@ export const MENU: MenuItem[] = [
     // Candidate -> Operational (EXISTANT)
     {
         id: 26,
-        label: 'OPERATIONAL',
+        label: 'OPÉRATIONNEL',
         isTitle: true,
         roles: ['CANDIDATE']
     },
     {
         id: 27,
-        label: 'Dashboard',
+        label: 'Tableau de bord',
         icon: 'bxs-chart',
         link: 'candidate-dashboard',
         roles: ['CANDIDATE']
     },
     {
     id: 27,
-    label: 'My Applications',
+    label: 'Mes candidatures',
     icon: 'bxs-folder-open',  // Icône changée ici
     link: 'my-applications',
     roles: ['CANDIDATE']
@@ -225,28 +225,28 @@ export const MENU: MenuItem[] = [
  // Candidate - Additional Features
     {
         id: 41,
-        label: 'My Exams',
+        label: 'Mes examens',
         link: 'my-exams',
         icon: 'bx-book',
         roles: ['CANDIDATE'],
     },
     {
         id: 42,
-        label: 'My Results',
+        label: 'Mes résultats',
         link: 'my-results',
         icon: 'bx-award',
         roles: ['CANDIDATE'],
     },
     {
         id: 43,
-        label: 'My Certificates',
+        label: 'Mes attestations',
         link: 'my-certificates',
         icon: 'bx-certification',
         roles: ['CANDIDATE'],
     },
     {
         id: 44,
-        label: 'My Payments',
+        label: 'Mes paiements',
         link: 'my-payments',
         icon: 'bx-credit-card',
         roles: ['CANDIDATE'],
@@ -269,34 +269,34 @@ export const MENU: MenuItem[] = [
     // Promoter -> Settings (EXISTANT)
     {
         id: 25,
-        label: 'SETTINGS',
+        label: 'PARAMÈTRES',
         isTitle: true,
         roles: ['CANDIDATE']
     },
     {
         id: 28,
-        label: 'My Notifications',
+        label: 'Mes notifications',
         icon: 'bx-message',
         link: 'my-notifications',
         roles: ['PROMOTER', 'CANDIDATE']
     },
     {
         id: 29,
-        label: 'Help & Support',
+        label: 'Aide & Support',
         icon: 'bx-headphone',
         link: 'help-and-support',
         roles: ['CANDIDATE', 'PROMOTER', 'STAFF']
     },
     {
         id: 30,
-        label: 'Profile Settings',
+        label: 'Paramètres du profil',
         icon: 'bxs-user-circle',
         link: 'profile',
         roles: ['CANDIDATE', 'PROMOTER', 'STAFF']
     },
     {
         id: 31,
-        label: 'Logout',
+        label: 'Déconnexion',
         icon: 'bxs-log-out',
         link: '/auth/logout',
         roles: ['CANDIDATE', 'PROMOTER', 'STAFF']

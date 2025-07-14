@@ -19,4 +19,6 @@ public class UpdateSessionRequest {
     @NotBlank(message = "SessionYear is required")
     private String sessionYear;
 
+    private LocalDate registrationStartDate;
+    private LocalDate registrationEndDate;
 }

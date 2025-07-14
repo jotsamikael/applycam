@@ -18,6 +18,9 @@ public class CreateSessionRequest {
     @NotNull(message = "ExamDate is mandatory")
 	private LocalDate examDate;
 	
+    private LocalDate registrationStartDate;
+    private LocalDate registrationEndDate;
+	
     @NotEmpty(message = "Session-year is mandatory")
     @NotNull(message = "Session-Year is mandatory")
 	private String sessionYear;

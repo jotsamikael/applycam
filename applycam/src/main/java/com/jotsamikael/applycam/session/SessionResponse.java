@@ -14,6 +14,9 @@ public class SessionResponse {
     private LocalDate examDate;
     private String sessionYear;
 
+    private LocalDate registrationStartDate;
+    private LocalDate registrationEndDate;
+
 
 }
 

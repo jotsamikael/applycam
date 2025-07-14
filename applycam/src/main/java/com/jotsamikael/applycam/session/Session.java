@@ -33,6 +33,9 @@ public class Session extends BaseEntity{
 	
 	private LocalDate examDate;
 	
+    private LocalDate registrationStartDate;
+    private LocalDate registrationEndDate;
+	
 	private String sessionYear;
 	
 	@OneToMany(mappedBy="session")

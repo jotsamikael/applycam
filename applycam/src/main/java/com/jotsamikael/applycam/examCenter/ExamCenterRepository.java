@@ -23,8 +23,8 @@ public interface ExamCenterRepository extends JpaRepository<ExamCenter, Long> {
 
 		 @Query(
 		            """ 
-		              SELECT se
-		              FROM Session se
+		              SELECT ec
+		              FROM ExamCenter ec
 		            """
 		    )
 		  Page<ExamCenter> findAllExamCenter(Pageable pageable);

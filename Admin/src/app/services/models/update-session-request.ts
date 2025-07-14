@@ -7,4 +7,6 @@ export interface UpdateSessionRequest {
   examType: string;
   sessionId: number;
   sessionYear: string;
+  registrationStartDate: string;
+  registrationEndDate: string;
 }

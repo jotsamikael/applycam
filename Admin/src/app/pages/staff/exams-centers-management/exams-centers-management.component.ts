@@ -10,6 +10,8 @@ import { CreateCenterRequest } from '../../../services/models/create-center-requ
 import { UpdateCenterRequest } from '../../../services/models/update-center-request';
 import { ExamCenterResponse } from '../../../services/models/exam-center-response';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CandidateService } from '../../../services/services/candidate.service';
+import { CandidateResponse } from '../../../services/models/candidate-response';
 
 @Component({
   selector: 'app-exams-centers-management',
@@ -77,6 +79,9 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     'Bamboutos', 'Haut-Nkam', 'Hauts-Plateaux', 'Koung-Khi', 'Ménoua', 'Mifi', 'Ndé', 'Noun'
   ];
 
+  candidates: CandidateResponse[] = [];
+  selectedCandidateId: number | null = null;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -84,13 +89,15 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private modalService: BsModalService,
     private examCenterService: ExamCenterControllerService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private candidateService: CandidateService
   ) {}
 
   ngOnInit(): void {
     this.initForms();
     this.loadExamCenters();
     this.updateStats();
+    this.loadCandidates();
   }
 
   ngAfterViewInit() {
@@ -290,29 +297,47 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
   }
 
   assignExamCenter(examCenter: ExamCenterResponse) {
-    if (!examCenter.id) return;
-    
+    // Charger les candidats si ce n'est pas déjà fait
+    if (this.candidates.length === 0) {
+      this.loadCandidates();
+    }
+
+    // Préparer les options pour le select
+    const inputOptions: Record<string, string> = {};
+    this.candidates.forEach(candidate => {
+      inputOptions[candidate.email!] = `${candidate.firstname} ${candidate.lastname}`;
+    });
+
     Swal.fire({
-      title: 'Assigner le centre d\'examen',
-      text: `Voulez-vous assigner le centre "${examCenter.name}" à un candidat ?`,
-      icon: 'question',
+      title: `Assigner le centre "${examCenter.name}"`,
+      input: 'select',
+      inputOptions: inputOptions,
+      inputPlaceholder: 'Choisir un candidat',
       showCancelButton: true,
-      confirmButtonColor: '#28a745',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Oui, assigner',
-      cancelButtonText: 'Annuler'
+      confirmButtonText: 'Assigner',
+      cancelButtonText: 'Annuler',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Veuillez sélectionner un candidat';
+        }
+        return null;
+      }
     }).then(result => {
-      if (result.isConfirmed) {
+      if (result.isConfirmed && result.value) {
+        const candidateEmail = result.value;
         this.processing = true;
-        this.examCenterService.assignExamCenter({ id: examCenter.id }).subscribe({
+        this.examCenterService.assignExamCenter({ id: candidateEmail }).subscribe({
           next: () => {
             this.processing = false;
             this.showSnackBar('Centre d\'examen assigné avec succès', 'success');
           },
           error: (error) => {
-            console.error('Erreur assignation:', error);
             this.processing = false;
-            this.showSnackBar('Erreur lors de l\'assignation', 'error');
+            if (error?.error?.message?.includes('aucun historique de formation')) {
+              this.showSnackBar('Ce candidat n\'a pas d\'historique de formation. Impossible d\'assigner un centre.', 'error');
+            } else {
+              this.showSnackBar('Erreur lors de l\'assignation', 'error');
+            }
           }
         });
       }
@@ -417,13 +442,33 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
 
   applyAdvancedFilters(): void {
     const filterValue = this.filterForm.value;
-    if (filterValue.region || filterValue.division) {
-      // Appliquer les filtres
-      this.loadExamCenters();
-      this.showSnackBar('Filtres appliqués', 'success');
+    if (filterValue.division) {
+      // Recherche par division via le backend
+      this.searchByDivision(filterValue.division);
+    } else if (filterValue.region) {
+      // Filtrage local par région
+      this.filterByRegion(filterValue.region);
+      this.showSnackBar('Filtre par région appliqué', 'success');
     } else {
-      this.showSnackBar('Veuillez sélectionner au moins un filtre', 'warning');
+      this.loadExamCenters();
+      this.showSnackBar('Aucun filtre appliqué, affichage de tous les centres', 'info');
     }
+  }
+
+  filterByRegion(region: string) {
+    // Recharge tous les centres puis filtre localement
+    this.processing = true;
+    this.examCenterService.getAllExamCenters({ offset: 0, pageSize: 1000, field: 'name', order: true }).subscribe({
+      next: (res) => {
+        this.dataSource.data = (res.content || []).filter(center => center.region === region);
+        this.totalElements = this.dataSource.data.length;
+        this.processing = false;
+      },
+      error: (err) => {
+        this.processing = false;
+        this.showSnackBar('Erreur lors du filtrage par région', 'error');
+      }
+    });
   }
 
   clearFilters(): void {
@@ -464,5 +509,16 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     document.body.removeChild(link);
 
     this.showSnackBar(`Export terminé: ${data.length} centre(s) exporté(s)`, 'success');
+  }
+
+  loadCandidates() {
+    this.candidateService.getAllCandidates({ offset: 0, pageSize: 1000, field: 'id', order: true }).subscribe({
+      next: (res) => {
+        this.candidates = res.content || [];
+      },
+      error: (err) => {
+        this.showSnackBar('Erreur lors du chargement des candidats', 'error');
+      }
+    });
   }
 }
