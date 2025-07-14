@@ -6,4 +6,6 @@ export interface CreateSessionRequest {
   examDate: string;
   examType: string;
   sessionYear: string;
+  registrationStartDate: string;
+  registrationEndDate: string;
 }

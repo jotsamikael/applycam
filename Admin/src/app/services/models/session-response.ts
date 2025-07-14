@@ -7,4 +7,23 @@ export interface SessionResponse {
   examType?: string;
   id?: number;
   sessionYear?: string;
+  registrationStartDate?: string;
+  registrationEndDate?: string;
+}
+
+export interface CreateSessionRequest {
+  sessionYear: string;
+  examType: string;
+  examDate: string;
+  registrationStartDate: string;
+  registrationEndDate: string;
+}
+
+export interface UpdateSessionRequest {
+  sessionId: number;
+  sessionYear: string;
+  examType: string;
+  examDate: string;
+  registrationStartDate: string;
+  registrationEndDate: string;
 }

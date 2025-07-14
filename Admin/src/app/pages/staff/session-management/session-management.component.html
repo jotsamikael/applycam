@@ -184,6 +184,24 @@
                 </td>
               </ng-container>
 
+              <!-- Date début inscription -->
+              <ng-container matColumnDef="registrationStartDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date début inscription</th>
+                <td mat-cell *matCellDef="let session">
+                  <span *ngIf="session.registrationStartDate">{{formatDate(session.registrationStartDate)}}</span>
+                  <span *ngIf="!session.registrationStartDate" class="text-muted">-</span>
+                </td>
+              </ng-container>
+
+              <!-- Date fin inscription -->
+              <ng-container matColumnDef="registrationEndDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date fin inscription</th>
+                <td mat-cell *matCellDef="let session">
+                  <span *ngIf="session.registrationEndDate">{{formatDate(session.registrationEndDate)}}</span>
+                  <span *ngIf="!session.registrationEndDate" class="text-muted">-</span>
+                </td>
+              </ng-container>
+
               <!-- Statut -->
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef>Statut</th>

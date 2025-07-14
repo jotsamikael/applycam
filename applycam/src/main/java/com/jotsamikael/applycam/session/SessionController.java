@@ -57,7 +57,7 @@ public class SessionController {
 	public ResponseEntity<PageResponse<SessionResponse>> getall(
 		@Parameter(description = "Offset de pagination") @RequestParam(name = "offset", defaultValue = "0", required = false) int offset,
 		@Parameter(description = "Taille de page") @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize,
-		@Parameter(description = "Champ de tri") @RequestParam(name = "field", defaultValue = "name", required = false) String field,
+		@Parameter(description = "Champ de tri") @RequestParam(name = "field", defaultValue = "examDate", required = false) String field,
 		@Parameter(description = "Ordre de tri") @RequestParam(name = "order", defaultValue = "true", required = false) boolean order
 	) {
 		try {
@@ -121,6 +121,18 @@ public class SessionController {
 			return ResponseEntity.notFound().build();
 		} catch (Exception e) {
 			log.error("Erreur lors de la recherche par date: {}", e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	@GetMapping("/open-registrations")
+	@Operation(summary = "Sessions ouvertes à l'inscription", description = "Récupérer les sessions dont la période d'inscription est en cours")
+	public ResponseEntity<List<SessionResponse>> getOpenRegistrationSessions() {
+		try {
+			List<SessionResponse> sessions = sessionService.getOpenRegistrationSessions();
+			return ResponseEntity.ok(sessions);
+		} catch (Exception e) {
+			log.error("Erreur lors de la récupération des sessions ouvertes à l'inscription: {}", e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}

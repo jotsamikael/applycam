@@ -1,16 +1,28 @@
 <div class="container-fluid">
     <app-page-title title="Gestion des Candidats" [breadcrumbItems]="breadCrumbItems"></app-page-title>
 
+    <!-- Statistiques -->
     <div class="row mb-3">
-      <div *ngFor="let stat of stats" class="col-md-2 col-6 mb-2">
-        <div class="card text-center border-0 shadow-sm bg-light">
-          <div class="card-body p-2">
-            <i class="{{stat.icon}} text-{{stat.color}}" style="font-size: 2rem;"></i>
-            <h5 class="mb-0 mt-1">{{ stat.value }}</h5>
-            <small class="text-muted">{{ stat.title }}</small>
-          </div>
+        <div class="col-md-4 col-6 mb-3">
+            <app-stat title="Total" [value]="stats[0]?.value || 0" icon="bx-group"></app-stat>
         </div>
-      </div>
+        <div class="col-md-4 col-6 mb-3">
+            <app-stat title="Validés" [value]="stats[1]?.value || 0" icon="bx-check-circle"></app-stat>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <app-stat title="En attente" [value]="stats[2]?.value || 0" icon="bx-time"></app-stat>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 col-6 mb-3">
+            <app-stat title="Rejetés" [value]="stats[3]?.value || 0" icon="bx-block"></app-stat>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <app-stat title="Brouillons" [value]="stats[4]?.value || 0" icon="bx-edit"></app-stat>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <app-stat title="Payés" [value]="stats[5]?.value || 0" icon="bx-money"></app-stat>
+        </div>
     </div>
 
     <!-- Barre d'outils -->
@@ -167,18 +179,18 @@
                     <ng-container matColumnDef="actions">
                         <th mat-header-cell *matHeaderCellDef class="text-end">Actions</th>
                         <td mat-cell *matCellDef="let row" class="text-end">
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary btn-sm" (click)="edit(row)" title="Modifier">
-                                    <i class="bx bx-edit"></i>
+                            <div class="d-flex justify-content-end gap-1">
+                                <button mat-icon-button color="primary" matTooltip="Modifier" (click)="edit(row)">
+                                    <mat-icon>edit</mat-icon>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" (click)="delete(row)" title="Supprimer">
-                                    <i class="bx bx-trash"></i>
+                                <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="delete(row)">
+                                    <mat-icon>delete</mat-icon>
                                 </button>
-                                <button class="btn btn-outline-info btn-sm" (click)="showDetails(row)" title="Voir détails">
-                                    <i class="bx bx-show"></i>
+                                <button mat-icon-button color="accent" matTooltip="Voir détails" (click)="showDetails(row)">
+                                    <mat-icon>visibility</mat-icon>
                                 </button>
-                                <button class="btn btn-outline-warning btn-sm" (click)="openStatusModal(row)" title="Changer le statut">
-                                    <i class="bx bx-transfer"></i>
+                                <button mat-icon-button color="warning" matTooltip="Changer le statut" (click)="openStatusModal(row)">
+                                    <mat-icon>swap_horiz</mat-icon>
                                 </button>
                             </div>
                         </td>
@@ -197,121 +209,121 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal unique pour Créer et Modifier un Candidat -->
-<ng-template #formModal>
-  <form [formGroup]="CandidateForm" (ngSubmit)="onSubmit()">
-    <div class="modal-header">
-      <h5 class="modal-title">{{ isEditMode ? 'Edit Candidate' : 'Create New Candidate' }}</h5>
-      <button type="button" class="btn-close" (click)="modalRef?.hide()" aria-label="Close"></button>
-    </div>
-    <div class="modal-body">
-      <!-- Row 1 -->
-      <div class="row">
-        <!-- Section Infos personnelles -->
-        <div class="col-md-6 border-end">
-          <h6 class="text-primary">Infos personnelles</h6>
-          <div class="mb-3">
-            <label class="form-label">Prénom <span class="text-danger">*</span></label>
-            <input class="form-control" formControlName="firstname" type="text">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Nom <span class="text-danger">*</span></label>
-            <input class="form-control" formControlName="lastname" type="text">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Email <span class="text-danger">*</span></label>
-            <input class="form-control" formControlName="email" type="email">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Téléphone <span class="text-danger">*</span></label>
-            <input class="form-control" formControlName="phoneNumber" type="text">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Sexe <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="sex">
-              <option value="Male">Masculin</option>
-              <option value="Female">Féminin</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
-            <input class="form-control" formControlName="dateOfBirth" type="date">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Lieu de naissance <span class="text-danger">*</span></label>
-            <input class="form-control" formControlName="placeOfBirth" type="text">
-          </div>
+    <!-- Modal unique pour Créer et Modifier un Candidat -->
+    <ng-template #formModal>
+      <form [formGroup]="CandidateForm" (ngSubmit)="onSubmit()">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ isEditMode ? 'Edit Candidate' : 'Create New Candidate' }}</h5>
+          <button type="button" class="btn-close" (click)="modalRef?.hide()" aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          <!-- Row 1 -->
+          <div class="row">
+            <!-- Section Infos personnelles -->
+            <div class="col-md-6 border-end">
+              <h6 class="text-primary">Infos personnelles</h6>
+              <div class="mb-3">
+                <label class="form-label">Prénom <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="firstname" type="text">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="lastname" type="text">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="email" type="email">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="phoneNumber" type="text">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                <select class="form-select" formControlName="sex">
+                  <option value="Male">Masculin</option>
+                  <option value="Female">Féminin</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="dateOfBirth" type="date">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Lieu de naissance <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="placeOfBirth" type="text">
+              </div>
+            </div>
 
-        <!-- Section Infos académiques et parents -->
-        <div class="col-md-6">
-          <h6 class="text-primary">Infos académiques & parents</h6>
-          <div class="mb-3">
-            <label class="form-label">Nationalité <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="nationality">
-                <option *ngFor="let country of countries" [ngValue]="country">
-                    {{ country }}
+            <!-- Section Infos académiques et parents -->
+            <div class="col-md-6">
+              <h6 class="text-primary">Infos académiques & parents</h6>
+              <div class="mb-3">
+                <label class="form-label">Nationalité <span class="text-danger">*</span></label>
+                <select class="form-select" formControlName="nationality">
+                    <option *ngFor="let country of countries" [ngValue]="country">
+                        {{ country }}
+                    </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Niveau scolaire</label>
+                <input class="form-control" formControlName="highestSchoolLevel" type="text">
+              </div>
+              <hr/>
+              <div class="mb-3">
+                <label class="form-label">Nom du père</label>
+                <input class="form-control" formControlName="fatherFullName" type="text">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Profession du père</label>
+                <input class="form-control" formControlName="fatherProfession" type="text">
+              </div>
+              <hr/>
+              <div class="mb-3">
+                <label class="form-label">Nom de la mère</label>
+                <input class="form-control" formControlName="motherFullName" type="text">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Profession de la mère</label>
+                <input class="form-control" formControlName="motherProfession" type="text">
+              </div>
+            </div>
+          </div>
+          
+          <hr/>
+          <h6 class="text-primary mt-3">Centre & Statut</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Centre d'Examen <span class="text-danger">*</span></label>
+              <select class="form-select" formControlName="examCenterId">
+                <option *ngFor="let center of examCenters" [ngValue]="center.id">
+                  {{ center.name }}
                 </option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Niveau scolaire</label>
-            <input class="form-control" formControlName="highestSchoolLevel" type="text">
-          </div>
-          <hr/>
-          <div class="mb-3">
-            <label class="form-label">Nom du père</label>
-            <input class="form-control" formControlName="fatherFullName" type="text">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Profession du père</label>
-            <input class="form-control" formControlName="fatherProfession" type="text">
-          </div>
-          <hr/>
-          <div class="mb-3">
-            <label class="form-label">Nom de la mère</label>
-            <input class="form-control" formControlName="motherFullName" type="text">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Profession de la mère</label>
-            <input class="form-control" formControlName="motherProfession" type="text">
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Statut du Dossier <span class="text-danger">*</span></label>
+              <select class="form-select" formControlName="contentStatus">
+                <option value="DRAFT">Brouillon (Draft)</option>
+                <option value="READYTOPAY">Prêt à payer (Ready to Pay)</option>
+                <option value="PAID">Payé (Paid)</option>
+                <option value="VALIDATED">Validé (Validated)</option>
+                <option value="INCOMPLETED">Incomplet (Incompleted)</option>
+                <option value="REJECTED">Rejeté (Rejected)</option>
+                <option value="PENDING">En attente (Pending)</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <hr/>
-      <h6 class="text-primary mt-3">Centre & Statut</h6>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Centre d'Examen <span class="text-danger">*</span></label>
-          <select class="form-select" formControlName="examCenterId">
-            <option *ngFor="let center of examCenters" [ngValue]="center.id">
-              {{ center.name }}
-            </option>
-          </select>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="CandidateForm.invalid || processing">
+            <span *ngIf="!processing">{{ isEditMode ? 'Sauvegarder les changements' : 'Créer le candidat' }}</span>
+            <span *ngIf="processing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          </button>
         </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Statut du Dossier <span class="text-danger">*</span></label>
-          <select class="form-select" formControlName="contentStatus">
-            <option value="DRAFT">Brouillon (Draft)</option>
-            <option value="READYTOPAY">Prêt à payer (Ready to Pay)</option>
-            <option value="PAID">Payé (Paid)</option>
-            <option value="VALIDATED">Validé (Validated)</option>
-            <option value="INCOMPLETED">Incomplet (Incompleted)</option>
-            <option value="REJECTED">Rejeté (Rejected)</option>
-            <option value="PENDING">En attente (Pending)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Annuler</button>
-      <button type="submit" class="btn btn-primary" [disabled]="CandidateForm.invalid || processing">
-        <span *ngIf="!processing">{{ isEditMode ? 'Sauvegarder les changements' : 'Créer le candidat' }}</span>
-        <span *ngIf="processing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      </button>
-    </div>
-  </form>
-</ng-template>
+      </form>
+    </ng-template>
+</div>

@@ -13,7 +13,7 @@ import { SessionResponse } from 'src/app/services/models/session-response';
   styleUrls: ['./session-management.component.scss']
 })
 export class SessionManagementComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['sessionYear', 'examType', 'examDate', 'status', 'actions'];
+  displayedColumns: string[] = ['sessionYear', 'examType', 'examDate', 'registrationStartDate', 'registrationEndDate', 'status', 'actions'];
   dataSource = new MatTableDataSource<SessionResponse>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -50,7 +50,9 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
     this.sessionForm = this.fb.group({
       sessionYear: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(4)]],
       examType: ['', Validators.required],
-      examDate: ['', Validators.required]
+      examDate: ['', Validators.required],
+      registrationStartDate: ['', Validators.required],
+      registrationEndDate: ['', Validators.required]
     });
 
     this.searchForm = this.fb.group({
@@ -118,6 +120,22 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
     });
   }
 
+  loadOpenRegistrationSessions(): void {
+    this.processing = true;
+    this.sessionService['http'].get<SessionResponse[]>(this.sessionService.rootUrl + '/session/open-registrations').subscribe({
+      next: (sessions) => {
+        this.dataSource.data = sessions;
+        this.totalElements = sessions.length;
+        this.totalPages = 1;
+        this.processing = false;
+      },
+      error: (error) => {
+        this.processing = false;
+        Swal.fire('Erreur', 'Impossible de charger les sessions ouvertes à l\'inscription', 'error');
+      }
+    });
+  }
+
   loadStatistics(): void {
     // Calcul des statistiques basiques
     this.statistics.totalSessions = this.dataSource.data.length;
@@ -146,7 +164,9 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
     this.sessionForm.patchValue({
       sessionYear: session.sessionYear,
       examType: session.examType,
-      examDate: session.examDate ? session.examDate.substring(0, 10) : ''
+      examDate: session.examDate ? session.examDate.substring(0, 10) : '',
+      registrationStartDate: session.registrationStartDate ? session.registrationStartDate.substring(0, 10) : '',
+      registrationEndDate: session.registrationEndDate ? session.registrationEndDate.substring(0, 10) : ''
     });
     this.showFormModal();
   }
@@ -180,6 +200,16 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
                    min="${new Date().toISOString().split('T')[0]}">
             <div class="form-text">La date doit être future</div>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Date début inscription *</label>
+            <input name="registrationStartDate" type="date" class="form-control" required 
+                   value="${this.sessionForm.value.registrationStartDate || ''}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date fin inscription *</label>
+            <input name="registrationEndDate" type="date" class="form-control" required 
+                   value="${this.sessionForm.value.registrationEndDate || ''}">
+          </div>
         </form>
       `,
       showCancelButton: true,
@@ -193,18 +223,32 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
           const formData = new FormData(form);
           const value: any = {};
           formData.forEach((v, k) => value[k] = v);
-          
+
           // Validation supplémentaire
+          if (!value.sessionYear || !value.examType || !value.examDate || !value.registrationStartDate || !value.registrationEndDate) {
+            Swal.showValidationMessage('Tous les champs obligatoires doivent être remplis.');
+            return false;
+          }
           if (value.sessionYear && (value.sessionYear < 2020 || value.sessionYear > 2030)) {
             Swal.showValidationMessage('L\'année doit être entre 2020 et 2030');
             return false;
           }
-          
           if (value.examDate && new Date(value.examDate) < new Date()) {
             Swal.showValidationMessage('La date d\'examen doit être future');
             return false;
           }
-          
+          if (value.registrationStartDate > value.registrationEndDate) {
+            Swal.showValidationMessage('La date de début d\'inscription doit être antérieure ou égale à la date de fin d\'inscription.');
+            return false;
+          }
+          if (value.registrationStartDate > value.examDate) {
+            Swal.showValidationMessage('La date de début d\'inscription doit être antérieure ou égale à la date d\'examen.');
+            return false;
+          }
+          if (value.registrationEndDate > value.examDate) {
+            Swal.showValidationMessage('La date de fin d\'inscription doit être antérieure ou égale à la date d\'examen.');
+            return false;
+          }
           return value;
         } else {
           Swal.showValidationMessage('Veuillez remplir tous les champs obligatoires');
@@ -230,7 +274,9 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
       body: {
         sessionYear: formValue.sessionYear,
         examType: formValue.examType,
-        examDate: formValue.examDate
+        examDate: formValue.examDate,
+        registrationStartDate: formValue.registrationStartDate,
+        registrationEndDate: formValue.registrationEndDate
       }
     }).subscribe({
       next: (response) => {
@@ -256,7 +302,9 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
         sessionId,
         sessionYear: formValue.sessionYear,
         examType: formValue.examType,
-        examDate: formValue.examDate
+        examDate: formValue.examDate,
+        registrationStartDate: formValue.registrationStartDate,
+        registrationEndDate: formValue.registrationEndDate
       }
     }).subscribe({
       next: (response) => {

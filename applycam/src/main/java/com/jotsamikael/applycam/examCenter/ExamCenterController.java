@@ -31,9 +31,9 @@ public class ExamCenterController {
 	
 	 private final ExamService examService;
 
-	    @PostMapping("/assign-exam-center/{id}")
-	    public ResponseEntity<Void> assignExamCenter(@PathVariable Long id) {
-	        examService.assignRandomExamCenterToCandidate(id);
+	    @PostMapping("/assign-exam-center/{email}")
+	    public ResponseEntity<Void> assignExamCenter(@PathVariable String email) {
+	        examService.assignRandomExamCenterToCandidate(email);
 	        return ResponseEntity.ok().build();
 	    }
 	    

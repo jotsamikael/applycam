@@ -1,1 +1,93 @@
-<p>system-statistics works!</p>
+<div class="container-fluid mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Statistiques du système</h2>
+    <button class="btn btn-outline-primary" (click)="refreshStats()" [disabled]="loading" matTooltip="Rafraîchir les statistiques">
+      <i class="bx bx-refresh"></i>
+      <span *ngIf="loading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <!-- Statistiques globales -->
+  <div class="row mb-3">
+    <div class="col-md-4 col-6 mb-3">
+      <app-stat title="Candidats" [value]="totalCandidates" icon="bx-user"></app-stat>
+    </div>
+    <div class="col-md-4 col-6 mb-3">
+      <app-stat title="Centres de formation" [value]="totalTrainingCenters" icon="bx-building-house"></app-stat>
+    </div>
+    <div class="col-md-4 col-6 mb-3">
+      <app-stat title="Centres d'examen" [value]="totalExamCenters" icon="bx-map"></app-stat>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-md-4 col-6 mb-3">
+      <app-stat title="Sessions" [value]="totalSessions" icon="bx-calendar"></app-stat>
+    </div>
+    <div class="col-md-4 col-6 mb-3">
+      <app-stat title="Candidatures" [value]="totalApplications" icon="bx-file"></app-stat>
+    </div>
+    <div class="col-md-4 col-6 mb-3">
+      <app-stat title="Paiements" [value]="totalPayments" icon="bx-credit-card"></app-stat>
+    </div>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Évolution des candidatures par mois</h5>
+          <canvas baseChart
+                  *ngIf="lineChartConfig"
+                  [data]="lineChartConfig.data"
+                  [type]="lineChartConfig.type"
+                  [options]="lineChartConfig.options">
+          </canvas>
+          <div *ngIf="!lineChartConfig" class="text-muted">Aucune donnée</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Répartition des candidats par région</h5>
+          <canvas baseChart
+                  *ngIf="doughnutChartConfigCandidates"
+                  [data]="doughnutChartConfigCandidates.data"
+                  [type]="doughnutChartConfigCandidates.type"
+                  [options]="doughnutChartConfigCandidates.options">
+          </canvas>
+          <div *ngIf="!doughnutChartConfigCandidates" class="text-muted">Aucune donnée</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Répartition des centres d'examen par région</h5>
+          <canvas baseChart
+                  *ngIf="doughnutChartConfigCenters"
+                  [data]="doughnutChartConfigCenters.data"
+                  [type]="doughnutChartConfigCenters.type"
+                  [options]="doughnutChartConfigCenters.options">
+          </canvas>
+          <div *ngIf="!doughnutChartConfigCenters" class="text-muted">Aucune donnée</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Statut des candidatures</h5>
+          <canvas baseChart
+                  *ngIf="barChartConfigStatus"
+                  [data]="barChartConfigStatus.data"
+                  [type]="barChartConfigStatus.type"
+                  [options]="barChartConfigStatus.options">
+          </canvas>
+          <div *ngIf="!barChartConfigStatus" class="text-muted">Aucune donnée</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

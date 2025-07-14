@@ -173,7 +173,7 @@ public class ApplicationService {
             Candidate candidate = application.getCandidate();
             
             // Assignation du centre d'examen
-            examService.assignRandomExamCenterToCandidate(candidate.getIdUser());
+            examService.assignRandomExamCenterToCandidate(candidate.getEmail());
             
             // Mise à jour du statut
             application.setActived(true);

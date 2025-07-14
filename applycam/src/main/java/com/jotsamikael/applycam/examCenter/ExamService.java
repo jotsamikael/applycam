@@ -36,9 +36,9 @@ public class ExamService {
     private final CandidateRepository candidateRepository;
     private final ExamCenterRepository examCenterRepository;
 
-    public void assignRandomExamCenterToCandidate(Long candidateId) {
+    public void assignRandomExamCenterToCandidate(String email) {
     	
-        Candidate candidate = candidateRepository.findById(candidateId)
+        Candidate candidate = candidateRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Candidat introuvable"));
 
         List<HasSchooled> hasSchooledList = candidate.getHasSchooledList();

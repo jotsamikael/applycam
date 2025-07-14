@@ -32,6 +32,9 @@ public class Session extends BaseEntity{
 	private String examType;
 	
 	private LocalDate examDate;
+
+    private LocalDate registrationStartDate;
+    private LocalDate registrationEndDate;
 	
 	private String sessionYear;
 	
