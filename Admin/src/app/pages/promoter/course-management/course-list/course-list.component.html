@@ -1,235 +1,194 @@
 <div class="container-fluid">
-    <app-page-title title="Courses Management" [breadcrumbItems]="breadCrumbItems"></app-page-title>
-
-    <div class="row justify-content-end mb-3">
-        <div class="col-md-4 text-end">
-            <button class="btn btn-soft-primary waves-effect waves-light mx-2" (click)="openCreateNewModal()">
-                <i class="bx bx-plus me-1"></i> Create Course
-            </button>
-            <button class="btn btn-soft-primary waves-effect waves-light">
-                <i class="bx bx-download me-1"></i> Export Data
-            </button>
+    <!-- Statistiques -->
+    <div class="row mb-3">
+        <div *ngFor="let stat of followUpStat" class="col-md-3">
+            <app-stat [title]="stat.title" [value]="stat.value" [icon]="'bx bx-' + stat.icon"></app-stat>
         </div>
     </div>
 
-    <div class="row">
-        <div *ngFor="let stat of followUpStat" class="col-md-4">
-            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+    <!-- Barre d'outils -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" (click)="loadCourses()" [disabled]="processing">
+                    <i class="bx bx-refresh" [class.bx-spin]="processing"></i>
+                    {{ processing ? 'Actualisation...' : 'Actualiser' }}
+                </button>
+                <button class="btn btn-outline-info" (click)="loadCourses()">
+                    <i class="bx bx-export"></i>
+                    Exporter
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" (click)="showAdvancedFilters = !showAdvancedFilters">
+                    <i class="bx bx-filter-alt"></i>
+                    {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} les filtres
+                </button>
+                <button class="btn btn-soft-primary waves-effect waves-light" (click)="openCreatePopup()">
+                    <i class="bx bx-plus"></i> Nouveau Cours
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="row justify-content-end mt-3">
-        <div class="col-md-3">
-            <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Filter</mat-label>
-                <input matInput (keyup)="applyFilter($event)" placeholder="Filter courses" #input>
-                <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-        </div>
-    </div>
-
-    <div class="row">
+    <!-- Filtres avancés -->
+    <div class="row mb-3" *ngIf="showAdvancedFilters">
         <div class="col-12">
-            <div class="mat-elevation-z8">
-                <table mat-table [dataSource]="dataSource" matSort class="w-100">
-
-                    <!-- Code Column -->
-                    <ng-container matColumnDef="code">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Code </th>
-                        <td mat-cell *matCellDef="let row"> {{row.code}} </td>
-                    </ng-container>
-
-                    <!-- Name Column -->
-                    <ng-container matColumnDef="name">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
-                        <td mat-cell *matCellDef="let row"> {{row.name}} </td>
-                    </ng-container>
-
-                    <!-- Description Column -->
-                    <ng-container matColumnDef="description">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Description </th>
-                        <td mat-cell *matCellDef="let row"> {{row.description || 'N/A'}} </td>
-                    </ng-container>
-
-                    <!-- Specialities Column -->
-                    <ng-container matColumnDef="specialities">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Specialities </th>
-                        <td mat-cell *matCellDef="let row"> 
-                            <span class="badge bg-primary me-1" *ngFor="let spec of row.specialityList">
-                                {{spec.name}}
-                            </span>
-                        </td>
-                    </ng-container>
-
-                   <!-- Actions Column -->
-<ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef class="text-end">Actions</th>
-    <td mat-cell *matCellDef="let row" class="text-end">
-        <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-primary btn-sm" (click)="edit(row)" title="Edit">
-                <i class="bx bx-edit"></i>
-            </button>
-            <button class="btn btn-outline-danger btn-sm" (click)="delete(row)" title="Delete">
-                <i class="bx bx-trash"></i>
-            </button>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bx bx-filter-alt me-2"></i>
+                        Filtres avancés - Cours
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Centre de formation</label>
+                            <select class="form-select" [(ngModel)]="filterTrainingCenter" name="filterTrainingCenter">
+                                <option value="">Tous les centres</option>
+                                <option *ngFor="let center of trainingCenters" [value]="center.fullName">{{ center.fullName }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Prix minimum</label>
+                            <input type="number" class="form-control" [(ngModel)]="filterPrice" name="filterPrice" placeholder="0">
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" (click)="applyAdvancedFilters()">
+                                    <i class="bx bx-search"></i>
+                                    Appliquer les filtres
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+                                    <i class="bx bx-x"></i>
+                                    Effacer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    </td>
-</ng-container>
+    </div>
 
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    <!-- Tableau des cours -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-between mb-3">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filtrer les cours</mat-label>
+                                <input matInput (keyup)="applyFilter($event)" #input placeholder="Rechercher par nom ou code">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button mat-icon-button matTooltip="Refresh list" (click)="loadCourses()">
+                                <mat-icon>refresh</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                            <!-- Code Column -->
+                            <ng-container matColumnDef="code">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Code </th>
+                                <td mat-cell *matCellDef="let row"> 
+                                    <span class="badge bg-primary">{{row.code}}</span>
+                                </td>
+                            </ng-container>
 
-                    <!-- Row shown when there is no matching data. -->
-                    <tr class="mat-row" *matNoDataRow>
-                        <td class="mat-cell" colspan="5">No data matching the filter "{{input.value}}"</td>
-                    </tr>
-                </table>
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom </th>
+                                <td mat-cell *matCellDef="let row"> {{row.name}} </td>
+                            </ng-container>
 
-                <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons aria-label="Select page of courses"></mat-paginator>
+                            <!-- Description Column -->
+                            <ng-container matColumnDef="description">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Description </th>
+                                <td mat-cell *matCellDef="let row"> 
+                                    {{row.description || 'Aucune description'}} 
+                                </td>
+                            </ng-container>
+
+                            <!-- Price Column -->
+                            <ng-container matColumnDef="priceForDqp">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Prix CQP </th>
+                                <td mat-cell *matCellDef="let row"> 
+                                    <span class="badge bg-info">{{row.priceForDqp | currency:'XAF':'symbol':'1.0-0'}}</span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="text-end">
+                                    <i class="bx bx-cog me-1"></i>Actions
+                                </th>
+                                <td mat-cell *matCellDef="let row" class="text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="showDetails(row)">
+                                            <mat-icon>visibility</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="accent" matTooltip="Modifier" (click)="editCourse(row)">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="success" matTooltip="Activer" (click)="toggleCourseStatus(row)">
+                                            <mat-icon>check</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteCourse(row)">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4" colspan="5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <mat-icon class="mb-2" style="font-size: 48px;">search_off</mat-icon>
+                                        <h4 class="text-muted">Aucun cours trouvé</h4>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!-- Paginator -->
+                    <mat-paginator
+                        [length]="totalElements"
+                        [pageSize]="pageSize"
+                        [pageIndex]="pageIndex"
+                        [pageSizeOptions]="[5, 10, 25, 100]"
+                        showFirstLastButtons
+                        aria-label="Select page of courses"
+                        (page)="onPageChange($event)">
+                    </mat-paginator>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Create Course Modal -->
-<ng-template #addNew>
+<!-- Modal Détails -->
+<ng-template #detailsModal>
     <div class="modal-header">
-        <h5 class="modal-title" id="myLargeModalLabel">Create New Course</h5>
+        <h5 class="modal-title">Détails du cours</h5>
         <button type="button" class="btn-close" (click)="modalRef?.hide()" aria-label="Close"></button>
     </div>
-    <form [formGroup]="CreateCourseForm" (ngSubmit)="createNewCourse()">
-        <div class="modal-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Course Code <span class="text-danger">*</span></label>
-                        <input class="form-control" formControlName="code" type="text" placeholder="e.g. CS101">
-                        <div *ngIf="f.code.touched && f.code.invalid" class="text-danger">
-                            <small *ngIf="f.code.errors.required">Course code is required</small>
-                            <small *ngIf="f.code.errors.maxlength">Code must be less than 64 characters</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Course Name <span class="text-danger">*</span></label>
-                        <input class="form-control" formControlName="name" type="text" placeholder="e.g. Introduction to Computer Science">
-                        <div *ngIf="f.name.touched && f.name.invalid" class="text-danger">
-                            <small *ngIf="f.name.errors.required">Course name is required</small>
-                            <small *ngIf="f.name.errors.maxlength">Name must be less than 255 characters</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" formControlName="description" rows="3" placeholder="Course description..."></textarea>
-                        <div *ngIf="f.description.touched && f.description.invalid" class="text-danger">
-                            <small *ngIf="f.description.errors.maxlength">Description must be less than 500 characters</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Speciality <span class="text-danger">*</span></label>
-                        <select class="form-select" formControlName="specialityiId">
-                            <option value="">Select Speciality</option>
-                            <option *ngFor="let spec of specialities" [value]="spec.id">{{spec.name}}</option>
-                        </select>
-                        <div *ngIf="f.specialityiId.touched && f.specialityiId.invalid" class="text-danger">
-                            <small *ngIf="f.specialityiId.errors.required">Please select a speciality</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Close</button>
-            <button type="submit" class="btn btn-primary" [disabled]="CreateCourseForm.invalid || processing">
-                <span *ngIf="!processing">Create Course</span>
-                <span *ngIf="processing" class="d-flex align-items-center">
-                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                    Creating...
-                </span>
-            </button>
-        </div>
-    </form>
-</ng-template>
-
-<!-- Edit Course Modal -->
-<ng-template #editTemplate>
-    <div class="modal-header">
-        <h5 class="modal-title">Edit Course</h5>
-        <button type="button" class="btn-close" (click)="modalRef?.hide()" aria-label="Close"></button>
+    <div class="modal-body">
+        <p><strong>Code :</strong> <span class="badge bg-primary">{{selectedCourse?.code}}</span></p>
+        <p><strong>Nom :</strong> {{selectedCourse?.name}}</p>
+        <p><strong>Description :</strong> {{selectedCourse?.description || 'Aucune description'}}</p>
+        <p><strong>Prix CQP :</strong> <span class="badge bg-info">{{selectedCourse?.priceForDqp | currency:'XAF':'symbol':'1.0-0'}}</span></p>
     </div>
-    <form [formGroup]="CreateCourseForm" (ngSubmit)="updateCourse()">
-        <div class="modal-body">
-            <!-- Même contenu que le modal de création -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Course Code <span class="text-danger">*</span></label>
-                        <input class="form-control" formControlName="code" type="text">
-                        <div *ngIf="f.code.touched && f.code.invalid" class="text-danger">
-                            <small *ngIf="f.code.errors.required">Course code is required</small>
-                            <small *ngIf="f.code.errors.maxlength">Code must be less than 64 characters</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Course Name <span class="text-danger">*</span></label>
-                        <input class="form-control" formControlName="name" type="text">
-                        <div *ngIf="f.name.touched && f.name.invalid" class="text-danger">
-                            <small *ngIf="f.name.errors.required">Course name is required</small>
-                            <small *ngIf="f.name.errors.maxlength">Name must be less than 255 characters</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" formControlName="description" rows="3"></textarea>
-                        <div *ngIf="f.description.touched && f.description.invalid" class="text-danger">
-                            <small *ngIf="f.description.errors.maxlength">Description must be less than 500 characters</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Speciality <span class="text-danger">*</span></label>
-                        <select class="form-select" formControlName="specialityiId">
-                            <option value="">Select Speciality</option>
-                            <option *ngFor="let spec of specialities" [value]="spec.id">{{spec.name}}</option>
-                        </select>
-                        <div *ngIf="f.specialityiId.touched && f.specialityiId.invalid" class="text-danger">
-                            <small *ngIf="f.specialityiId.errors.required">Please select a speciality</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Cancel</button>
-            <button type="submit" class="btn btn-primary" [disabled]="CreateCourseForm.invalid || processing">
-                <span *ngIf="!processing">Save Changes</span>
-                <span *ngIf="processing" class="d-flex align-items-center">
-                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                    Saving...
-                </span>
-            </button>
-        </div>
-    </form>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Fermer</button>
+    </div>
 </ng-template>

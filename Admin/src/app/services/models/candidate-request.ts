@@ -24,3 +24,16 @@ export interface CandidateRequest {
   sex?: string;
   townOfResidence?: string;
 }
+
+// Ajout : modèle pour la création par le centre
+export interface CandidateByCenterRequest {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phoneNumber: string;
+  language: string;
+  startYear: string;
+  endYear: string;
+  trainingCenterName: string;
+  // Ajouter d'autres champs si besoin
+}

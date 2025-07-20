@@ -4,6 +4,7 @@ import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.staff.CreateStaffRequest;
 import com.jotsamikael.applycam.staff.StaffResponse;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -242,6 +243,24 @@ public class PromoterController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Erreur lors de la suppression définitive: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Infos complètes du promoteur (profil + centres de formation + documents)
+     */
+    @GetMapping("/promoter-information")
+    @Operation(summary = "Infos complètes du promoteur", description = "Retourne toutes les infos du promoteur et de ses centres de formation")
+    public ResponseEntity<PromoterFullInfoResponse> promoterInformation(
+        @RequestParam String email
+    ) {
+        try {
+            PromoterFullInfoResponse info = promoterService.promoterInformation(email);
+            return ResponseEntity.ok(info);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

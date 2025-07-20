@@ -223,7 +223,7 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
           const formData = new FormData(form);
           const value: any = {};
           formData.forEach((v, k) => value[k] = v);
-
+          
           // Validation supplémentaire
           if (!value.sessionYear || !value.examType || !value.examDate || !value.registrationStartDate || !value.registrationEndDate) {
             Swal.showValidationMessage('Tous les champs obligatoires doivent être remplis.');

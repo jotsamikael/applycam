@@ -1,5 +1,5 @@
 {
-  "name": "skote-angular-vertical",
+  "name": "Applycam-angular-vertical",
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
@@ -34,7 +34,7 @@
     "@fullcalendar/interaction": "^6.1.8",
     "@fullcalendar/list": "^6.1.8",
     "@fullcalendar/timegrid": "^6.1.8",
-    "@ng-bootstrap/ng-bootstrap": "^18.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^15.1.2",
     "@ng-select/ng-select": "^11.0.0",
     "@ngx-translate/core": "^15.0.0",
     "@ngx-translate/http-loader": "^8.0.0",

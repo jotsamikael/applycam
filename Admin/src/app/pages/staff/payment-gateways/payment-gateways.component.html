@@ -84,9 +84,9 @@
   <!-- Barre d'outils -->
   <div class="row mb-3">
     <div class="col-md-6">
-      <button class="btn btn-primary waves-effect waves-light me-2" (click)="openCreateModal()">
+      <!-- <button class="btn btn-primary waves-effect waves-light me-2" (click)="openCreateModal()">
         <i class="bx bx-plus me-1"></i> Créer un paiement
-      </button>
+      </button> -->
       <button class="btn btn-success waves-effect waves-light me-2" (click)="refreshData()" [disabled]="processing">
         <i class="bx bx-refresh me-1"></i> Actualiser
       </button>
@@ -179,25 +179,13 @@
 
               <!-- Actions -->
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Actions</th>
-                <td mat-cell *matCellDef="let payment">
-                  <div class="d-flex gap-1">
-                    <!-- Bouton Modifier -->
-                    <button mat-icon-button color="primary" 
-                            (click)="openEditModal(payment)" 
-                            matTooltip="Modifier"
-                            [disabled]="!canEdit(payment)">
-                      <mat-icon>edit</mat-icon>
+                <th mat-header-cell *matHeaderCellDef class="text-end">
+                  <i class="bx bx-cog me-1"></i>Actions
+                </th>
+                <td mat-cell *matCellDef="let payment" class="text-end">
+                  <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="viewPaymentDetails(payment)">
+                    <mat-icon>visibility</mat-icon>
                     </button>
-
-                    <!-- Bouton Supprimer -->
-                    <button mat-icon-button color="warn" 
-                            (click)="confirmDelete(payment)" 
-                            matTooltip="Supprimer"
-                            [disabled]="!canDelete(payment)">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
                 </td>
               </ng-container>
 

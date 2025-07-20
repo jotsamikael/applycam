@@ -53,9 +53,9 @@ export class CampusService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  createCampus(params: CreateCampus$Params, context?: HttpContext): Observable<string> {
+  createCampus(params: CreateCampus$Params, context?: HttpContext): Observable<any> {
     return this.createCampus$Response(params, context).pipe(
-      map((r: StrictHttpResponse<string>): string => r.body)
+      map((r: StrictHttpResponse<any>): any => r.body)
     );
   }
 

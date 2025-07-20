@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "skote": {
+    "Applycam": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -22,7 +22,7 @@
               "ev-emitter/ev-emitter","can-use-dom","lodash.debounce","lodash.memoize","lodash.throttle","metismenujs/dist/metismenujs","sweetalert2",
               "@ckeditor/ckeditor5-build-classic"
             ],
-            "outputPath": "dist/skote",
+            "outputPath": "dist/Applycam",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -86,14 +86,14 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "skote:build"
+            "browserTarget": "Applycam:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "skote:build:production"
+              "browserTarget": "Applycam:build:production"
             },
             "development": {
-              "browserTarget": "skote:build:development"
+              "browserTarget": "Applycam:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -101,7 +101,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "skote:build"
+            "browserTarget": "Applycam:build"
           }
         },
         "test": {

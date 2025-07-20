@@ -13,4 +13,14 @@ export interface ApplicationResponse {
   paymentMethod?: string;
   speciality?: string;
   status?: 'READYTOPAY' | 'DRAFT' | 'PAID' | 'VALIDATED' | 'INCOMPLETED' | 'REJECTED' | 'PENDING';
+  paymentReceiptUrl?: string;
+  cniUrl?: string;
+  diplomaUrl?: string;
+  photoUrl?: string;
+  birthCertificateUrl?: string;
+  cvUrl?: string;
+  letterUrl?: string;
+  financialJustificationUrl?: string;
+  stageCertificateUrl?: string;
+  oldApplyanceUrl?: string;
 }

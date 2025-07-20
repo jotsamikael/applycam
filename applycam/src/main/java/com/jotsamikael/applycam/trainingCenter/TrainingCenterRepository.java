@@ -26,6 +26,8 @@ public interface TrainingCenterRepository extends JpaRepository<TrainingCenter, 
 
     Optional<TrainingCenter> findByAgreementNumber(String agreementNumber);
     
+    List<TrainingCenter> findAllByAgreementNumber(String agreementNumber);
+    
     Optional<TrainingCenter> findByCenterEmail(String centerEmail);
 
     Optional<List<TrainingCenter>> findByPromoter(Promoter promoter);

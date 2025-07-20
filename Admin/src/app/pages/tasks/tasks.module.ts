@@ -13,6 +13,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 import { TasksRoutingModule } from './tasks-routing.module';
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 
 import { ListComponent } from './list/list.component';
 import { KanbanboardComponent } from './kanbanboard/kanbanboard.component';
@@ -26,6 +27,7 @@ import { CreatetaskComponent } from './createtask/createtask.component';
     ReactiveFormsModule,
     TasksRoutingModule,
     UIModule,
+    SharedModule,
     NgApexchartsModule,
     BsDatepickerModule.forRoot(),
     ModalModule.forRoot(),

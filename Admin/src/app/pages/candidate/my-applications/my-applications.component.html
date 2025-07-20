@@ -16,10 +16,10 @@
                     <i class="bx bx-refresh" [class.bx-spin]="processing"></i>
                     {{ processing ? 'Actualisation...' : 'Actualiser' }}
                 </button>
-                <button class="btn btn-outline-info" (click)="exportMyApplications()">
+                <!-- <button class="btn btn-outline-info" (click)="exportMyApplications()">
                     <i class="bx bx-export"></i>
                     Exporter
-                </button>
+                </button> -->
                 <button class="btn btn-outline-success" (click)="showStatisticsPopup()" [disabled]="loadingStatistics">
                     <i class="bx bx-bar-chart-alt-2" [class.bx-spin]="loadingStatistics"></i>
                     {{ loadingStatistics ? 'Chargement...' : 'Statistiques' }}
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <!-- Recherche par nom de candidat -->
+    <!-- Recherche par nom de candidat
     <div class="row mb-3">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
@@ -78,7 +78,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- Options avancées -->
     <div class="row mb-3" *ngIf="showAdvancedOptions">
         <div class="col-12">
@@ -109,12 +109,12 @@
                                 Exporter mes données
                             </button>
                         </div>
-                        <div class="col-md-3">
+                        <!-- <div class="col-md-3">
                             <button class="btn btn-outline-primary w-100" (click)="openCreateModal()">
                                 <i class="bx bx-plus"></i>
                                 Nouvelle candidature
                             </button>
-                        </div>
+                        </div> -->
                         <div class="col-md-3">
                             <button class="btn btn-outline-warning w-100" (click)="reloadFormLists()">
                                 <i class="bx bx-refresh"></i>
@@ -207,20 +207,9 @@
                                         <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="viewApplicationDetails(application)">
                                             <mat-icon>visibility</mat-icon>
                                         </button>
-                                        <button mat-icon-button color="accent" matTooltip="Modifier" (click)="openEditModal(application)" [disabled]="application.status === 'VALIDATED' || application.status === 'PAID'">
+                                        <button mat-icon-button color="accent" matTooltip="Modifier" (click)="openEditModal(application)">
                                             <mat-icon>edit</mat-icon>
                                         </button>
-                                        <!--
-                                        <button mat-icon-button color="success" matTooltip="Valider" (click)="validateMyApplication(application)" [disabled]="application.status === 'VALIDATED'">
-                                            <mat-icon>check</mat-icon>
-                                        </button>
-                                        <button mat-icon-button color="warning" matTooltip="Annuler" (click)="cancelApplication(application)" [disabled]="application.status === 'VALIDATED' || application.status === 'PAID'">
-                                            <mat-icon>cancel</mat-icon>
-                                        </button>
-                                        <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteApplication(application)" [disabled]="processing || application.status === 'VALIDATED' || application.status === 'PAID'">
-                                            <mat-icon>delete</mat-icon>
-                                        </button>
-                                        -->
                                     </div>
                                 </td>
                             </ng-container>
@@ -264,6 +253,42 @@
     </div>
 </div>
 
+<!-- Bouton pour compléter les informations personnelles manquantes -->
+<!-- <div class="mb-3" *ngIf="dynamicFields.length > 0">
+  <button class="btn btn-warning" (click)="openDynamicPersonalModal()">
+    <i class="bx bx-user-plus"></i> Compléter mes informations personnelles
+  </button>
+</div> -->
+
+<!-- Modal dynamique pour compléter les infos personnelles -->
+<div class="modal fade" [class.show]="showDynamicPersonalModal" [style.display]="showDynamicPersonalModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bx bx-user"></i> Compléter mes informations personnelles</h5>
+        <button type="button" class="btn-close" (click)="closeDynamicPersonalModal()"></button>
+      </div>
+      <form [formGroup]="dynamicPersonalForm" (ngSubmit)="onSubmitDynamic()">
+        <div class="modal-body">
+          <div *ngFor="let field of dynamicFields" class="mb-3">
+            <label class="form-label">{{field.label}}</label>
+            <select *ngIf="field.type === 'select' && field.options" class="form-select" [formControlName]="field.key">
+              <option value="">Sélectionner</option>
+              <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
+            </select>
+            <input *ngIf="!field.type || field.type === 'text'" class="form-control" [formControlName]="field.key" type="text">
+            <input *ngIf="field.type === 'date'" class="form-control" [formControlName]="field.key" type="date">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDynamicPersonalModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="dynamicPersonalForm.invalid">Valider</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Modal de création/édition -->
 <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
     <div class="modal-dialog modal-xl">
@@ -277,13 +302,37 @@
             </div>
             <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
                 <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-12 text-end">
+                            <button class="btn btn-outline-warning" type="button" (click)="fillTestData()">
+                                <i class="bx bx-bolt"></i> Remplir test
+                            </button>
+                        </div>
+                    </div>
                     <!-- Informations personnelles -->
                     <div class="card mb-3">
-                        <div class="card-header">
+                        <div class="card-header bg-light">
                             <h6 class="mb-0"><i class="bx bx-user me-2"></i>Informations personnelles</h6>
                         </div>
                         <div class="card-body">
                             <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Prénom <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="firstname" type="text" placeholder="Votre prénom">
+                                    <div *ngIf="applicationForm.get('firstname')?.invalid && applicationForm.get('firstname')?.touched" class="text-danger small">Le prénom est requis.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="lastname" type="text" placeholder="Votre nom">
+                                    <div *ngIf="applicationForm.get('lastname')?.invalid && applicationForm.get('lastname')?.touched" class="text-danger small">Le nom est requis.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="dateOfBirth" type="date" placeholder="AAAA-MM-JJ">
+                                    <div *ngIf="applicationForm.get('dateOfBirth')?.invalid && applicationForm.get('dateOfBirth')?.touched" class="text-danger small">La date de naissance est requise.</div>
+                                </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Sexe <span class="text-danger">*</span></label>
                                     <select class="form-select" formControlName="sex">
@@ -291,120 +340,67 @@
                                         <option value="M">Masculin</option>
                                         <option value="F">Féminin</option>
                                     </select>
+                                    <div *ngIf="applicationForm.get('sex')?.invalid && applicationForm.get('sex')?.touched" class="text-danger small">Le sexe est requis.</div>
                                 </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="email" type="email" [value]="currentUser?.email" readonly>
+                                    <input class="form-control" formControlName="email" type="email" placeholder="exemple@email.com">
+                                    <div *ngIf="applicationForm.get('email')?.invalid && applicationForm.get('email')?.touched" class="text-danger small">Email valide requis.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                                    <input class="form-control" formControlName="phoneNumber" type="tel" placeholder="Numéro de téléphone">
+                                    <div *ngIf="applicationForm.get('phoneNumber')?.invalid && applicationForm.get('phoneNumber')?.touched" class="text-danger small">Le téléphone est requis.</div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Numéro CNI <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="nationIdNumber" type="text">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Niveau académique <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="academicLevel">
-                                        <option value="">Sélectionner</option>
-                                        <option value="BAC">BAC</option>
-                                        <option value="LICENCE">Licence</option>
-                                        <option value="MASTER">Master</option>
-                                        <option value="DOCTORAT">Doctorat</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="dateOfBirth" type="date">
+                                    <input class="form-control" formControlName="nationalIdNumber" type="text" placeholder="Numéro de carte nationale d'identité">
+                                    <div *ngIf="applicationForm.get('nationalIdNumber')?.invalid && applicationForm.get('nationalIdNumber')?.touched" class="text-danger small">Le numéro CNI est requis.</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Lieu de naissance <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="placeOfBirth" type="text">
+                                    <input class="form-control" formControlName="placeOfBirth" type="text" placeholder="Ville de naissance">
+                                    <div *ngIf="applicationForm.get('placeOfBirth')?.invalid && applicationForm.get('placeOfBirth')?.touched" class="text-danger small">Le lieu de naissance est requis.</div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Nationalité <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="nationality" type="text">
+                                    <label class="form-label">Nationalité</label>
+                                    <input class="form-control" formControlName="nationality" type="text" placeholder="Nationalité">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Région d'origine <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="regionOrigins">
-                                        <option value="">Sélectionner</option>
-                                        <option *ngFor="let region of cameroonRegions" [value]="region">{{region}}</option>
-                                    </select>
+                                    <label class="form-label">Ville de résidence</label>
+                                    <input class="form-control" formControlName="townOfResidence" type="text" placeholder="Ville de résidence">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Département d'origine <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="departmentOfOrigin" type="text">
+                                    <label class="form-label">Niveau scolaire</label>
+                                    <input class="form-control" formControlName="highestSchoolLevel" type="text" placeholder="Niveau scolaire le plus élevé">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Situation matrimoniale <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="matrimonialSituation">
-                                        <option value="">Sélectionner</option>
-                                        <option value="CELIBATAIRE">Célibataire</option>
-                                        <option value="MARIE">Marié(e)</option>
-                                        <option value="DIVORCE">Divorcé(e)</option>
-                                        <option value="VEUF">Veuf/Veuve</option>
-                                    </select>
+                                    <label class="form-label">Nom de la mère</label>
+                                    <input class="form-control" formControlName="motherFullName" type="text" placeholder="Nom complet de la mère">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Nombre d'enfants <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="numberOfKid" type="number" min="0">
+                                    <label class="form-label">Nom du père</label>
+                                    <input class="form-control" formControlName="fatherFullName" type="text" placeholder="Nom complet du père">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Langue d'apprentissage <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="learningLanguage">
-                                        <option value="">Sélectionner</option>
-                                        <option value="FRANCAIS">Français</option>
-                                        <option value="ANGLAIS">Anglais</option>
-                                        <option value="BILINGUE">Bilingue</option>
-                                    </select>
+                                    <label class="form-label">Profession de la mère</label>
+                                    <input class="form-control" formControlName="motherProfession" type="text" placeholder="Profession de la mère">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Candidat libre <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="freeCandidate">
-                                        <option value="">Sélectionner</option>
-                                        <option [value]="true">Oui</option>
-                                        <option [value]="false">Non</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Candidat répétiteur <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="repeatCandidate">
-                                        <option value="">Sélectionner</option>
-                                        <option [value]="true">Oui</option>
-                                        <option [value]="false">Non</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Mode de formation <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="formationMode">
-                                        <option value="">Sélectionner</option>
-                                        <option value="PRESENTIEL">Présentiel</option>
-                                        <option value="DISTANCE">À distance</option>
-                                        <option value="HYBRIDE">Hybride</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Ressource financière <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="financialRessource">
-                                        <option value="">Sélectionner</option>
-                                        <option value="PERSONNELLE">Personnelle</option>
-                                        <option value="FAMILLE">Famille</option>
-                                        <option value="EMPLOYEUR">Employeur</option>
-                                        <option value="BOURSE">Bourse</option>
-                                        <option value="AUTRE">Autre</option>
-                                    </select>
+                                    <label class="form-label">Profession du père</label>
+                                    <input class="form-control" formControlName="fatherProfession" type="text" placeholder="Profession du père">
                                 </div>
                             </div>
                         </div>
@@ -418,40 +414,38 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Spécialité <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="speciality">
-                                        <option value="">Sélectionner une spécialité</option>
-                                        <option *ngFor="let spec of specialities" [value]="spec.name">{{spec.name}}</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Nom du cours (si CQP)</label>
-                                    <input class="form-control" formControlName="courseName" type="text">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
                                     <label class="form-label">Type d'examen <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="examType">
+                                    <select class="form-select" formControlName="examType" (change)="onExamTypeChange($event)">
                                         <option value="">Sélectionner</option>
                                         <option value="DQP">DQP</option>
                                         <option value="CQP">CQP</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Région de candidature <span class="text-danger">*</span></label>
-                                    <select class="form-select" formControlName="applicationRegion">
-                                        <option value="">Sélectionner</option>
-                                        <option *ngFor="let region of cameroonRegions" [value]="region">{{region}}</option>
+                                    <label class="form-label">Filière (CQP)</label>
+                                    <select class="form-select" formControlName="courseName" (change)="onSpecialityOrCourseChange()">
+                                        <option value="">Sélectionner une filière</option>
+                                        <option *ngFor="let course of courses" [value]="course.name">{{course.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Spécialité (DQP)</label>
+                                    <select class="form-select" formControlName="speciality" (change)="onSpecialityOrCourseChange()">
+                                        <option value="">Sélectionner une spécialité</option>
+                                        <option *ngFor="let spec of specialities" [value]="spec.name">{{spec.name}}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Année de session <span class="text-danger">*</span></label>
+                                    <label class="form-label">Session <span class="text-danger">*</span></label>
                                     <select class="form-select" formControlName="sessionYear">
-                                        <option value="">Sélectionner</option>
-                                        <option *ngFor="let session of sessions" [value]="session.sessionYear">{{session.sessionYear}} - {{session.examType}}</option>
+                                        <option value="">Sélectionner une session</option>
+                                        <option *ngFor="let session of filteredSessions" [value]="session.sessionYear">
+                                            {{session.sessionYear}} - {{session.examType}}
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -484,13 +478,13 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Montant (FCFA) <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="amount" type="number" min="0" placeholder="0">
+                                    <input class="form-control" formControlName="amount" type="number" min="0" placeholder="0" readonly>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Code secret <span class="text-danger">*</span></label>
-                                    <input class="form-control" formControlName="secretCode" type="number" min="0" placeholder="0">
+                                    <input class="form-control" formControlName="secretCode" type="password" min="0" placeholder="0">
                                 </div>
                             </div>
                         </div>

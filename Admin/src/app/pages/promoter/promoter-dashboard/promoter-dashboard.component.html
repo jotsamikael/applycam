@@ -1,79 +1,171 @@
 <div class="container-fluid">
-  <!-- Page Title -->
-  <div class="row">
-    <div class="col-12">
-      <div class="page-title-box d-flex align-items-center justify-content-between">
-        <div class="page-title-left">
-          <h4 class="mb-0">Tableau de bord du promoteur</h4>
+    <!-- Statistiques -->
+    <div class="row mb-3">
+        <div *ngFor="let stat of stats" class="col-md-3">
+            <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Statistiques -->
-  <div class="row mx-2 mt-3">
-    <div class="col-md-3" *ngFor="let stat of stats">
-      <div class="card text-center">
-        <div class="card-body">
-          <i [class]="stat.icon + ' bx-lg text-' + stat.color"></i>
-          <h3 class="mt-2">{{ stat.value }}</h3>
-          <p class="mb-0">{{ stat.title }}</p>
+    <!-- Barre d'outils -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" (click)="refreshDashboard()" [disabled]="loading">
+                    <i class="bx bx-refresh" [class.bx-spin]="loading"></i>
+                    {{ loading ? 'Actualisation...' : 'Actualiser' }}
+                </button>
+                <button class="btn btn-outline-info" (click)="testAllApis()">
+                    <i class="bx bx-export"></i>
+                    Exporter
+                </button>
+            </div>
         </div>
-      </div>
+        <div class="col-md-6 text-end">
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" (click)="showAdvancedFilters = !showAdvancedFilters">
+                    <i class="bx bx-filter-alt"></i>
+                    {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} les filtres
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Infos promoteur -->
-  <div class="row mx-2 mt-3" *ngIf="promoter">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <h5>Mes informations</h5>
-          <table class="table table-bordered">
-            <tr><th>Nom</th><td>{{ promoter.lastname }}</td></tr>
-            <tr><th>Prénom</th><td>{{ promoter.firstname }}</td></tr>
-            <tr><th>Email</th><td>{{ promoter.email }}</td></tr>
-            <tr><th>Téléphone</th><td>{{ promoter.phoneNumber }}</td></tr>
-            <tr><th>Date de naissance</th><td>{{ promoter.dateOfBirth }}</td></tr>
-            <tr><th>Numéro CNI</th><td>{{ promoter.nationalIdNumber }}</td></tr>
-            <tr><th>Compte actif</th><td><span [ngClass]="{'text-success': promoter.enabled, 'text-danger': !promoter.enabled}">{{ promoter.enabled ? 'Oui' : 'Non' }}</span></td></tr>
-          </table>
+    <!-- Filtres avancés -->
+    <div class="row mb-3" *ngIf="showAdvancedFilters">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bx bx-filter-alt me-2"></i>
+                        Filtres avancés - Suivi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" [(ngModel)]="filterStatus" name="filterStatus">
+                                <option value="">Tous</option>
+                                <option value="DRAFT">Brouillon</option>
+                                <option value="VALIDATED">Validé</option>
+                                <option value="REJECTED">Rejeté</option>
+                                <option value="PENDING">En attente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Centre</label>
+                            <select class="form-select" [(ngModel)]="filterCenter" name="filterCenter">
+                                <option value="">Tous</option>
+                                <option *ngFor="let center of centers" [value]="center.id">{{ center.fullName }}</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" (click)="applyAdvancedFilters()">
+                                    <i class="bx bx-search"></i>
+                                    Appliquer les filtres
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+                                    <i class="bx bx-x"></i>
+                                    Effacer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Activités récentes -->
-  <div class="row mx-2 mt-3">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <h5>Activités récentes</h5>
-          <ul class="list-group">
-            <li class="list-group-item" *ngFor="let act of recentActivities">
-              <i [class]="act.icon + ' text-' + act.color"></i>
-              <strong>{{ act.title }}</strong> - {{ act.description }} <span class="float-end text-muted">{{ act.time }}</span>
-            </li>
-          </ul>
+    <!-- Tableau principal -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-between mb-3">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filtrer</mat-label>
+                                <input matInput (keyup)="applyFilter($event)" #input placeholder="Rechercher par nom, email ou centre">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button mat-icon-button matTooltip="Actualiser la liste" (click)="refreshDashboard()">
+                                <mat-icon>refresh</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                            <!-- Nom du candidat -->
+                            <ng-container matColumnDef="candidateName">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Candidat </th>
+                                <td mat-cell *matCellDef="let row"> {{row.candidateName}} </td>
+                            </ng-container>
+                            <!-- Email -->
+                            <ng-container matColumnDef="email">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+                                <td mat-cell *matCellDef="let row"> {{row.email}} </td>
+                            </ng-container>
+                            <!-- Centre -->
+                            <ng-container matColumnDef="center">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Centre </th>
+                                <td mat-cell *matCellDef="let row"> {{row.centerName}} </td>
+                            </ng-container>
+                            <!-- Statut -->
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Statut </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <span class="badge bg-info">{{row.status || 'DRAFT'}}</span>
+                                </td>
+                            </ng-container>
+                            <!-- Actions -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="text-end">
+                                    <i class="bx bx-cog me-1"></i>Actions
+                                </th>
+                                <td mat-cell *matCellDef="let row" class="text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="showDetails(row)">
+                                            <mat-icon>visibility</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="accent" matTooltip="Modifier" (click)="edit(row)">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="success" matTooltip="Valider" (click)="validate(row)">
+                                            <mat-icon>check</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn" matTooltip="Rejeter" (click)="reject(row)">
+                                            <mat-icon>block</mat-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </ng-container>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4" colspan="7">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <mat-icon class="mb-2" style="font-size: 48px;">search_off</mat-icon>
+                                        <h4 class="text-muted">Aucune donnée trouvée</h4>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!-- Paginator -->
+                    <mat-paginator
+                        [length]="totalElements"
+                        [pageSize]="pageSize"
+                        [pageIndex]="pageIndex"
+                        [pageSizeOptions]="[5, 10, 25, 100]"
+                        showFirstLastButtons
+                        aria-label="Select page"
+                        (page)="onPageChange($event)">
+                    </mat-paginator>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <!-- Événements à venir -->
-  <div class="row mx-2 mt-3">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <h5>Événements à venir</h5>
-          <ul class="list-group">
-            <li class="list-group-item" *ngFor="let event of upcomingEvents">
-              <i [class]="getEventIcon(event.type)"></i>
-              {{ event.title }} - <span class="text-muted">{{ formatDate(event.date) }}</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

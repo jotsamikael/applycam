@@ -10,6 +10,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 
 import { WidgetModule } from '../../shared/widget/widget.module';
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 import { ContactsRoutingModule } from './contacts-routing.module';
 
 import { ModalModule } from 'ngx-bootstrap/modal';
@@ -25,6 +26,7 @@ import { ProfileComponent } from './profile/profile.component';
     ContactsRoutingModule,
     WidgetModule,
     UIModule,
+    SharedModule,
     NgSelectModule,
     NgApexchartsModule,
     FormsModule, 

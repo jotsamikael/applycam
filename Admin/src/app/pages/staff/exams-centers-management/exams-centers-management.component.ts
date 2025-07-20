@@ -307,7 +307,7 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     this.candidates.forEach(candidate => {
       inputOptions[candidate.email!] = `${candidate.firstname} ${candidate.lastname}`;
     });
-
+    
     Swal.fire({
       title: `Assigner le centre "${examCenter.name}"`,
       input: 'select',
@@ -336,7 +336,7 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
             if (error?.error?.message?.includes('aucun historique de formation')) {
               this.showSnackBar('Ce candidat n\'a pas d\'historique de formation. Impossible d\'assigner un centre.', 'error');
             } else {
-              this.showSnackBar('Erreur lors de l\'assignation', 'error');
+            this.showSnackBar('Erreur lors de l\'assignation', 'error');
             }
           }
         });
@@ -467,7 +467,7 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
       error: (err) => {
         this.processing = false;
         this.showSnackBar('Erreur lors du filtrage par région', 'error');
-      }
+    }
     });
   }
 

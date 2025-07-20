@@ -394,7 +394,7 @@ const recentJobsData = [
     {
         image: 'assets/images/companies/airbnb.svg',
         title: 'NodeJs Developer',
-        brand: 'Skote Themes',
+        brand: 'Applycam Themes',
         location: 'Louisiana',
         time: 2
     },
@@ -408,7 +408,7 @@ const recentJobsData = [
     {
         image: 'assets/images/companies/mailchimp.svg',
         title: 'Marketing Director',
-        brand: 'Skote Technology',
+        brand: 'Applycam Technology',
         location: 'Dominica',
         time: 1
     },

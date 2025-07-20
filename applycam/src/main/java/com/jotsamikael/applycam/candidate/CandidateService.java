@@ -4,6 +4,15 @@ import com.jotsamikael.applycam.common.PageResponse;
 import com.jotsamikael.applycam.promoter.Promoter;
 import com.jotsamikael.applycam.promoter.PromoterRepository;
 import com.jotsamikael.applycam.user.User;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterMapper;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
+import com.jotsamikael.applycam.candidate.CreateCandidateByCenterRequest;
+import com.jotsamikael.applycam.hasSchooled.HasSchooled;
+import com.jotsamikael.applycam.hasSchooled.HasSchooledRepository;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
+import com.jotsamikael.applycam.role.RoleRepository;
+import com.jotsamikael.applycam.role.Role;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,6 +30,13 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 import java.util.Map;
+import java.security.SecureRandom;
+import jakarta.mail.MessagingException;
+import com.jotsamikael.applycam.email.EmailService;
+import com.jotsamikael.applycam.email.EmailTemplateName;
+import com.jotsamikael.applycam.user.Token;
+import com.jotsamikael.applycam.user.TokenRepository;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +47,16 @@ public class CandidateService {
     private final CandidateRepository candidateRepository;
     private final CandidateMapper mapper;
     private final PromoterRepository promoterRepository;
+    private final TrainingCenterMapper trainingCenterMapper;
+    private final HasSchooledRepository hasSchooledRepository;
+    private final TrainingCenterRepository trainingCenterRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final TokenRepository tokenRepository;
+
+    @Value("${application.mailing.frontend.activation-url:https://ton-frontend.com/activate-account}")
+    private String activationUrl;
 
     /**
      * Récupérer tous les candidats avec pagination
@@ -387,6 +414,121 @@ public class CandidateService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Erreur lors de la recherche par nom");
         }
+    }
+    
+    public CandidateFullInfoResponse candidateInformation(String email) {
+        Candidate candidate = candidateRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Candidat non trouvé pour l'email: " + email));
+
+        // Centre de formation principal (premier hasSchooled)
+        TrainingCenter trainingCenter = null;
+        String schooledYear = null;
+        if (candidate.getHasSchooledList() != null && !candidate.getHasSchooledList().isEmpty()) {
+            trainingCenter = candidate.getHasSchooledList().get(0).getTrainingCenter();
+        }
+
+        // Années de scolarisation
+        List<String> schooledYears = candidate.getHasSchooledList() != null ?
+            candidate.getHasSchooledList().stream()
+                .map(hs -> hs.getStartYear() + "-" + hs.getEndYear())
+                .toList() : List.of();
+
+        // Centre d'examen
+        String examCenterName = candidate.getExamCenter() != null ? candidate.getExamCenter().getName() : null;
+        String examCenterRegion = candidate.getExamCenter() != null ? candidate.getExamCenter().getRegion() : null;
+
+        return CandidateFullInfoResponse.builder()
+            .candidate(mapper.toCandidateResponse(candidate))
+            .trainingCenter(trainingCenter != null ? trainingCenterMapper.toTrainingResponse(trainingCenter) : null)
+            .examCenterName(examCenterName)
+            .examCenterRegion(examCenterRegion)
+            .schooledYears(schooledYears)
+            .profilePictureUrl(candidate.getProfilePictureUrl())
+            .birthCertificateUrl(candidate.getBirthCertificateUrl())
+            .nationalIdCardUrl(candidate.getNationalIdCardUrl())
+            .highestDiplomatUrl(candidate.getHighestDiplomatUrl())
+            .cvUrl(candidate.getCvUrl())
+            .letterUrl(candidate.getLetterUrl())
+            .financialJustificationUrl(candidate.getFinancialJustificationUrl())
+            .stageCertificateUrl(candidate.getStageCertificateUrl())
+            .oldApplyanceUrl(candidate.getOldApplyanceUrl())
+            .contentStatus(candidate.getContentStatus() != null ? candidate.getContentStatus().name() : null)
+            .isAccountActive(candidate.isActived())
+            .build();
+    }
+    
+    // --- Nouvelle méthode pour création par le centre ---
+    public void createCandidateByCenter(CreateCandidateByCenterRequest request, Authentication connectedUser) throws MessagingException {
+        // Vérifier que l'email n'existe pas déjà
+        if (candidateRepository.findByEmail(request.email) != null && candidateRepository.findByEmail(request.email).isPresent()) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
+        // Générer un mot de passe aléatoire
+        String randomPassword = generateRandomPassword(10);
+        // Récupérer le centre de formation
+        var center = trainingCenterRepository.findByFullName(request.trainingCenterName)
+            .orElseThrow(() -> new EntityNotFoundException("Centre de formation non trouvé: " + request.trainingCenterName));
+        // Récupérer le rôle CANDIDATE
+        Role userRole = roleRepository.findByName("CANDIDATE")
+            .orElseThrow(() -> new IllegalStateException("ROLE CANDIDATE was not initialized"));
+        // Créer le candidat
+        Candidate candidate = Candidate.builder()
+            .firstname(request.firstname)
+            .lastname(request.lastname)
+            .email(request.email)
+            .phoneNumber(request.phoneNumber)
+            .language(request.language)
+            .accountLocked(false)
+            .enabled(false)
+            .password(passwordEncoder.encode(randomPassword))
+            .createdDate(java.time.LocalDateTime.now())
+            .roles(List.of(userRole))
+            .build();
+        candidateRepository.save(candidate);
+        // Associer au centre via HasSchooled
+        HasSchooled hs = new HasSchooled();
+        hs.setCandidate(candidate);
+        hs.setTrainingCenter(center);
+        hs.setStartYear(java.time.LocalDate.parse(request.startYear));
+        hs.setEndYear(java.time.LocalDate.parse(request.endYear));
+        hs.setActived(true);
+        hasSchooledRepository.save(hs);
+        // Générer le code d'activation
+        String activationCode = generateActivationCode(6);
+        Token token = Token.builder()
+            .token(activationCode)
+            .createdAt(java.time.LocalDateTime.now())
+            .expiresAt(java.time.LocalDateTime.now().plusMinutes(15))
+            .user(candidate)
+            .build();
+        tokenRepository.save(token);
+        // Générer le lien d'activation
+        String confirmationUrl = activationUrl + "?token=" + activationCode;
+        // Envoyer le mail avec le mot de passe ET le code d'activation et le lien
+        String subject = "Votre compte a été créé par le centre de formation " + center.getFullName();
+        String activationInfo = "Mot de passe : " + randomPassword + "\nCode d'activation : " + activationCode;
+        emailService.sendEmail(candidate.getEmail(), candidate.getFirstname(), EmailTemplateName.ACTIVATE_ACCOUNT, confirmationUrl, activationInfo, subject);
+    }
+
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
+    private String generateActivationCode(int length) {
+        String characters = "0123456789";
+        StringBuilder codeBuilder = new StringBuilder();
+        java.security.SecureRandom secureRandom = new java.security.SecureRandom();
+        for (int i = 0; i < length; i++) {
+            int randomIndex = secureRandom.nextInt(characters.length());
+            codeBuilder.append(characters.charAt(randomIndex));
+        }
+        return codeBuilder.toString();
     }
     
     // ==================== MÉTHODES PRIVÉES D'AIDE ====================

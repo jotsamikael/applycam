@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
@@ -18,6 +19,7 @@ import { AdvancedtableComponent } from './advancedtable/advancedtable.component'
     CommonModule,
     TablesRoutingModule,
     UIModule,
+    SharedModule,
     PaginationModule.forRoot(),
     TypeaheadModule.forRoot(),
     BsDropdownModule.forRoot(),

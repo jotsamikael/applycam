@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,9 +21,12 @@ public class CampusController {
 
     //create campus
     @PostMapping
-    public ResponseEntity<String> createCampus(CreateCampusRequest request, Authentication connectedUser) {
-
-        return ResponseEntity.ok(campusService.createCampus(request, connectedUser));
+    public ResponseEntity<Map<String, String>> createCampus(@RequestBody CreateCampusRequest request, Authentication connectedUser) {
+        String campusName = campusService.createCampus(request, connectedUser);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Campus créé avec succès");
+        response.put("campusName", campusName);
+        return ResponseEntity.ok(response);
     }
 
     //get all campuses of Training center

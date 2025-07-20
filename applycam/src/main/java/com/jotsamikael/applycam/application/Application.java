@@ -68,5 +68,7 @@ public class Application extends BaseEntity {
     @JsonIgnore
     private Payment payment;
     
+    // URL du reçu de paiement
+    private String paymentReceiptUrl;
     
 }

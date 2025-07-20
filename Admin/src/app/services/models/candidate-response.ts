@@ -23,4 +23,11 @@ export interface CandidateResponse {
   profilePictureUrl?: string;
   sex?: string;
   townOfResidence?: string;
+  /**
+   * Liste des scolarisations (pour filtrage par centre)
+   */
+  hasSchooledList?: Array<{
+    trainingCenterName: string;
+    // autres champs si besoin
+  }>;
 }

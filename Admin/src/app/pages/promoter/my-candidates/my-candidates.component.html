@@ -1,10 +1,23 @@
 <div class="container-fluid">
-  <app-page-title title="Candidates Management" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+    <!-- Titre de la page -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">Gestion des Candidats</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Candidats</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
 
   <div class="row justify-content-end mb-3">
     <div class="col-md-4 text-end">
       <button class="btn btn-soft-primary waves-effect waves-light mx-2" 
-              (click)="openCreateModal()"
+              (click)="openCreatePopup()"
               matTooltip="Create new candidate">
         <i class="bx bx-plus"></i> Add Candidate
       </button>
@@ -42,27 +55,40 @@
             </div>
           </div>
 
+          <mat-tab-group (selectedTabChange)="onTabChange($event)">
+            <mat-tab *ngFor="let center of trainingCenters" [label]="center.fullName">
+              <div *ngIf="loadingCandidates" class="text-center my-4">
+                <mat-spinner></mat-spinner>
+              </div>
+              <div *ngIf="!loadingCandidates">
+                <div *ngIf="candidatesByCenter[center.fullName]?.length > 0; else noCandidates">
           <div class="table-responsive">
-            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                    <table mat-table [dataSource]="candidatesByCenter[center.fullName]" class="w-100">
               <!-- Name Column -->
               <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                        <th mat-header-cell *matHeaderCellDef> Name </th>
                 <td mat-cell *matCellDef="let candidate"> 
-                  <span class="fw-semibold">{{candidate.firstname}} {{candidate.lastname}}</span>
+                          <span class="fw-semibold d-flex align-items-center">
+                            <ng-container *ngIf="candidate.profilePictureUrl; else noPhoto">
+                              <img [src]="candidate.profilePictureUrl" alt="Photo" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover;">
+                            </ng-container>
+                            <ng-template #noPhoto>
+                              <mat-icon class="me-2">account_circle</mat-icon>
+                            </ng-template>
+                            {{candidate.firstname}} {{candidate.lastname}}
+                          </span>
                 </td>
               </ng-container>
-
               <!-- Email Column -->
               <ng-container matColumnDef="email">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+                        <th mat-header-cell *matHeaderCellDef> Email </th>
                 <td mat-cell *matCellDef="let candidate"> 
                   {{candidate.email}}
                 </td>
               </ng-container>
-
               <!-- Status Column -->
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                        <th mat-header-cell *matHeaderCellDef> Status </th>
                 <td mat-cell *matCellDef="let candidate"> 
                   <span class="badge" [ngClass]="{
                     'bg-success': candidate.contentStatus === 'APPROVED',
@@ -73,7 +99,6 @@
                   </span>
                 </td>
               </ng-container>
-
               <!-- Actions Column -->
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="text-end"> Actions </th>
@@ -93,30 +118,17 @@
                   </div>
                 </td>
               </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-              <!-- Row shown when there is no matching data. -->
-              <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell text-center py-4" colspan="4">
-                  <div class="d-flex flex-column align-items-center">
-                    <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">search_off</mat-icon>
-                    <h4 class="text-muted">No candidates found</h4>
-                    <p *ngIf="input.value" class="text-muted">
-                      No matching results for "{{input.value}}"
-                    </p>
-                    <button mat-raised-button color="primary" 
-                            class="mt-2"
-                            (click)="openCreateModal()"
-                            *ngIf="!input.value">
-                      Create your first candidate
-                    </button>
+                      <tr mat-header-row *matHeaderRowDef="['name', 'email', 'status', 'actions']"></tr>
+                      <tr mat-row *matRowDef="let row; columns: ['name', 'email', 'status', 'actions'];"></tr>
+                    </table>
                   </div>
-                </td>
-              </tr>
-            </table>
+                </div>
+                <ng-template #noCandidates>
+                  <div class="text-center my-4 text-muted">Aucun candidat pour ce centre</div>
+                </ng-template>
           </div>
+            </mat-tab>
+          </mat-tab-group>
 
           <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
                         showFirstLastButtons
@@ -129,101 +141,6 @@
   </div>
 
   <!-- Create/Edit Modal -->
-  <div class="modal fade show" [ngClass]="{'d-block': showModal}" tabindex="-1" role="dialog" *ngIf="showModal">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{isEditMode ? 'Edit' : 'Create'}} Candidate</h5>
-          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
-        </div>
-        <form [formGroup]="candidateForm" (ngSubmit)="onSubmit()">
-          <div class="modal-body">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">First Name</label>
-                  <input type="text" class="form-control" formControlName="firstname">
-                  <div *ngIf="f.firstname.touched && f.firstname.invalid" class="text-danger">
-                    <small *ngIf="f.firstname.errors.required">First name is required</small>
-                    <small *ngIf="f.firstname.errors.maxlength">Max 50 characters</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">Last Name</label>
-                  <input type="text" class="form-control" formControlName="lastname">
-                  <div *ngIf="f.lastname.touched && f.lastname.invalid" class="text-danger">
-                    <small *ngIf="f.lastname.errors.required">Last name is required</small>
-                    <small *ngIf="f.lastname.errors.maxlength">Max 50 characters</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">Email</label>
-                  <input type="email" class="form-control" formControlName="email">
-                  <div *ngIf="f.email.touched && f.email.invalid" class="text-danger">
-                    <small *ngIf="f.email.errors.required">Email is required</small>
-                    <small *ngIf="f.email.errors.email">Valid email is required</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">Phone Number</label>
-                  <input type="tel" class="form-control" formControlName="phoneNumber">
-                  <div *ngIf="f.phoneNumber.touched && f.phoneNumber.invalid" class="text-danger">
-                    <small *ngIf="f.phoneNumber.errors.required">Phone number is required</small>
-                    <small *ngIf="f.phoneNumber.errors.pattern">Valid phone number required (9-15 digits)</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">National ID</label>
-                  <input type="text" class="form-control" formControlName="nationalIdNumber">
-                  <div *ngIf="f.nationalIdNumber.touched && f.nationalIdNumber.invalid" class="text-danger">
-                    <small *ngIf="f.nationalIdNumber.errors.required">National ID is required</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label">Gender</label>
-                  <select class="form-select" formControlName="sex">
-                    <option value="M">Male</option>
-                    <option value="F">Female</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Status</label>
-              <select class="form-select" formControlName="contentStatus">
-                <option value="DRAFT">Draft</option>
-                <option value="PENDING_REVIEW">Pending Review</option>
-                <option value="APPROVED">Approved</option>
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
-            <button type="submit" class="btn btn-primary" [disabled]="candidateForm.invalid || processing">
-              <span *ngIf="!processing">{{isEditMode ? 'Update' : 'Create'}}</span>
-              <span *ngIf="processing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" *ngIf="showModal"></div>
+  <!-- Modal supprimé, remplacé par SweetAlert2 -->
+  <!-- Fin du code modal -->
 </div>

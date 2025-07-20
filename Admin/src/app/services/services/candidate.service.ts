@@ -35,6 +35,7 @@ import { toggleCandidate } from '../fn/candidate/toggle-candidate';
 import { ToggleCandidate$Params } from '../fn/candidate/toggle-candidate';
 import { updateCandidate } from '../fn/candidate/update-candidate';
 import { UpdateCandidate$Params } from '../fn/candidate/update-candidate';
+import { CandidateByCenterRequest } from '../models/candidate-request';
 
 
 /**
@@ -409,4 +410,19 @@ export class CandidateService extends BaseService {
     );
   }
 
+  /**
+   * Récupérer toutes les infos enrichies du candidat (profil, centre, documents, etc.)
+   */
+  getCandidateFullInfo(email: string, context?: HttpContext): Observable<any> {
+    const url = this.rootUrl + '/candidate/candidate-information';
+    return this.http.get<any>(url, { params: { email }, context });
+  }
+
+  /**
+   * Créer un candidat par un centre (mot de passe généré et envoyé par mail)
+   */
+  createCandidateByCenter(request: CandidateByCenterRequest, context?: HttpContext): Observable<any> {
+    const url = this.rootUrl + '/candidate/create-by-center';
+    return this.http.post(url, request, { context });
+  }
 }

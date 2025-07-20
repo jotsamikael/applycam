@@ -14,10 +14,10 @@ export interface CreateCampus$Params {
   request: CreateCampusRequest;
 }
 
-export function createCampus(http: HttpClient, rootUrl: string, params: CreateCampus$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+export function createCampus(http: HttpClient, rootUrl: string, params: CreateCampus$Params, context?: HttpContext): Observable<StrictHttpResponse<any>> {
   const rb = new RequestBuilder(rootUrl, createCampus.PATH, 'post');
   if (params) {
-    rb.query('request', params.request, {});
+    rb.body(params.request, 'application/json');
   }
 
   return http.request(
@@ -25,7 +25,7 @@ export function createCampus(http: HttpClient, rootUrl: string, params: CreateCa
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return r as StrictHttpResponse<any>;
     })
   );
 }

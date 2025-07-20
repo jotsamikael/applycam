@@ -14,6 +14,8 @@ import { SpecialityService } from '../../../services/services/speciality.service
 import { SpecialityResponse } from '../../../services/models/speciality-response';
 import { TrainingcenterService } from '../../../services/services/trainingcenter.service';
 import { HttpClient } from '@angular/common/http';
+import { CourseResponse } from '../../../services/models/course-response';
+import { CandidateService } from '../../../services/services/candidate.service';
 
 @Component({
   selector: 'app-my-applications',
@@ -51,6 +53,8 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   showDetailsModal = false;
 
   specialities: SpecialityResponse[] = [];
+  courses: CourseResponse[] = [];
+  examType: string = '';
 
   files: { [key: string]: File | null } = {
     cniFile: null,
@@ -61,10 +65,12 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
     stageCertificate: null,
     cv: null,
     financialJustification: null,
-    letter: null
+    letter: null,
+    paymentReceipt: null
   };
 
   sessions: any[] = [];
+  filteredSessions: any[] = [];
   trainingCenters: any[] = [];
 
   cameroonRegions: string[] = [
@@ -77,6 +83,11 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   loadingStatistics = false;
   searchForm: FormGroup;
 
+  personalInfo: any = {};
+  dynamicFields: Array<{ key: string, label: string, required: boolean, type?: string, options?: Array<{value: string, label: string}> }> = [];
+  dynamicPersonalForm: FormGroup = this.fb.group({});
+  showDynamicPersonalModal = false;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthenticationService,
@@ -86,41 +97,46 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
     private sessionService: SessionService,
     private specialityService: SpecialityService,
     private trainingCenterService: TrainingcenterService,
-    private http: HttpClient
+    private http: HttpClient,
+    private candidateService: CandidateService
   ) {
+    // Initialisation complète du formulaire avec tous les contrôles nécessaires
     this.applicationForm = this.fb.group({
-      // Informations personnelles
-      sex: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      nationIdNumber: ['', Validators.required],
-      academicLevel: ['', Validators.required],
+      // Champs personnels
+      firstname: ['', Validators.required],
+      lastname: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', Validators.required],
+      nationalIdNumber: ['', Validators.required],
+      sex: ['', Validators.required],
       placeOfBirth: ['', Validators.required],
-      nationality: ['', Validators.required],
-      regionOrigins: ['', Validators.required],
-      departmentOfOrigin: ['', Validators.required],
-      matrimonialSituation: ['', Validators.required],
-      numberOfKid: [0, [Validators.required, Validators.min(0)]],
-      learningLanguage: ['', Validators.required],
-      freeCandidate: [false, Validators.required],
-      repeatCandidate: [false, Validators.required],
-      formationMode: ['', Validators.required],
-      financialRessource: ['', Validators.required],
-      
-      // Informations de candidature
-      speciality: ['', Validators.required],
-      courseName: [''],
+      motherFullName: [''],
+      fatherFullName: [''],
+      motherProfession: [''],
+      fatherProfession: [''],
+      highestSchoolLevel: [''],
+      nationality: [''],
+      townOfResidence: [''],
+      regionOrigins: [''],
+      departmentOfOrigin: [''],
+      matrimonialSituation: [''],
+      numberOfKid: [''],
+      learningLanguage: [''],
+      freeCandidate: [false],
+      repeatCandidate: [false],
+      formationMode: [''],
+      financialRessource: [''],
+      // Champs de candidature
       examType: ['', Validators.required],
-      applicationRegion: ['', Validators.required],
+      courseName: ['', Validators.required],
+      speciality: ['', Validators.required],
       sessionYear: ['', Validators.required],
       trainingCenterAcronym: ['', Validators.required],
-      
-      // Informations de paiement
       amount: [0, [Validators.required, Validators.min(0)]],
       paymentMethod: ['', Validators.required],
-      secretCode: [0, [Validators.required, Validators.min(0)]],
-      
-      // Pièces jointes
+      secretCode: ['', Validators.required],
+      // Fichiers
       cniFile: [null],
       birthCertificate: [null],
       diplomFile: [null],
@@ -129,7 +145,8 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
       stageCertificate: [null],
       cv: [null],
       financialJustification: [null],
-      letter: [null]
+      letter: [null],
+      paymentReceipt: [null]
     });
 
     // Formulaire de recherche
@@ -140,8 +157,70 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.currentUser = this.tokenService.getUserInfo();
+    console.log('[DEBUG] currentUser:', this.currentUser);
+    const userEmail = this.currentUser?.email || this.currentUser?.sub;
+    if (userEmail) {
+      this.candidateService.getCandidateFullInfo(userEmail).subscribe(info => {
+        console.log('[DEBUG] Résultat getCandidateFullInfo:', info);
+        this.personalInfo = info.candidate;
+        console.log('[DEBUG] personalInfo:', this.personalInfo);
+        this.buildDynamicForm();
+      });
+    } else {
+      console.warn('[MyApplications] Email utilisateur non défini, impossible de charger les infos personnelles.');
+    }
     this.loadApplications();
     this.loadFormLists();
+    this.loadSpecialities();
+    this.loadCourses();
+    // Initialisation complète du formulaire avec tous les contrôles nécessaires
+    this.applicationForm = this.fb.group({
+      // Champs personnels
+      firstname: ['', Validators.required],
+      lastname: ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', Validators.required],
+      nationalIdNumber: ['', Validators.required],
+      sex: ['', Validators.required],
+      placeOfBirth: ['', Validators.required],
+      motherFullName: [''],
+      fatherFullName: [''],
+      motherProfession: [''],
+      fatherProfession: [''],
+      highestSchoolLevel: [''],
+      nationality: [''],
+      townOfResidence: [''],
+      regionOrigins: [''],
+      departmentOfOrigin: [''],
+      matrimonialSituation: [''],
+      numberOfKid: [''],
+      learningLanguage: [''],
+      freeCandidate: [false],
+      repeatCandidate: [false],
+      formationMode: [''],
+      financialRessource: [''],
+      // Champs de candidature
+      examType: ['', Validators.required],
+      courseName: ['', Validators.required],
+      speciality: ['', Validators.required],
+      sessionYear: ['', Validators.required],
+      trainingCenterAcronym: ['', Validators.required],
+      amount: [0, [Validators.required, Validators.min(0)]],
+      paymentMethod: ['', Validators.required],
+      secretCode: ['', Validators.required],
+      // Fichiers
+      cniFile: [null],
+      birthCertificate: [null],
+      diplomFile: [null],
+      photo: [null],
+      oldApplyanceFile: [null],
+      stageCertificate: [null],
+      cv: [null],
+      financialJustification: [null],
+      letter: [null],
+      paymentReceipt: [null]
+    });
   }
 
   loadFormLists(): void {
@@ -207,6 +286,61 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
         this.trainingCenters = [];
       }
     });
+  }
+
+  loadSpecialities(): void {
+    this.specialityService.getallSpeciality({ offset: 0, pageSize: 100 }).subscribe({
+      next: (res) => {
+        this.specialities = res.content || [];
+      },
+      error: () => {
+        this.specialities = [];
+      }
+    });
+  }
+
+  loadCourses(): void {
+    this.courseService.getCourses({ offset: 0, pageSize: 100 }).subscribe({
+      next: (res) => {
+        this.courses = res.content || [];
+      },
+      error: () => {
+        this.courses = [];
+      }
+    });
+  }
+
+  onExamTypeChange(event: any): void {
+    this.examType = event.target.value;
+    // Filtrer les sessions selon le type d'examen sélectionné
+    this.filteredSessions = this.sessions.filter(s => s.examType === this.examType);
+    if (this.examType === 'CQP') {
+      this.applicationForm.get('courseName')?.enable();
+      this.applicationForm.get('speciality')?.disable();
+      this.applicationForm.patchValue({ speciality: '' });
+    } else if (this.examType === 'DQP') {
+      this.applicationForm.get('speciality')?.enable();
+      this.applicationForm.get('courseName')?.disable();
+      this.applicationForm.patchValue({ courseName: '' });
+    } else {
+      this.applicationForm.get('speciality')?.disable();
+      this.applicationForm.get('courseName')?.disable();
+      this.applicationForm.patchValue({ speciality: '', courseName: '' });
+    }
+    // Réinitialiser la session sélectionnée si elle ne correspond plus
+    this.applicationForm.patchValue({ sessionYear: '' });
+  }
+
+  onSpecialityOrCourseChange(): void {
+    let amount = 0;
+    if (this.examType === 'DQP') {
+      const spec = this.specialities.find(s => s.name === this.applicationForm.value.speciality);
+      amount = spec?.paymentAmount || 0;
+    } else if (this.examType === 'CQP') {
+      const course = this.courses.find(c => c.name === this.applicationForm.value.courseName);
+      amount = course?.priceForDqp || 0;
+    }
+    this.applicationForm.patchValue({ amount });
   }
 
   onFileChange(event: any, fileKey: string): void {
@@ -321,54 +455,55 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   openEditModal(application: ApplicationResponse): void {
     this.isEditMode = true;
     this.selectedApplication = application;
-    
-    // Pré-remplir le formulaire avec les données existantes
-    this.applicationForm.patchValue({
-      // Informations personnelles (à récupérer depuis le backend si nécessaire)
-      sex: '',
-      email: this.currentUser?.email || '',
-      nationIdNumber: '',
-      academicLevel: '',
-      dateOfBirth: '',
-      placeOfBirth: '',
-      nationality: '',
-      regionOrigins: '',
-      departmentOfOrigin: '',
-      matrimonialSituation: '',
-      numberOfKid: 0,
-      learningLanguage: '',
-      freeCandidate: false,
-      repeatCandidate: false,
-      formationMode: '',
-      financialRessource: '',
-      
-      // Informations de candidature
-      speciality: application.speciality || '',
-      courseName: '',
-      examType: application.examType || '',
-      applicationRegion: application.applicationRegion || '',
-      sessionYear: application.applicationYear || '',
-      trainingCenterAcronym: '',
-      
-      // Informations de paiement
-      amount: application.amount || 0,
-      paymentMethod: application.paymentMethod || '',
-      secretCode: 0
-    });
-    
+    if (this.currentUser?.email) {
+      this.candidateService.getCandidateFullInfo(this.currentUser.email).subscribe({
+        next: (info) => {
+          console.log('[DEBUG] Infos candidat reçues (openEditModal):', info);
+          if (info && info.candidate) {
+            const patch: any = {
+              sex: info.candidate.sex || '',
+              dateOfBirth: info.candidate.dateOfBirth || '',
+              placeOfBirth: info.candidate.placeOfBirth || '',
+              nationality: info.candidate.nationality || '',
+              regionOrigins: info.candidate.regionOrigins || '',
+              departmentOfOrigin: info.candidate.departmentOfOrigin || '',
+              matrimonialSituation: info.candidate.matrimonialSituation || '',
+              numberOfKid: info.candidate.numberOfKid || 0,
+              learningLanguage: info.candidate.learningLanguage || '',
+              nationIdNumber: info.candidate.nationalIdNumber || '',
+              academicLevel: info.candidate.highestSchoolLevel || '',
+              email: info.candidate.email || this.currentUser.email
+            };
+            Object.keys(patch).forEach(ctrl => this.applicationForm.get(ctrl)?.enable({ emitEvent: false }));
+            this.applicationForm.patchValue(patch);
+            Object.keys(patch).forEach(ctrl => this.applicationForm.get(ctrl)?.disable({ emitEvent: false }));
+            console.log('[DEBUG] Valeurs préremplies du formulaire (openEditModal):', this.applicationForm.value);
+          }
+          if (info && info.trainingCenter && info.trainingCenter.acronym) {
+            this.applicationForm.get('trainingCenterAcronym')?.enable({ emitEvent: false });
+            this.applicationForm.patchValue({ trainingCenterAcronym: info.trainingCenter.acronym });
+            this.applicationForm.get('trainingCenterAcronym')?.disable({ emitEvent: false });
+          }
+          // Préremplir les champs de la candidature sélectionnée
+          this.applicationForm.patchValue({
+            speciality: application.speciality || '',
+            examType: application.examType || '',
+            applicationRegion: application.applicationRegion || '',
+            sessionYear: application.applicationYear || '',
+            amount: application.amount || 0,
+            paymentMethod: application.paymentMethod || ''
+          });
+        }
+      });
+    }
     this.showModal = true;
   }
 
   openCreateModal(): void {
+    console.log('[MyApplications] openCreateModal appelé');
     this.isEditMode = false;
     this.selectedApplication = null;
     this.applicationForm.reset();
-    
-    // Pré-remplir l'email de l'utilisateur connecté
-    this.applicationForm.patchValue({
-      email: this.currentUser?.email || ''
-    });
-    
     // Réinitialiser les fichiers
     this.files = {
       cniFile: null,
@@ -379,12 +514,11 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
       stageCertificate: null,
       cv: null,
       financialJustification: null,
-      letter: null
+      letter: null,
+      paymentReceipt: null
     };
-    
     // Forcer le rechargement des listes pour s'assurer qu'elles sont à jour
     this.loadFormLists();
-    
     this.showModal = true;
   }
 
@@ -467,20 +601,63 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   onSubmit(): void {
     if (this.applicationForm.invalid) return;
     this.processing = true;
-    
-    // Première étape : créer la candidature
-    const formValue = this.applicationForm.value;
+
+    // Récupérer toutes les valeurs du formulaire (plus de remplissage automatique)
     const payload: any = {
-      ...formValue,
-      email: this.currentUser?.email || '',
+      ...this.applicationForm.value
     };
-    
-    this.applicationService.candidateAppliance({ body: payload }).subscribe({
-      next: () => {
-        // Deuxième étape : upload des fichiers si des fichiers sont sélectionnés
-        const hasFiles = Object.values(this.files).some(file => file !== null);
-        if (hasFiles) {
-          this.uploadFiles();
+
+    // Formater la date de naissance si présente
+    if (payload.dateOfBirth) {
+      const date = new Date(payload.dateOfBirth);
+      if (!isNaN(date.getTime())) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        payload.dateOfBirth = `${yyyy}-${mm}-${dd}`;
+      } else {
+        delete payload.dateOfBirth;
+      }
+    }
+
+    // Vérification stricte de la date de naissance
+    if (!payload.dateOfBirth || !/^\d{4}-\d{2}-\d{2}$/.test(payload.dateOfBirth)) {
+      Swal.fire('Erreur', 'La date de naissance est obligatoire et doit être au format AAAA-MM-JJ', 'error');
+      this.processing = false;
+      return;
+    }
+
+    // Log du payload pour debug
+    console.log('Payload envoyé au backend:', payload);
+
+    // Supprimer tous les champs fichiers du payload JSON
+    delete payload.cniFile;
+    delete payload.birthCertificate;
+    delete payload.diplomFile;
+    delete payload.photo;
+    delete payload.oldApplyanceFile;
+    delete payload.stageCertificate;
+    delete payload.cv;
+    delete payload.financialJustification;
+    delete payload.letter;
+    delete payload.paymentReceipt;
+
+    // Préparer le FormData pour multipart/form-data (uniquement paymentReceipt pour la création)
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    if (this.files.paymentReceipt) {
+      formData.append('paymentReceipt', this.files.paymentReceipt);
+    }
+
+    // Appel direct à l'API backend pour créer la candidature
+    this.http.post(`${this.applicationService.rootUrl}/application/PersonalInformation`, formData).subscribe({
+      next: (res: any) => {
+        // Si la création retourne un ID de candidature, l'utiliser pour lier les fichiers
+        const applicationId = res?.id || res?.applicationId || null;
+        // Étape suivante : upload de tous les fichiers (sauf paymentReceipt déjà envoyé)
+        const hasOtherFiles = Object.keys(this.files).some(key => key !== 'paymentReceipt' && this.files[key]);
+        if (hasOtherFiles) {
+          this.uploadFiles(applicationId);
         } else {
           this.processing = false;
           this.showModal = false;
@@ -496,20 +673,26 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Méthode pour uploader les fichiers
-  uploadFiles(): void {
+  // Méthode pour uploader tous les fichiers de la candidature (hors paymentReceipt)
+  uploadFiles(applicationId?: string | number): void {
     const formData = new FormData();
-    
-    // Ajouter tous les fichiers sélectionnés
+    // Ajouter tous les fichiers sélectionnés sauf paymentReceipt
     Object.keys(this.files).forEach(key => {
-      const file = this.files[key];
-      if (file) {
-        formData.append(key, file);
+      if (key !== 'paymentReceipt') {
+        const file = this.files[key];
+        if (file) {
+          formData.append(key, file);
+        }
       }
     });
-
+    // Ajouter l'ID de la candidature ou l'email si besoin pour lier côté backend
+    if (applicationId) {
+      formData.append('applicationId', String(applicationId));
+    } else if (this.currentUser?.email) {
+      formData.append('email', this.currentUser.email);
+    }
     // Appel à l'endpoint d'upload des fichiers
-    this.http.patch(`${this.applicationService.rootUrl}/application/PersonalInformation/documents`, formData).subscribe({
+    this.http.post(`${this.applicationService.rootUrl}/application/PersonalInformation/documents`, formData).subscribe({
       next: () => {
         this.processing = false;
         this.showModal = false;
@@ -526,7 +709,8 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
           stageCertificate: null,
           cv: null,
           financialJustification: null,
-          letter: null
+          letter: null,
+          paymentReceipt: null
         };
       },
       error: (err) => {
@@ -632,10 +816,26 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
         </div>
         <div class='col-md-6 mb-2'>
           <label>Type d'examen</label>
-          <select id='swal-examType' class='form-select'>
+          <select id='swal-examType' class='form-select' onchange='window.onExamTypeChange && window.onExamTypeChange(event)'>
             <option value=''>Sélectionner</option>
             <option value='CQP'>CQP</option>
             <option value='DQP'>DQP</option>
+          </select>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col-md-6 mb-2'>
+          <label>Filière (si DQP)</label>
+          <select id='swal-courseName' class='form-select' disabled>
+            <option value=''>Sélectionner</option>
+            ${this.courses.map(c => `<option value='${c.name}'>${c.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class='col-md-6 mb-2'>
+          <label>Spécialité (si CQP)</label>
+          <select id='swal-speciality' class='form-select' disabled>
+            <option value=''>Sélectionner</option>
+            ${this.specialities.map(s => `<option value='${s.name}'>${s.name}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -675,6 +875,10 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
             <option value='TRANSFER'>Virement</option>
             <option value='MOBILE_MONEY'>Mobile Money</option>
           </select>
+        </div>
+        <div class='col-md-6 mb-2'>
+          <label>Code secret</label>
+          <input id='swal-secretCode' type='password' class='form-control' placeholder='Code secret'>
         </div>
       </div>
       <script>
@@ -789,20 +993,8 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   }
 
   viewApplicationDetails(application: ApplicationResponse): void {
-    Swal.fire({
-      title: 'Détails de la candidature',
-      html: `
-        <p><strong>Spécialité :</strong> ${application.speciality}</p>
-        <p><strong>Année :</strong> ${application.applicationYear}</p>
-        <p><strong>Région :</strong> ${application.applicationRegion}</p>
-        <p><strong>Type d'examen :</strong> ${application.examType}</p>
-        <p><strong>Date d'examen :</strong> ${application.examDate ? application.examDate.substring(0, 10) : ''}</p>
-        <p><strong>Méthode de paiement :</strong> ${application.paymentMethod}</p>
-        <p><strong>Montant :</strong> ${application.amount}</p>
-        <p><strong>Statut :</strong> ${this.getStatusDisplayText(application.status)}</p>
-      `,
-      confirmButtonText: 'Fermer'
-    });
+    this.selectedApplication = application;
+    this.showDetailsModal = true;
   }
 
   getStatusBadgeClass(status: string | undefined): string {
@@ -1106,5 +1298,148 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
       default:
         return 'bx-info-circle';
     }
+  }
+
+  fillTestData(): void {
+    this.applicationForm.patchValue({
+      sex: 'M',
+      email: this.currentUser?.email || 'test@example.com',
+      nationIdNumber: '123456789',
+      academicLevel: 'LICENCE',
+      dateOfBirth: '1995-01-01',
+      placeOfBirth: 'Douala',
+      nationality: 'Camerounaise',
+      regionOrigins: 'Littoral',
+      departmentOfOrigin: 'Wouri',
+      matrimonialSituation: 'CELIBATAIRE',
+      numberOfKid: 0,
+      learningLanguage: 'FRANCAIS',
+      freeCandidate: false,
+      repeatCandidate: false,
+      formationMode: 'PRESENTIEL',
+      financialRessource: 'PERSONNELLE',
+      speciality: this.specialities[0]?.name || '',
+      courseName: this.courses[0]?.name || '',
+      examType: 'DQP',
+      applicationRegion: 'Littoral',
+      sessionYear: this.filteredSessions[0]?.sessionYear || '',
+      trainingCenterAcronym: this.trainingCenters[0]?.acronym || '',
+      amount: 50000,
+      paymentMethod: 'MOBILE_MONEY',
+      secretCode: '1234'
+    });
+    this.examType = 'DQP';
+    this.onExamTypeChange({ target: { value: 'DQP' } });
+    this.onSpecialityOrCourseChange();
+  }
+
+  buildDynamicForm() {
+    const group: any = {};
+    const fields = [
+      { key: 'firstname', label: 'Prénom', required: true },
+      { key: 'lastname', label: 'Nom', required: true },
+      { key: 'dateOfBirth', label: 'Date de naissance', required: true, type: 'date' },
+      { key: 'nationalIdNumber', label: 'Numéro CNI', required: true },
+      { key: 'sex', label: 'Sexe', required: true, type: 'select', options: [
+        { value: 'M', label: 'Masculin' },
+        { value: 'F', label: 'Féminin' }
+      ] },
+      { key: 'placeOfBirth', label: 'Lieu de naissance', required: false },
+      { key: 'motherFullName', label: 'Nom de la mère', required: false },
+      { key: 'fatherFullName', label: 'Nom du père', required: false },
+      { key: 'motherProfession', label: 'Profession de la mère', required: false },
+      { key: 'fatherProfession', label: 'Profession du père', required: false },
+      { key: 'highestSchoolLevel', label: 'Niveau scolaire', required: false, type: 'select', options: [
+        { value: 'PRIMAIRE', label: 'Primaire' },
+        { value: 'COLLEGE', label: 'Collège' },
+        { value: 'LYCEE', label: 'Lycée' },
+        { value: 'UNIVERSITE', label: 'Université' },
+        { value: 'AUTRE', label: 'Autre' }
+      ] },
+      { key: 'nationality', label: 'Nationalité', required: false, type: 'select', options: [
+        { value: 'Camerounaise', label: 'Camerounaise' },
+        { value: 'Autre', label: 'Autre' }
+      ] },
+      { key: 'townOfResidence', label: 'Ville de résidence', required: false },
+      { key: 'regionOrigins', label: 'Région d\'origine', required: false, type: 'select', options: [
+        { value: 'Adamaoua', label: 'Adamaoua' },
+        { value: 'Centre', label: 'Centre' },
+        { value: 'Est', label: 'Est' },
+        { value: 'Extrême-Nord', label: 'Extrême-Nord' },
+        { value: 'Littoral', label: 'Littoral' },
+        { value: 'Nord', label: 'Nord' },
+        { value: 'Nord-Ouest', label: 'Nord-Ouest' },
+        { value: 'Ouest', label: 'Ouest' },
+        { value: 'Sud', label: 'Sud' },
+        { value: 'Sud-Ouest', label: 'Sud-Ouest' }
+      ] },
+      { key: 'departmentOfOrigin', label: 'Département d\'origine', required: false },
+      { key: 'matrimonialSituation', label: 'Situation matrimoniale', required: false, type: 'select', options: [
+        { value: 'CELIBATAIRE', label: 'Célibataire' },
+        { value: 'MARIE', label: 'Marié(e)' },
+        { value: 'DIVORCE', label: 'Divorcé(e)' },
+        { value: 'VEUF', label: 'Veuf(ve)' }
+      ] },
+      { key: 'numberOfKid', label: 'Nombre d\'enfants', required: false },
+      { key: 'learningLanguage', label: 'Langue d\'apprentissage', required: false, type: 'select', options: [
+        { value: 'FRANCAIS', label: 'Français' },
+        { value: 'ANGLAIS', label: 'Anglais' },
+        { value: 'AUTRE', label: 'Autre' }
+      ] },
+      { key: 'freeCandidate', label: 'Candidat libre', required: false, type: 'select', options: [
+        { value: 'true', label: 'Oui' },
+        { value: 'false', label: 'Non' }
+      ] },
+      { key: 'repeatCandidate', label: 'Candidat redoublant', required: false, type: 'select', options: [
+        { value: 'true', label: 'Oui' },
+        { value: 'false', label: 'Non' }
+      ] },
+      { key: 'formationMode', label: 'Mode de formation', required: false, type: 'select', options: [
+        { value: 'PRESENTIEL', label: 'Présentiel' },
+        { value: 'DISTANCIEL', label: 'Distanciel' },
+        { value: 'MIXTE', label: 'Mixte' }
+      ] },
+      { key: 'financialRessource', label: 'Ressource financière', required: false }
+    ];
+    this.dynamicFields = [];
+    fields.forEach(field => {
+      if (!this.personalInfo[field.key] || this.personalInfo[field.key] === '' || this.personalInfo[field.key] === null) {
+        group[field.key] = ['', field.required ? Validators.required : []];
+        this.dynamicFields.push(field);
+      }
+    });
+    this.dynamicPersonalForm = this.fb.group(group);
+  }
+
+  openDynamicPersonalModal() {
+    this.showDynamicPersonalModal = true;
+  }
+  closeDynamicPersonalModal() {
+    this.showDynamicPersonalModal = false;
+  }
+
+  onSubmitDynamic() {
+    if (this.dynamicPersonalForm.invalid) return;
+    const payload = this.dynamicPersonalForm.value;
+    const userEmail = this.currentUser?.email || this.currentUser?.sub;
+    this.candidateService.updateCandidate({
+      email: userEmail,
+      body: payload
+    }).subscribe({
+      next: () => {
+        this.showDynamicPersonalModal = false;
+        Swal.fire('Succès', 'Informations personnelles complétées !', 'success');
+        // Recharge les infos pour cacher les champs remplis
+        this.candidateService.getCandidateFullInfo(userEmail).subscribe(info => {
+          console.log('[DEBUG] Résultat getCandidateFullInfo:', info);
+          this.personalInfo = info.candidate;
+          console.log('[DEBUG] personalInfo:', this.personalInfo);
+          this.buildDynamicForm();
+        });
+      },
+      error: () => {
+        Swal.fire('Erreur', 'Impossible de mettre à jour les informations', 'error');
+      }
+    });
   }
 }

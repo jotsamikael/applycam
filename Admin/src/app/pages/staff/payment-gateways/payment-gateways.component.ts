@@ -402,4 +402,26 @@ export class PaymentGatewaysComponent implements OnInit, AfterViewInit {
   canDelete(payment: PaymentResponse): boolean {
     return true; // Tous les paiements peuvent être supprimés
   }
+
+  viewPaymentDetails(payment: PaymentResponse): void {
+    Swal.fire({
+      title: 'Détails du paiement',
+      html: `
+        <div class="text-start">
+          <p><strong>ID :</strong> ${payment.id || 'N/A'}</p>
+          <p><strong>Montant :</strong> ${this.formatCurrency(payment.amount)}</p>
+          <p><strong>Méthode de paiement :</strong> ${payment.paymentMethod || 'N/A'}</p>
+          ${'status' in payment ? `<p><strong>Statut :</strong> ${String(payment['status']) || 'N/A'}</p>` : ''}
+          ${'createdDate' in payment ? `<p><strong>Date :</strong> ${payment['createdDate'] ? this.formatDate(String(payment['createdDate'])) : 'N/A'}</p>` : ''}
+          ${'candidateName' in payment ? `<p><strong>Candidat :</strong> ${String(payment['candidateName']) || 'N/A'}</p>` : ''}
+          ${'applicationLabel' in payment ? `<p><strong>Candidature :</strong> ${String(payment['applicationLabel']) || 'N/A'}</p>` : ''}
+          ${'paymentReceiptUrl' in payment && payment['paymentReceiptUrl'] ? `<p><strong>Reçu :</strong> <a href='${String(payment['paymentReceiptUrl'])}' target='_blank' class='btn btn-sm btn-outline-primary'>Voir le reçu <i class='bx bx-link-external'></i></a></p>` : ''}
+        </div>
+      `,
+      width: '600px',
+      confirmButtonText: 'Fermer',
+      confirmButtonColor: '#3085d6',
+      showCloseButton: true
+    });
+  }
 }

@@ -6,6 +6,7 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 // import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -67,6 +68,7 @@ import { UtilitiesComponent } from './utilities/utilities.component';
     CommonModule,
     UiRoutingModule,
     UIModule,
+    SharedModule,
     FormsModule,
     NgxSliderModule,
     AlertModule.forRoot(),

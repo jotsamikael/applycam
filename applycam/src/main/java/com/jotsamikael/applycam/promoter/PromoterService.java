@@ -15,6 +15,8 @@ import com.jotsamikael.applycam.staff.*;
 import com.jotsamikael.applycam.trainingCenter.CreateTainingCenterRequest;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenter;
 import com.jotsamikael.applycam.trainingCenter.TrainingCenterRepository;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterMapper;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
 import com.jotsamikael.applycam.user.Token;
 import com.jotsamikael.applycam.user.TokenRepository;
 import com.jotsamikael.applycam.user.User;
@@ -60,6 +62,7 @@ public class PromoterService {
     private final TokenRepository tokenRepository;
     private final FileStorageService fileStorageService;
     private final TrainingCenterHistoryRepository trainingCenterStatusHistoryRepository;
+    private final TrainingCenterMapper trainingCenterMapper;
 
     @Value("${application.mailing.frontend.activation-url}")
     String activationUrl;
@@ -510,6 +513,26 @@ public class PromoterService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Erreur lors de la récupération du promoteur");
         }
+    }
+
+    public PromoterFullInfoResponse promoterInformation(String email) {
+        Promoter promoter = repository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Promoteur non trouvé pour l'email: " + email));
+
+        List<TrainingCenterResponse> trainingCenters = promoter.getTrainingCenterList() != null ?
+            promoter.getTrainingCenterList().stream()
+                .map(trainingCenterMapper::toTrainingResponse)
+                .toList() : List.of();
+
+        return PromoterFullInfoResponse.builder()
+            .promoter(mapper.toPromoterResponse(promoter))
+            .trainingCenters(trainingCenters)
+            .nationalIdCardUrl(promoter.getNationalIdCardUrl())
+            .photoUrl(promoter.getPhotoUrl())
+            .accountLocked(promoter.isAccountLocked())
+            .enabled(promoter.isEnabled())
+            .numberOfCenters(trainingCenters.size())
+            .build();
     }
 
     // ==================== MÉTHODES PRIVÉES D'AIDE ====================

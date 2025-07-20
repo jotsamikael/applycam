@@ -69,6 +69,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTreeModule } from '@angular/material/tree';
 import { DatePipe } from '@angular/common';
+import { NgbAccordionModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 if (environment.defaultauth === 'firebase') {
   initFirebaseBackend(environment.firebaseConfig);
@@ -158,6 +159,8 @@ export function createTranslateLoader(http: HttpClient): any {
       positionClass: 'toast-top-right',
       preventDuplicates: true,
     }),
+    NgbAccordionModule,
+    NgbModule
   ],
   providers: [
     BsModalService,

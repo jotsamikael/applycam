@@ -8,6 +8,13 @@ import Swal from 'sweetalert2';
 import { ApplicationService } from '../../../services/services/application.service';
 import { ApplicationRequest } from '../../../services/models/application-request';
 import { ApplicationResponse } from '../../../services/models/application-response';
+import { SessionDetailsListResponse } from '../../../services/models/session-details-list-response';
+import { SessionService } from '../../../services/services/session.service';
+import { SessionResponse } from '../../../services/models/session-response';
+import { SpecialityService } from '../../../services/services/speciality.service';
+import { SpecialityResponse } from '../../../services/models/speciality-response';
+import { CourseService } from '../../../services/services/course.service';
+import { CourseResponse } from '../../../services/models/course-response';
 
 @Component({
   selector: 'app-application-management',
@@ -35,15 +42,18 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
   modalRef?: BsModalRef;
   CreateApplicationForm!: FormGroup;
   selectedApplication: ApplicationResponse | null = null;
-  specialities: { id: string, name: string }[] = [
-    { id: 'info', name: 'Informatique' },
-    { id: 'math', name: 'Mathématiques' },
-    { id: 'phy', name: 'Physique' }
-  ];
+  specialities: SpecialityResponse[] = [];
+  courses: CourseResponse[] = [];
+  examType: string = '';
+  sessions: SessionResponse[] = [];
 
   totalElements = 0;
   pageSize = 10;
   pageIndex = 0;
+
+  files: { [key: string]: File | null } = {
+    paymentReceipt: null
+  };
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -51,12 +61,51 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
   constructor(
     private fb: FormBuilder,
     private modalService: BsModalService,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    private sessionService: SessionService,
+    private specialityService: SpecialityService,
+    private courseService: CourseService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.loadSessions();
+    this.loadSpecialities();
+    this.loadCourses();
     this.loadApplications();
+  }
+
+  loadSessions() {
+    this.sessionService.getall({ offset: 0, pageSize: 100 }).subscribe({
+      next: (res) => {
+        this.sessions = res.content || [];
+      },
+      error: () => {
+        this.sessions = [];
+      }
+    });
+  }
+
+  loadSpecialities() {
+    this.specialityService.getallSpeciality({ offset: 0, pageSize: 100 }).subscribe({
+      next: (res) => {
+        this.specialities = res.content || [];
+      },
+      error: () => {
+        this.specialities = [];
+      }
+    });
+  }
+
+  loadCourses() {
+    this.courseService.getCourses({ offset: 0, pageSize: 100 }).subscribe({
+      next: (res) => {
+        this.courses = res.content || [];
+      },
+      error: () => {
+        this.courses = [];
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -72,8 +121,10 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
       speciality: ['', [Validators.required]],
       applicationRegion: ['', [Validators.required]],
       nationality: ['', [Validators.required]],
-      status: ['DRAFT', [Validators.required]]
-      // Ajoute d'autres champs requis par ApplicationRequest si besoin
+      status: ['DRAFT', [Validators.required]],
+      amount: ['', [Validators.required]],
+      courseName: ['', [Validators.required]],
+      secretCode: ['', [Validators.required]]
     });
   }
 
@@ -130,6 +181,34 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
     this.modalRef = this.modalService.show('addNew');
   }
 
+  onFileChange(event: any, fileKey: string): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2Mo
+        Swal.fire('Erreur', 'Le fichier ne doit pas dépasser 2 Mo', 'error');
+        this.removeFile(fileKey);
+        return;
+      }
+      this.files[fileKey] = file;
+    }
+  }
+
+  isFileSelected(fileKey: string): boolean {
+    return this.files[fileKey] !== null;
+  }
+
+  getFileName(fileKey: string): string {
+    const file = this.files[fileKey];
+    return file ? file.name : '';
+  }
+
+  removeFile(fileKey: string): void {
+    this.files[fileKey] = null;
+    // Réinitialiser l'input file si besoin
+    const fileInput = document.getElementById(`file-${fileKey}`) as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  }
+
   createNewApplication() {
     if (this.CreateApplicationForm.invalid) return;
     this.processing = true;
@@ -138,6 +217,26 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
       sessionYear: '2024',
       trainingCenterAcronym: 'ABC'
     };
+    if (this.files.paymentReceipt) {
+      // Envoi multipart/form-data
+      const formData = new FormData();
+      formData.append('data', new Blob([JSON.stringify(formValue)], { type: 'application/json' }));
+      formData.append('paymentReceipt', this.files.paymentReceipt);
+      this.applicationService['http'].post(`${this.applicationService.rootUrl}/application/PersonalInformation`, formData).subscribe({
+        next: () => {
+          this.loadApplications();
+          this.processing = false;
+          this.modalRef?.hide();
+          this.files.paymentReceipt = null;
+          Swal.fire('Success', 'Application créée avec reçu de paiement', 'success');
+        },
+        error: () => {
+          this.processing = false;
+          Swal.fire('Error', 'Erreur lors de l\'upload du reçu', 'error');
+        }
+      });
+    } else {
+      // Envoi classique JSON
     this.applicationService.candidateAppliance({ body: formValue }).subscribe({
       next: () => {
         this.loadApplications();
@@ -150,13 +249,16 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
         Swal.fire('Error', 'Failed to create application', 'error');
       }
     });
+    }
   }
 
   edit(row: ApplicationResponse) {
     this.selectedApplication = row;
     this.CreateApplicationForm.patchValue({
       ...row,
-      speciality: this.specialities.find(s => s.name === row.speciality)?.id || ''
+      speciality: row.speciality || '',
+      courseName: (row as any).courseName || '',
+      amount: row.amount || 0
     });
     this.modalRef = this.modalService.show('editTemplate');
   }
@@ -200,15 +302,13 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
   }
 
   showDetails(application: ApplicationResponse) {
-    console.log('[Application] Affichage des détails pour:', application);
-    
-    const detailsHtml = `
+    this.selectedApplication = application;
+    let detailsHtml = `
       <div class="text-start">
         <div class="row">
           <div class="col-md-6">
             <p><strong>ID:</strong> ${application.id || 'N/A'}</p>
             <p><strong>Candidat:</strong> ${application.candidateName || 'N/A'}</p>
-            
             <p><strong>Spécialité:</strong> ${application.speciality || 'N/A'}</p>
           </div>
           <div class="col-md-6">
@@ -226,9 +326,20 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
             <p><strong>Montant:</strong> ${application.amount ? application.amount + ' FCFA' : 'N/A'}</p>
           </div>
         </div>
+        <div class='row mt-3'><div class='col-12'>
+          ${application.paymentReceiptUrl ? `<p><strong>Reçu de paiement :</strong> <a href='${application.paymentReceiptUrl}' target='_blank' class='btn btn-sm btn-outline-primary'>Voir le reçu <i class='bx bx-link-external'></i></a></p>` : ''}
+          ${application.cniUrl ? `<p><strong>CNI :</strong> <a href='${application.cniUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la CNI</a></p>` : ''}
+          ${application.diplomaUrl ? `<p><strong>Diplôme :</strong> <a href='${application.diplomaUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le diplôme</a></p>` : ''}
+          ${application.photoUrl ? `<p><strong>Photo :</strong> <a href='${application.photoUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la photo</a></p>` : ''}
+          ${application.birthCertificateUrl ? `<p><strong>Certificat de naissance :</strong> <a href='${application.birthCertificateUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le certificat</a></p>` : ''}
+          ${application.cvUrl ? `<p><strong>CV :</strong> <a href='${application.cvUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le CV</a></p>` : ''}
+          ${application.letterUrl ? `<p><strong>Lettre de motivation :</strong> <a href='${application.letterUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la lettre</a></p>` : ''}
+          ${application.financialJustificationUrl ? `<p><strong>Justification financière :</strong> <a href='${application.financialJustificationUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la justification</a></p>` : ''}
+          ${application.stageCertificateUrl ? `<p><strong>Certificat de stage :</strong> <a href='${application.stageCertificateUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le certificat de stage</a></p>` : ''}
+          ${application.oldApplyanceUrl ? `<p><strong>Ancienne candidature :</strong> <a href='${application.oldApplyanceUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir l'ancienne candidature</a></p>` : ''}
+        </div></div>
       </div>
     `;
-
     Swal.fire({
       title: `Détails de la candidature`,
       html: detailsHtml,
@@ -326,5 +437,34 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  onExamTypeChange(event: any) {
+    this.examType = event.target.value;
+    if (this.examType === 'CQP') {
+      this.CreateApplicationForm.get('courseName')?.enable();
+      this.CreateApplicationForm.get('speciality')?.disable();
+      this.CreateApplicationForm.patchValue({ speciality: '' });
+    } else if (this.examType === 'DQP') {
+      this.CreateApplicationForm.get('speciality')?.enable();
+      this.CreateApplicationForm.get('courseName')?.disable();
+      this.CreateApplicationForm.patchValue({ courseName: '' });
+    } else {
+      this.CreateApplicationForm.get('speciality')?.disable();
+      this.CreateApplicationForm.get('courseName')?.disable();
+      this.CreateApplicationForm.patchValue({ speciality: '', courseName: '' });
+    }
+  }
+
+  onSpecialityOrCourseChange() {
+    let amount = 0;
+    if (this.examType === 'DQP') {
+      const spec = this.specialities.find(s => s.name === this.CreateApplicationForm.value.speciality);
+      amount = spec?.paymentAmount || 0;
+    } else if (this.examType === 'CQP') {
+      const course = this.courses.find(c => c.name === this.CreateApplicationForm.value.courseName);
+      amount = course?.priceForDqp || 0;
+    }
+    this.CreateApplicationForm.patchValue({ amount });
   }
 }

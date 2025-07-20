@@ -374,4 +374,12 @@ export class PromoterService extends BaseService {
     );
   }
 
+  /**
+   * Récupérer toutes les infos enrichies du promoteur (profil, centres, documents, etc.)
+   */
+  getPromoterFullInfo(email: string, context?: HttpContext): Observable<any> {
+    const url = this.rootUrl + '/promoter/promoter-information';
+    return this.http.get<any>(url, { params: { email }, context });
+  }
+
 }

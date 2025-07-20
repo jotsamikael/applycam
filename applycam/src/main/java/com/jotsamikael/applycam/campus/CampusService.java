@@ -45,8 +45,15 @@ public class CampusService {
 
         //check connected user is promoter pr throw exception
         Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
-        //find the trainingCenter 
-        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(request.getTrainingCenterAgr()).orElseThrow(() -> new EntityNotFoundException("No a training center found for this Agreement number" + request.getTrainingCenterAgr()));;
+        
+        //find the trainingCenter - handle duplicate agreement numbers
+        List<TrainingCenter> trainingCenters = trainingCenterRepository.findAllByAgreementNumber(request.getTrainingCenterAgr());
+        if (trainingCenters.isEmpty()) {
+            throw new EntityNotFoundException("No training center found for this Agreement number: " + request.getTrainingCenterAgr());
+        }
+        // Take the first one if there are duplicates (should be fixed in database)
+        TrainingCenter trainingCenter = trainingCenters.get(0);
+        
         //find all training centers linked to this promoter and check if training center in request matches this one
         List<TrainingCenter> centers = trainingCenterRepository.findByPromoter(promoter).orElseThrow(() -> new EntityNotFoundException("No a training center found for promoter" + promoter.getEmail()));
 
@@ -75,7 +82,13 @@ public class CampusService {
 
     public List<CampusResponse> findCampusByTrainingCenter(String agreementNumber) {
 
-        TrainingCenter trainingCenter = trainingCenterRepository.findByAgreementNumber(agreementNumber).orElseThrow(() -> new EntityNotFoundException("No training center with agreement num" + agreementNumber));
+        List<TrainingCenter> trainingCenters = trainingCenterRepository.findAllByAgreementNumber(agreementNumber);
+        if (trainingCenters.isEmpty()) {
+            throw new EntityNotFoundException("No training center with agreement num: " + agreementNumber);
+        }
+        // Take the first one if there are duplicates
+        TrainingCenter trainingCenter = trainingCenters.get(0);
+        
         List<Campus> campusList = campusRepository.findByTrainingCenter(trainingCenter).orElseThrow(() -> new EntityNotFoundException("No campus with found for training center with agreement Num" + agreementNumber));
 
         List<CampusResponse> responses = campusList.stream().map(mapper::toCampusResponse).toList();
@@ -201,12 +214,22 @@ public class CampusService {
         Promoter promoter = promoterRepository.findByEmail(user.getEmail()).orElseThrow(() -> new EntityNotFoundException("Not a promoter" + user.getEmail()));
 
         Campus campus = campusRepository.findByName(name).orElseThrow(() -> new EntityNotFoundException("Campus not found"));
+        
+        TrainingCenter trainingCenter = campus.getTrainingCenter();
+        
+        //find all training centers linked to this promoter and check if training center in request matches this one
+        List<TrainingCenter> centers = trainingCenterRepository.findByPromoter(promoter).orElseThrow(() -> new EntityNotFoundException("No a training center found for promoter" + promoter.getEmail()));
+
+        if (!centers.contains(trainingCenter)) {
+            throw new EntityNotFoundException("You cannot delete others campus or this is not one of your campus");
+        }
+        
         if(campus.isActived()){
-        campus.setActived(false);
+            campus.setActived(false);
         }else{
             campus.setActived(true);
-        campusRepository.save(campus);
         }
+        campusRepository.save(campus);
     }
     
     public PageResponse<CampusResponse> getAllCampuses(int offset, int pageSize, String field, boolean order) {

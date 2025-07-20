@@ -1,6 +1,7 @@
 package com.jotsamikael.applycam.candidate;
 
 import com.jotsamikael.applycam.common.PageResponse;
+import com.jotsamikael.applycam.trainingCenter.TrainingCenterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +15,20 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+// DTO pour la création par le centre
+class CreateCandidateByCenterRequest {
+    public String firstname;
+    public String lastname;
+    public String email;
+    public String phoneNumber;
+    public String language;
+    public String startYear;
+    public String endYear;
+    public String trainingCenterName;
+    // Ajouter d'autres champs nécessaires si besoin
+}
 
 @RestController
 @RequiredArgsConstructor
@@ -247,6 +262,42 @@ public class CandidateController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Erreur lors de la suppression définitive: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Créer un candidat par un centre (mot de passe généré et envoyé par mail)
+     */
+    @PostMapping("/create-by-center")
+    @PreAuthorize("hasAuthority('PROMOTER') or hasAuthority('STAFF')")
+    public ResponseEntity<?> createCandidateByCenter(
+        @RequestBody CreateCandidateByCenterRequest request,
+        Authentication connectedUser
+    ) {
+        try {
+            candidateService.createCandidateByCenter(request, connectedUser);
+            return ResponseEntity.accepted().build();
+        } catch (Exception e) {
+            log.error("Erreur lors de la création du candidat par le centre: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Infos complètes du candidat (profil + centre de formation + documents + exam center)
+     */
+    @GetMapping("/candidate-information")
+    @Operation(summary = "Infos complètes du candidat", description = "Retourne toutes les infos du candidat et de son centre de formation")
+    public ResponseEntity<CandidateFullInfoResponse> candidateInformation(
+        @RequestParam String email
+    ) {
+        try {
+            CandidateFullInfoResponse info = candidateService.candidateInformation(email);
+            return ResponseEntity.ok(info);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

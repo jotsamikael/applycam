@@ -15,6 +15,7 @@ import { LightboxModule } from 'ngx-lightbox';
 
 import { WidgetModule } from '../shared/widget/widget.module';
 import { UIModule } from '../shared/ui/ui.module';
+import { SharedModule } from '../shared/shared.module';
 
 // Emoji Picker
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
@@ -177,6 +178,7 @@ import { PromoterComponent } from './staff/promoter/promoter.component';
     
   ],
   imports: [
+    SharedModule,
     MatAutocompleteModule,
     MatBadgeModule,
     MatBottomSheetModule,

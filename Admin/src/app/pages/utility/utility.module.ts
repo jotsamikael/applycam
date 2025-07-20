@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { UtiliytRoutingModule } from './utility-routing.module';
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { CarouselModule } from 'ngx-owl-carousel-o';
 
@@ -18,6 +19,7 @@ import { PricingComponent } from './pricing/pricing.component';
     CommonModule,
     UtiliytRoutingModule,
     UIModule,
+    SharedModule,
     TabsModule.forRoot(),
     CarouselModule
   ]

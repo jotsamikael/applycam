@@ -5,6 +5,7 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 import { InvoicesRoutingModule } from './invoices-routing.module';
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 
 import { ListComponent } from './list/list.component';
 import { DetailComponent } from './detail/detail.component';
@@ -15,6 +16,7 @@ import { DetailComponent } from './detail/detail.component';
     CommonModule,
     InvoicesRoutingModule,
     UIModule,
+    SharedModule,
     TooltipModule.forRoot()
   ]
 })

@@ -8,6 +8,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from '../../shared/shared.module';
 
 import {JobsRoutingModule} from "./jobs-routing.module";
 import { ListComponent } from './list/list.component';
@@ -37,6 +38,7 @@ import { CandidateOverviewComponent } from './candidate-overview/candidate-overv
     BsDropdownModule.forRoot(),
     CollapseModule.forRoot(),
     UIModule,
+    SharedModule,
     JobsRoutingModule,
   ]
 })

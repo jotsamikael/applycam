@@ -5,6 +5,14 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CandidateResponse } from '../../../services/models/candidate-response';
+import { CandidateService } from '../../../services/services/candidate.service';
+import { CandidateByCenterRequest } from '../../../services/models/candidate-request';
+import { TrainingcenterService } from '../../../services/services/trainingcenter.service';
+import { TrainingCenterResponse } from '../../../services/models/training-center-response';
+import Swal from 'sweetalert2';
+import { MatTabChangeEvent } from '@angular/material/tabs';
+import { PageResponseCandidateResponse } from '../../../services/models/page-response-candidate-response';
+import { TokenService } from '../../../services/token/token.service';
 
 @Component({
   selector: 'app-my-candidates',
@@ -39,19 +47,68 @@ export class MyCandidatesComponent implements OnInit {
   isEditMode = false;
   currentCandidateId: number | null = null;
   processing = false;
+  trainingCenters: TrainingCenterResponse[] = [];
+  languages: string[] = ['Français', 'Anglais', 'Espagnol', 'Allemand'];
+  isSingleTrainingCenter = false;
+  candidatesByCenter: { [centerName: string]: CandidateResponse[] } = {};
+  selectedYear: number = new Date().getFullYear();
+  loadingCandidates = false;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
   constructor(
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private candidateService: CandidateService,
+    private trainingcenterService: TrainingcenterService,
+    private tokenService: TokenService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-    this.loadCandidates();
+    if (!this.tokenService.hasRole('PROMOTER')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Accès refusé',
+        text: 'Vous n\'avez pas les droits pour accéder à la gestion des candidats par centre.',
+        confirmButtonText: 'Retour'
+      });
+      return;
+    }
+    this.loadTrainingCenters();
+    this.loadAllCandidatesByCenter();
+  }
+
+  loadAllCandidatesByCenter(): void {
+    this.loadingCandidates = true;
+    this.candidateService.getCandidatesOfConnectedpromoterid({
+      year: this.selectedYear,
+      offset: 0,
+      pageSize: 1000, // pour tout charger
+      field: 'firstname',
+      order: true
+    }).subscribe({
+      next: (res: PageResponseCandidateResponse) => {
+        const allCandidates = res.content || [];
+        this.candidatesByCenter = {};
+        for (const center of this.trainingCenters) {
+          this.candidatesByCenter[center.fullName!] = allCandidates.filter(c => {
+            return c.hasSchooledList?.some((hs: any) => hs.trainingCenterName === center.fullName);
+          });
+        }
+        this.loadingCandidates = false;
+      },
+      error: () => {
+        this.candidatesByCenter = {};
+        this.loadingCandidates = false;
+      }
+    });
+  }
+
+  onTabChange(event: MatTabChangeEvent): void {
+    // Si tu veux charger à la demande, tu peux le faire ici
   }
 
   initForm(): void {
@@ -60,9 +117,10 @@ export class MyCandidatesComponent implements OnInit {
       lastname: ['', [Validators.required, Validators.maxLength(50)]],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{9,15}$/)]],
-      nationalIdNumber: ['', [Validators.required]],
-      sex: ['M', [Validators.required]],
-      contentStatus: ['DRAFT', [Validators.required]]
+      language: ['', [Validators.required]],
+      startYear: ['', [Validators.required]],
+      endYear: ['', [Validators.required]],
+      trainingCenterName: ['', [Validators.required]],
     });
   }
 
@@ -73,20 +131,94 @@ export class MyCandidatesComponent implements OnInit {
     this.updateStats();
   }
 
+  loadTrainingCenters(): void {
+    this.trainingcenterService.getTrainingCenterOfConnectedPromoter().subscribe({
+      next: (centers) => {
+        this.trainingCenters = centers || [];
+        if (this.trainingCenters.length === 1) {
+          this.isSingleTrainingCenter = true;
+          this.candidateForm.patchValue({ trainingCenterName: this.trainingCenters[0].fullName });
+          this.candidateForm.get('trainingCenterName')?.disable();
+        } else {
+          this.isSingleTrainingCenter = false;
+          this.candidateForm.get('trainingCenterName')?.enable();
+        }
+      },
+      error: () => {
+        this.trainingCenters = [];
+        this.isSingleTrainingCenter = false;
+      }
+    });
+  }
+
   updateStats(): void {
     this.followUpStat[0].value = this.candidates.length.toString();
     this.followUpStat[1].value = this.candidates.filter(c => c.contentStatus === 'VALIDATED').length.toString(); // corrigé
     this.followUpStat[2].value = this.candidates.filter(c => c.contentStatus === 'DRAFT').length.toString(); // corrigé
   }
 
-  openCreateModal(): void {
-    this.isEditMode = false;
-    this.currentCandidateId = null;
-    this.candidateForm.reset({
-      sex: 'M',
-      contentStatus: 'DRAFT'
+  openCreatePopup(): void {
+    const htmlForm = `
+      <form id="swal-candidate-form">
+        <div class='mb-2'><input id='swal-input-firstname' class='swal2-input' placeholder='First Name' required maxlength='50'></div>
+        <div class='mb-2'><input id='swal-input-lastname' class='swal2-input' placeholder='Last Name' required maxlength='50'></div>
+        <div class='mb-2'><input id='swal-input-email' class='swal2-input' placeholder='Email' type='email' required></div>
+        <div class='mb-2'><input id='swal-input-phone' class='swal2-input' placeholder='Phone Number' required pattern='[0-9]{9,15}'></div>
+        <div class='mb-2'>
+          <select id='swal-input-language' class='swal2-input'>
+            ${this.languages.map(lang => `<option value='${lang}'>${lang}</option>`).join('')}
+          </select>
+        </div>
+        <div class='mb-2'>
+          <select id='swal-input-trainingcenter' class='swal2-input' ${this.isSingleTrainingCenter ? 'disabled' : ''}>
+            ${this.trainingCenters.map(center => `<option value='${center.fullName}'>${center.fullName}</option>`).join('')}
+          </select>
+        </div>
+        <div class='mb-2'><input id='swal-input-startyear' class='swal2-input' placeholder='Start Year (YYYY-MM-DD)' required></div>
+        <div class='mb-2'><input id='swal-input-endyear' class='swal2-input' placeholder='End Year (YYYY-MM-DD)' required></div>
+      </form>
+    `;
+    Swal.fire({
+      title: 'Create Candidate',
+      html: htmlForm,
+      focusConfirm: false,
+      showCancelButton: true,
+      preConfirm: () => {
+        const firstname = (document.getElementById('swal-input-firstname') as HTMLInputElement).value;
+        const lastname = (document.getElementById('swal-input-lastname') as HTMLInputElement).value;
+        const email = (document.getElementById('swal-input-email') as HTMLInputElement).value;
+        const phoneNumber = (document.getElementById('swal-input-phone') as HTMLInputElement).value;
+        const language = (document.getElementById('swal-input-language') as HTMLSelectElement).value;
+        const trainingCenterName = this.isSingleTrainingCenter && this.trainingCenters.length === 1
+          ? this.trainingCenters[0].fullName
+          : (document.getElementById('swal-input-trainingcenter') as HTMLSelectElement).value;
+        const startYear = (document.getElementById('swal-input-startyear') as HTMLInputElement).value;
+        const endYear = (document.getElementById('swal-input-endyear') as HTMLInputElement).value;
+        if (!firstname || !lastname || !email || !phoneNumber || !language || !trainingCenterName || !startYear || !endYear) {
+          Swal.showValidationMessage('All fields are required');
+          return;
+        }
+        return { firstname, lastname, email, phoneNumber, language, trainingCenterName, startYear, endYear };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        this.candidateService.createCandidateByCenter(result.value).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Succès',
+              text: 'Candidate created successfully',
+              timer: 2000,
+              showConfirmButton: false
+            });
+            this.loadAllCandidatesByCenter();
+          },
+          error: (err) => {
+            this.showSnackBar('Error creating candidate: ' + (err?.error?.message || 'Unknown error'));
+          }
+        });
+      }
     });
-    this.showModal = true;
   }
 
   edit(candidate: any): void {
@@ -112,34 +244,25 @@ export class MyCandidatesComponent implements OnInit {
     }
   }
 
-  // onSubmit(): void {
-  //   if (this.candidateForm.invalid) {
-  //     return;
-  //   }
-
-  //   this.processing = true;
-  //   const candidateData = this.candidateForm.value;
-
-  //   setTimeout(() => {
-  //     if (this.isEditMode && this.currentCandidateId) {
-  //       // Update
-  //       const index = this.candidates.findIndex(c => c.idUser === this.currentCandidateId);
-  //       if (index !== -1) {
-  //         this.candidates[index] = { ...this.candidates[index], ...candidateData };
-  //         this.showSnackBar('Candidate updated successfully');
-  //       }
-  //     } else {
-  //       // Create
-  //       const newId = Math.max(...this.candidates.map(c => c.idUser || 0)) + 1;
-  //       this.candidates.push({ ...candidateData, idUser: newId });
-  //       this.showSnackBar('Candidate added successfully');
-  //     }
-
-  //     this.closeModal();
-  //     this.loadCandidates();
-  //     this.processing = false;
-  //   }, 1000);
-  // }
+  onSubmit(): void {
+    if (this.candidateForm.invalid) {
+      return;
+    }
+    this.processing = true;
+    const candidateData: CandidateByCenterRequest = this.candidateForm.value;
+    this.candidateService.createCandidateByCenter(candidateData).subscribe({
+      next: () => {
+        this.showSnackBar('Candidate created successfully');
+        this.closeModal();
+        this.loadCandidates();
+        this.processing = false;
+      },
+      error: (err) => {
+        this.showSnackBar('Error creating candidate: ' + (err?.error?.message || 'Unknown error'));
+        this.processing = false;
+      }
+    });
+  }
 
   closeModal(): void {
     this.showModal = false;

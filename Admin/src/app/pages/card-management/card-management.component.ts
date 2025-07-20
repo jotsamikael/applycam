@@ -13,7 +13,7 @@ export class CardManagementComponent implements OnInit {
   constructor(private tokenService: TokenService) { }
 
   ngOnInit(): void {
-    this.breadCrumbItems = [{ label: 'Skote' }, { label: 'Card management', active: true }];
+    this.breadCrumbItems = [{ label: 'Applycam' }, { label: 'Card management', active: true }];
     this.user = this.tokenService.getRoles()
     
     console.log(this.user)

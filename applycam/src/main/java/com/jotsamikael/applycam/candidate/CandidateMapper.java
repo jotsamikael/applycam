@@ -1,6 +1,7 @@
 package com.jotsamikael.applycam.candidate;
 
 import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
 /*
 * This class is used to map a Candidate Object to a CandidateResponse object and vice-versa
 * */
@@ -28,6 +29,13 @@ public class CandidateMapper {
                 .nationalIdCardUrl(candidate.getNationalIdCardUrl())
                 .highestDiplomatUrl(candidate.getHighestDiplomatUrl())
                 .contentStatus(candidate.getContentStatus())
+                // Ajout du mapping des centres de formation
+                .hasSchooledList(candidate.getHasSchooledList() != null ?
+                    candidate.getHasSchooledList().stream()
+                        .map(hs -> CandidateResponse.HasSchooledInfo.builder()
+                            .trainingCenterName(hs.getTrainingCenter() != null ? hs.getTrainingCenter().getFullName() : null)
+                            .build())
+                        .collect(Collectors.toList()) : null)
                 .build();
     }
 

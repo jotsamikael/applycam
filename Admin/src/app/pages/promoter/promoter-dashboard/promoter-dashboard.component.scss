@@ -1,45 +1,524 @@
-/* Dashboard Styles */
-.card {
-  margin-bottom: 24px;
-  box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
-  border: none;
-  border-radius: 0.5rem;
+// Variables
+$primary-color: #5b73e8;
+$success-color: #34c38f;
+$warning-color: #f1b44c;
+$danger-color: #f46a6a;
+$info-color: #50a5f1;
+$dark-color: #495057;
+$light-color: #f8f9fa;
+
+// Mixins
+@mixin card-shadow {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.125);
 }
 
-.avatar-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@mixin gradient-bg($color) {
+  background: linear-gradient(135deg, $color 0%, darken($color, 10%) 100%);
 }
 
-/* Chart Containers */
-canvas {
-  width: 100% !important;
-}
-
-/* Activity Timeline */
-.simplebar-content {
-  padding-right: 16px;
-}
-
-/* Upcoming Events Table */
-.table {
-  td {
-    padding: 0.75rem;
-    vertical-align: middle;
-    border-color: #f6f6f6;
+@mixin hover-effect {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   }
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .card-body {
-    padding: 1rem;
+// Dashboard Container
+.dashboard-container {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+// Page Title
+.page-title-box {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  @include card-shadow;
+  
+  h4 {
+    color: $dark-color;
+    font-weight: 600;
+    margin-bottom: 5px;
   }
   
-  .avatar-md {
+  p {
+    color: #6c757d;
+    font-size: 14px;
+  }
+}
+
+// Styles généraux
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// États de chargement et d'erreur
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  
+  .spinner-border {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.error-state {
+  border: none;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  border-left: 4px solid $danger-color;
+  
+  .alert-heading {
+    color: $danger-color;
+    font-weight: 600;
+  }
+  
+  .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: $dark-color;
+  
+  i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+// Cartes de statistiques
+.stats-card {
+  @include card-shadow;
+  @include hover-effect;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  &.primary {
+    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 15%) 100%);
+    color: white;
+    
+    .stat-icon {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+  
+  &.success {
+    background: linear-gradient(135deg, $success-color 0%, darken($success-color, 15%) 100%);
+    color: white;
+    
+    .stat-icon {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+  
+  &.warning {
+    background: linear-gradient(135deg, $warning-color 0%, darken($warning-color, 15%) 100%);
+    color: white;
+    
+    .stat-icon {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+  
+  &.info {
+    background: linear-gradient(135deg, $info-color 0%, darken($info-color, 15%) 100%);
+    color: white;
+    
+    .stat-icon {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    line-height: 1;
+  }
+  
+  .stat-title {
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+}
+
+// Cartes de graphiques
+.chart-card {
+  @include card-shadow;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+    
+    .card-title {
+      font-weight: 600;
+      color: $dark-color;
+      margin: 0;
+      
+      i {
+        color: $primary-color;
+      }
+    }
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+// Timeline des activités
+.timeline {
+  position: relative;
+  padding-left: 30px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #e9ecef 0%, #dee2e6 100%);
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .timeline-marker {
+      position: absolute;
+      left: -22px;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px #e9ecef;
+      z-index: 1;
+    }
+    
+    .timeline-content {
+      h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: $dark-color;
+      }
+      
+      p {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+        color: #6c757d;
+        line-height: 1.4;
+      }
+      
+      small {
+        font-size: 0.75rem;
+        color: #adb5bd;
+      }
+    }
+  }
+}
+
+// Événements à venir
+.event-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #f1f3f4;
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .event-icon {
     width: 40px;
     height: 40px;
-    font-size: 16px !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  
+  h6 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: $dark-color;
+  }
+  
+  p {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+    color: #6c757d;
+    line-height: 1.4;
+  }
+  
+  small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    i {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Carte d'informations utilisateur
+.user-info-card {
+  @include card-shadow;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .card-header {
+    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 15%) 100%);
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    
+    .card-title {
+      font-weight: 600;
+      margin: 0;
+      
+      i {
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .avatar-sm {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .avatar-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    font-size: 1.5rem;
+  }
+  
+  .table {
+    margin-bottom: 0;
+    
+    td {
+      padding: 0.5rem 0;
+      border: none;
+      vertical-align: top;
+      
+      &:first-child {
+        font-weight: 500;
+        color: $dark-color;
+        width: 40%;
+      }
+      
+      &:last-child {
+        color: #6c757d;
+      }
+    }
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .stats-card {
+    margin-bottom: 1rem;
+    
+    .stat-value {
+      font-size: 2rem;
+    }
+    
+    .stat-icon {
+      font-size: 2rem;
+    }
+  }
+  
+  .chart-card {
+    margin-bottom: 1rem;
+    
+    .card-body {
+      padding: 1rem;
+    }
+  }
+  
+  .timeline {
+    padding-left: 20px;
+    
+    &::before {
+      left: 10px;
+    }
+    
+    .timeline-item .timeline-marker {
+      left: -17px;
+    }
+  }
+  
+  .error-state {
+    padding: 1rem;
+    
+    .d-flex {
+      flex-direction: column;
+      text-align: center;
+      
+      .btn {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.stats-card:hover {
+  animation: pulse 0.3s ease-in-out;
+}
+
+// États de couleur pour les badges et icônes
+.bg-primary { background-color: $primary-color !important; }
+.bg-success { background-color: $success-color !important; }
+.bg-warning { background-color: $warning-color !important; }
+.bg-danger { background-color: $danger-color !important; }
+.bg-info { background-color: $info-color !important; }
+
+.text-primary { color: $primary-color !important; }
+.text-success { color: $success-color !important; }
+.text-warning { color: $warning-color !important; }
+.text-danger { color: $danger-color !important; }
+.text-info { color: $info-color !important; }
+
+// Améliorations pour les cartes
+.card {
+  @include card-shadow;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 1rem 1.5rem;
+  }
+}
+
+// Boutons améliorés
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &.btn-primary {
+    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+    border: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, darken($primary-color, 5%) 0%, darken($primary-color, 15%) 100%);
+    }
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $primary-color;
+  border-radius: 4px;
+  
+  &:hover {
+    background: darken($primary-color, 10%);
   }
 }

@@ -105,6 +105,11 @@ public class ApplicationService {
             
             // Création de la candidature
             Application application = createApplication(request, candidate, session, payment, speciality);
+            // Gestion du reçu de paiement
+            if (request.getPaymentReceipt() != null && !request.getPaymentReceipt().isEmpty()) {
+                String receiptUrl = fileStorageService.saveFile(request.getPaymentReceipt(), candidate.getIdUser(), "PAYMENT_RECEIPT");
+                application.setPaymentReceiptUrl(receiptUrl);
+            }
             applicationRepository.save(application);
             
             log.info("Candidature créée avec succès pour le candidat: {}", candidate.getEmail());

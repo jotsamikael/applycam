@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,4 +36,17 @@ public class CandidateResponse{
     private String nationalIdCardUrl;
     private String highestDiplomatUrl;
     private ContentStatus contentStatus;
+
+    // Ajout pour le frontend : liste des scolarisations (centres)
+    private List<HasSchooledInfo> hasSchooledList;
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class HasSchooledInfo {
+        private String trainingCenterName;
+        // autres champs si besoin
+    }
 }

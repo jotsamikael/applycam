@@ -23,11 +23,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jotsamikael.applycam.common.ContentStatus;
 import com.jotsamikael.applycam.common.PageResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,16 +43,24 @@ public class ApplicationController {
 	/**
 	 * Créer une nouvelle candidature
 	 */
-	@PostMapping("/PersonalInformation")
-	@Operation(summary = "Créer une candidature", description = "Créer une nouvelle candidature avec les informations personnelles")
+	@PostMapping(value = "/PersonalInformation", consumes = {"multipart/form-data"})
+	@Operation(summary = "Créer une candidature", description = "Créer une nouvelle candidature avec les informations personnelles et le reçu de paiement")
 	public ResponseEntity<?> candidateAppliance(
-		@RequestBody @Valid ApplicationRequest request,
+		@RequestParam("data") String data,
+		@RequestPart(value = "paymentReceipt", required = false) MultipartFile paymentReceipt,
 		Authentication connectedUser
 	) {
 		try {
 			log.info("Création de candidature pour l'utilisateur: {}", connectedUser.getName());
+			ObjectMapper mapper = new ObjectMapper();
+			ApplicationRequest request = mapper.readValue(data, ApplicationRequest.class);
+			request.setPaymentReceipt(paymentReceipt);
 			service.applyPersonalInfo(request, connectedUser);
 			return ResponseEntity.ok().body(Map.of("message", "Candidature créée avec succès"));
+		} catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+			log.error("Erreur de parsing JSON pour ApplicationRequest: {}", e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("error", "Erreur de parsing JSON: " + e.getMessage()));
 		} catch (Exception e) {
 			log.error("Erreur lors de la création de la candidature: {}", e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

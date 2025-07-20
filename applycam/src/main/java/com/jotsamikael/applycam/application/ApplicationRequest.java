@@ -6,11 +6,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplicationRequest {
 	
 	 
@@ -105,4 +110,7 @@ public class ApplicationRequest {
    	
    	@NotNull(message = "Number of kid is mandatory")
    	private Integer numberOfKid;
+
+    // Champ pour l'upload du reçu de paiement (non persisté)
+    private MultipartFile paymentReceipt;
 } 
