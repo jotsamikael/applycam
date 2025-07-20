@@ -19,6 +19,7 @@ import { ProjectgridComponent } from './projectgrid/projectgrid.component';
 import { ProjectlistComponent } from './projectlist/projectlist.component';
 import { OverviewComponent } from './overview/overview.component';
 import { CreateComponent } from './create/create.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
   declarations: [ProjectgridComponent, ProjectlistComponent, OverviewComponent, CreateComponent],
@@ -32,7 +33,8 @@ import { CreateComponent } from './create/create.component';
     NgxDropzoneModule,
     FormsModule,
     BsDatepickerModule.forRoot(),
-    PaginationModule.forRoot()
+    PaginationModule.forRoot(),
+    SharedModule
   ]
 })
 

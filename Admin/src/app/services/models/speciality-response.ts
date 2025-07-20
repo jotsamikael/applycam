@@ -9,4 +9,5 @@ export interface SpecialityResponse {
   id?: number;
   name?: string;
   paymentAmount?: number;
+  trainingCenterName?: string;
 }

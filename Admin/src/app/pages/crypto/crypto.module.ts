@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 import { NgApexchartsModule } from 'ng-apexcharts';
 
@@ -51,7 +52,8 @@ import { OrdersComponent } from './orders/orders.component';
     CdkStepperModule,
     NgStepperModule,
     NgxDropzoneModule,
-    SimplebarAngularModule
+    SimplebarAngularModule,
+    SharedModule
   ]
 })
 export class CryptoModule { }

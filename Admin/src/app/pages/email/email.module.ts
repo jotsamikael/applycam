@@ -15,6 +15,7 @@ import { UIModule } from '../../shared/ui/ui.module';
 import { BasicComponent } from './basic/basic.component';
 import { BillingComponent } from './billing/billing.component';
 import { AlertComponent } from './alert/alert.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
   declarations: [InboxComponent, EmailreadComponent, BasicComponent, BillingComponent, AlertComponent],
@@ -27,6 +28,7 @@ import { AlertComponent } from './alert/alert.component';
     PaginationModule.forRoot(),
     CKEditorModule,
     FormsModule,
+    SharedModule,
   ]
 })
 export class EmailModule { }

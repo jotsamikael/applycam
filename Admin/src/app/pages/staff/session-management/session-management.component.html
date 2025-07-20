@@ -239,6 +239,29 @@
                             [disabled]="!canDelete(session)">
                       <mat-icon>{{session.examType === 'Cette session a été supprimée.' ? 'delete_forever' : 'delete'}}</mat-icon>
                     </button>
+
+                    <!-- Bouton afficher/masquer détails -->
+                    <button mat-icon-button color="info" (click)="toggleDetails(session.id)" matTooltip="Afficher/Masquer les détails">
+                      <mat-icon>{{ showDetails[session.id] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    </button>
+                  </div>
+                  <!-- Détails session -->
+                  <div *ngIf="showDetails[session.id] && sessionDetails[session.id]" class="mt-2 p-2 border rounded bg-light">
+                    <div *ngIf="sessionDetails[session.id].courses?.length">
+                      <strong>Cours :</strong>
+                      <ul class="mb-1">
+                        <li *ngFor="let course of sessionDetails[session.id].courses">{{ course.name }}</li>
+                      </ul>
+                    </div>
+                    <div *ngIf="sessionDetails[session.id].specialities?.length">
+                      <strong>Spécialités :</strong>
+                      <ul class="mb-1">
+                        <li *ngFor="let spec of sessionDetails[session.id].specialities">{{ spec.name }}</li>
+                      </ul>
+                    </div>
+                    <div *ngIf="!sessionDetails[session.id].courses?.length && !sessionDetails[session.id].specialities?.length">
+                      <em>Aucun détail disponible pour cette session.</em>
+                    </div>
                   </div>
                 </td>
               </ng-container>

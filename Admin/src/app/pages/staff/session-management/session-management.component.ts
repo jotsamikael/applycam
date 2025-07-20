@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { SessionService } from 'src/app/services/services/session.service';
 import { SessionResponse } from 'src/app/services/models/session-response';
+import { SessionDetailsListResponse } from 'src/app/services/models/session-details-list-response';
 
 @Component({
   selector: 'app-session-management',
@@ -40,6 +41,10 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
     inactiveSessions: 0,
     sessionsThisYear: 0
   };
+
+  sessions: SessionResponse[] = [];
+  sessionDetails: { [id: number]: SessionDetailsListResponse } = {};
+  showDetails: { [id: number]: boolean } = {};
 
   breadCrumbItems: Array<{}> = [{ label: 'Minister' }, { label: 'Sessions', active: true }];
 
@@ -97,25 +102,56 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
   loadSessions(): void {
     this.processing = true;
     console.log('Chargement des sessions...');
-    
-    this.sessionService.getall({ 
-      field: 'sessionYear', 
+    const params = {
+      field: 'sessionYear',
       order: true,
       offset: this.currentPage,
       pageSize: this.pageSize
-    }).subscribe({
+    };
+    const obs = this.showInactive
+      ? this.sessionService['http'].get<any>(this.sessionService.rootUrl + '/session/get-all-including-inactive', { params })
+      : this.sessionService.getall(params);
+    obs.subscribe({
       next: (res: any) => {
-        console.log('Réponse du serveur:', res);
-        this.dataSource.data = res?.content ?? [];
-        this.totalElements = res?.totalElements ?? 0;
-        this.totalPages = res?.totalPages ?? 0;
+        console.log('Réponse du backend:', res);
+        if (!res) {
+          Swal.fire('Erreur', 'Aucune réponse du backend. Vérifiez la connexion au serveur.', 'error');
+          this.sessions = [];
+          this.dataSource.data = [];
+        } else if (!res.content || !Array.isArray(res.content)) {
+          Swal.fire('Erreur', 'Format de réponse inattendu du backend. Contactez un administrateur.', 'error');
+          console.error('Réponse inattendue:', res);
+          this.sessions = [];
+          this.dataSource.data = [];
+        } else if (res.content.length === 0) {
+          Swal.fire('Information', 'Aucune session trouvée dans la base de données.', 'info');
+          this.sessions = [];
+          this.dataSource.data = [];
+        } else {
+          this.sessions = res.content;
+          this.dataSource.data = res.content;
+          this.totalElements = res.totalElements ?? 0;
+          this.totalPages = res.totalPages ?? 0;
+          // Charger les détails pour chaque session
+          this.sessions.forEach(session => {
+            if (session.id) {
+              this.sessionService.getSessionDetailsList({ id: session.id }).subscribe({
+                next: (details) => {
+                  this.sessionDetails[session.id!] = details;
+                },
+                error: (err) => {
+                  console.warn('Erreur chargement détails session', session.id, err);
+                }
+              });
+            }
+          });
+        }
         this.processing = false;
-        console.log('Sessions chargées:', this.dataSource.data.length);
       },
       error: (error) => {
         console.error('Erreur lors du chargement des sessions:', error);
         this.processing = false;
-        Swal.fire('Erreur', 'Impossible de charger les sessions', 'error');
+        Swal.fire('Erreur', 'Impossible de charger les sessions : ' + (error?.message || error), 'error');
       }
     });
   }
@@ -529,5 +565,9 @@ export class SessionManagementComponent implements OnInit, AfterViewInit {
 
   canReactivate(session: SessionResponse): boolean {
     return session.examType === 'Cette session a été supprimée.';
+  }
+
+  toggleDetails(sessionId: number): void {
+    this.showDetails[sessionId] = !this.showDetails[sessionId];
   }
 }

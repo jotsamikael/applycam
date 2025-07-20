@@ -7,7 +7,7 @@ import { UIModule } from '../../shared/ui/ui.module';
 import { WidgetModule } from '../../shared/widget/widget.module';
 
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { SharedModule } from './saas/shared/shared.module'
+import { SharedModule } from 'src/app/shared/shared.module';
 
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { BsDropdownModule,BsDropdownConfig} from 'ngx-bootstrap/dropdown';

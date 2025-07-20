@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EcommerceRoutingModule } from './ecommerce-routing.module';
 import { UIModule } from '../../shared/ui/ui.module';
 import { WidgetModule } from '../../shared/widget/widget.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 import { NgxSliderModule } from 'ngx-slider-v2';
 // import { Ng2SearchPipeModule } from 'ng2-search-filter';
@@ -47,7 +48,8 @@ import { OrdersComponent } from './orders/orders.component';
     NgxSliderModule,
     NgSelectModule,
     PaginationModule.forRoot(),
-    BsDatepickerModule.forRoot()
+    BsDatepickerModule.forRoot(),
+    SharedModule
   ],
   providers: [
     DatePipe,

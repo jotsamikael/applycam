@@ -53,7 +53,7 @@ public class SessionController {
 	}
 
 	@GetMapping("/get-all")
-	@Operation(summary = "Récupérer toutes les sessions", description = "Récupérer toutes les sessions avec pagination et tri")
+	@Operation(summary = "Récupérer toutes les sessions", description = "Récupérer toutes les sessions actives et inactives avec pagination et tri")
 	public ResponseEntity<PageResponse<SessionResponse>> getall(
 		@Parameter(description = "Offset de pagination") @RequestParam(name = "offset", defaultValue = "0", required = false) int offset,
 		@Parameter(description = "Taille de page") @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize,
@@ -61,8 +61,12 @@ public class SessionController {
 		@Parameter(description = "Ordre de tri") @RequestParam(name = "order", defaultValue = "true", required = false) boolean order
 	) {
 		try {
-			log.info("Récupération des sessions - offset: {}, pageSize: {}", offset, pageSize);
-			PageResponse<SessionResponse> response = sessionService.getAllSession(offset, pageSize, field, order);
+			log.info("Récupération de toutes les sessions (actives et inactives) - offset: {}, pageSize: {}", offset, pageSize);
+			PageResponse<SessionResponse> response = sessionService.getAllSessionsIncludingInactive(offset, pageSize, field, order);
+			log.info("[BACKEND] get-all: sessions récupérées = {}", response.getContent() != null ? response.getContent().size() : 0);
+			if (response.getContent() != null) {
+				response.getContent().forEach(s -> log.info("[BACKEND] Session: {}", s));
+			}
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
 			log.error("Erreur lors de la récupération des sessions: {}", e.getMessage(), e);

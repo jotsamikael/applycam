@@ -70,6 +70,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTreeModule } from '@angular/material/tree';
 import { DatePipe } from '@angular/common';
 import { NgbAccordionModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+//import { StatComponent } from './shared/stat/stat.component';
 
 if (environment.defaultauth === 'firebase') {
   initFirebaseBackend(environment.firebaseConfig);
@@ -89,6 +90,7 @@ export function createTranslateLoader(http: HttpClient): any {
     LoginComponent,
     ActivateAccountComponent,
     RegisterComponent,
+   // StatComponent,
   ],
   imports: [
     BrowserModule,

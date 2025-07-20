@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 import { MapsRoutingModule } from './maps-routing.module';
 import { GoogleComponent } from './google/google.component';
@@ -17,6 +18,7 @@ import { LeafletComponent } from './leaflet/leaflet.component';
     CommonModule,
     MapsRoutingModule,
     UIModule,
+    SharedModule,
     // AgmCoreModule.forRoot({
     //   apiKey: 'AIzaSyAbvyBxmMbFhrzP9Z8moyYr6dCr-pzjhBE'
     // }),

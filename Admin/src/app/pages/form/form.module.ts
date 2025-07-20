@@ -27,6 +27,7 @@ import { MaskComponent } from './mask/mask.component';
 import { AdvancedformComponent } from './advancedform/advancedform.component';
 import { RepeaterComponent } from './repeater/repeater.component';
 import { LayoutsComponent } from './layouts/layouts.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
   // tslint:disable-next-line: max-line-length
@@ -47,7 +48,8 @@ import { LayoutsComponent } from './layouts/layouts.component';
     ColorPickerModule,
     BsDatepickerModule.forRoot(),
     NgxDropzoneModule,
-    FlatpickrModule.forRoot()
+    FlatpickrModule.forRoot(),
+    SharedModule
   ],
   providers: [provideNgxMask()]
 })

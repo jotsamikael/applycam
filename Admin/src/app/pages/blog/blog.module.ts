@@ -5,6 +5,7 @@ import { TabsModule } from 'ngx-bootstrap/tabs';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 import { UIModule } from '../../shared/ui/ui.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 import { BlogRoutingModule } from './blog-routing.module';
 
@@ -20,6 +21,7 @@ import { DetailComponent } from '../blog/detail/detail.component';
         TabsModule.forRoot(),
         TooltipModule.forRoot(),
         UIModule,
+        SharedModule,
     ]
 })
 
