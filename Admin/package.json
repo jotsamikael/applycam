@@ -50,6 +50,7 @@
     "echarts": "^5.4.2",
     "firebase": "^10.0.0",
     "flatpickr": "^4.6.13",
+    "jspdf": "^3.0.1",
     "leaflet": "^1.9.4",
     "maildev": "^2.2.1",
     "masonry-layout": "^4.2.2",

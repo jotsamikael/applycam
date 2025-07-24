@@ -1,8 +1,11 @@
 spring:
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/applycam}
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:}
+    #url: jdbc:mysql://localhost:3306/applycam
+    url: jdbc:mysql://localhost:3306/applycam
+    username: root
+    #username: username
+    #password: password
+    password: 
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

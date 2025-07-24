@@ -16,6 +16,7 @@ import { TrainingcenterService } from '../../../services/services/trainingcenter
 import { HttpClient } from '@angular/common/http';
 import { CourseResponse } from '../../../services/models/course-response';
 import { CandidateService } from '../../../services/services/candidate.service';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-my-applications',
@@ -221,6 +222,17 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
       letter: [null],
       paymentReceipt: [null]
     });
+    // Charger le script Campay
+    this.loadCampayScript();
+  }
+
+  loadCampayScript() {
+    if (document.getElementById('campay-sdk')) return;
+    const script = document.createElement('script');
+    script.id = 'campay-sdk';
+    script.src = 'https://www.campay.net/sdk/js?app-id=qYqoj7yml9WSbb1i0K0CNRMEWHJdGXT1VspPSQV6XJTvGeWavMF8hIWUYvnuHvWM4iuIOSKz2ayw8CbS7ZFbeQ';
+    script.async = true;
+    document.body.appendChild(script);
   }
 
   loadFormLists(): void {
@@ -421,9 +433,7 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
       order: true
     };
 
-    console.log('[MyApplications] Paramètres de requête (incluant inactives):', params);
-
-    // Appel direct au nouvel endpoint
+    // Utilisation stricte de l'endpoint du candidat connecté pour éviter d'afficher les candidatures d'autres utilisateurs
     this.http.get<any>(`${this.applicationService.rootUrl}/application/get-my-applications-including-inactive`, { params }).subscribe({
       next: (res) => {
         console.log('[MyApplications] getMyApplicationsIncludingInactive succès:', res);
@@ -995,6 +1005,7 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
   viewApplicationDetails(application: ApplicationResponse): void {
     this.selectedApplication = application;
     this.showDetailsModal = true;
+    this.payForApplication(); // Initialise Campay dès que la modale s'ouvre
   }
 
   getStatusBadgeClass(status: string | undefined): string {
@@ -1441,5 +1452,113 @@ export class MyApplicationsComponent implements OnInit, AfterViewInit {
         Swal.fire('Erreur', 'Impossible de mettre à jour les informations', 'error');
       }
     });
+  }
+
+  /**
+   * Télécharger la candidature au format PDF
+   */
+  downloadApplicationPdf(): void {
+    if (!this.selectedApplication) return;
+    const doc = new jsPDF();
+    const margin = 15;
+    let y = margin;
+
+    // Titre
+    doc.setFontSize(18);
+    doc.text('Fiche de Candidature', 105, y, { align: 'center' });
+    y += 10;
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, 210 - margin, y);
+    y += 10;
+
+    // Informations du candidat
+    doc.setFontSize(12);
+    doc.text('Informations du Candidat', margin, y);
+    y += 8;
+    // (À adapter si tu veux plus d'infos personnelles)
+    doc.text(`Nom: ${this.selectedApplication.candidateName || 'N/A'}`, margin, y);
+    y += 7;
+    doc.text(`Spécialité: ${this.selectedApplication.speciality || 'N/A'}`, margin, y);
+    y += 7;
+    doc.text(`Type d'examen: ${this.selectedApplication.examType || 'N/A'}`, margin, y);
+    y += 7;
+    doc.text(`Région: ${this.selectedApplication.applicationRegion || 'N/A'}`, margin, y);
+    y += 7;
+    doc.text(`Année: ${this.selectedApplication.applicationYear || 'N/A'}`, margin, y);
+    y += 7;
+    doc.text(`Statut: ${this.getStatusDisplayText(this.selectedApplication.status)}`, margin, y);
+    y += 7;
+    doc.text(`Méthode de paiement: ${this.selectedApplication.paymentMethod || 'N/A'}`, margin, y);
+    y += 7;
+    doc.text(`Montant: ${this.selectedApplication.amount ? this.selectedApplication.amount + ' FCFA' : 'N/A'}`, margin, y);
+    y += 10;
+
+    // Espace pour le timbre
+    doc.setFontSize(12);
+    doc.text('Espace pour le timbre :', margin, y);
+    doc.rect(150, y - 5, 40, 25); // Rectangle pour le timbre
+    y += 30;
+
+    // Photo du candidat (si disponible)
+    if (this.selectedApplication.photoUrl) {
+      // Charger l'image et l'ajouter (asynchrone normalement, ici on prévoit l'appel)
+      this.addImageToPdf(doc, this.selectedApplication.photoUrl, 160, margin, 30, 40, () => {
+        doc.save(`candidature_${this.selectedApplication.id || ''}.pdf`);
+      });
+      return;
+    }
+
+    // Si pas de photo, sauvegarder directement
+    doc.save(`candidature_${this.selectedApplication.id || ''}.pdf`);
+  }
+
+  /**
+   * Ajoute une image à un PDF jsPDF à partir d'une URL
+   */
+  addImageToPdf(doc: any, imageUrl: string, x: number, y: number, width: number, height: number, callback: () => void) {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL('image/png');
+      doc.addImage(dataUrl, 'PNG', x, y, width, height);
+      callback();
+    };
+    img.onerror = function () {
+      callback();
+    };
+    img.src = imageUrl;
+  }
+
+  /**
+   * Initialise le widget Campay pour le paiement de la candidature sélectionnée
+   */
+  payForApplication(): void {
+    if (!this.selectedApplication) return;
+    // S'assurer que le script Campay est chargé
+    if (!(window as any).campay) {
+      return;
+    }
+    (window as any).campay.options({
+      payButtonId: "payButton",
+      description: `Paiement candidature #${this.selectedApplication.id}`,
+      amount: this.selectedApplication.amount || 0,
+      currency: "XAF",
+      externalReference: this.selectedApplication.id ? String(this.selectedApplication.id) : "",
+      redirectUrl: ""
+    });
+    (window as any).campay.onSuccess = function (data: any) {
+      Swal.fire('Succès', `Paiement réussi !\nStatus: ${data.status}\nRéférence: ${data.reference}`, 'success');
+    };
+    (window as any).campay.onFail = function (data: any) {
+      Swal.fire('Erreur', `Paiement échoué !\nStatus: ${data.status}\nRéférence: ${data.reference}`, 'error');
+    };
+    (window as any).campay.onModalClose = function (data: any) {
+      // Optionnel : tu peux gérer la fermeture de la modale ici
+    };
   }
 }

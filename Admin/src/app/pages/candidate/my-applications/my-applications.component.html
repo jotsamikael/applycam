@@ -678,6 +678,7 @@
                     <div class="col-md-6">
                         <p><strong>ID:</strong> {{selectedApplication.id || 'N/A'}}</p>
                         <p><strong>Spécialité:</strong> {{selectedApplication.speciality || 'N/A'}}</p>
+                        <p *ngIf="selectedApplication.amount"><strong>Montant spécialité/filière:</strong> {{selectedApplication.amount}} FCFA</p>
                         <p><strong>Type d'examen:</strong> {{selectedApplication.examType || 'N/A'}}</p>
                         <p><strong>Région:</strong> {{selectedApplication.applicationRegion || 'N/A'}}</p>
                     </div>
@@ -695,6 +696,12 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">Fermer</button>
+                <button type="button" class="btn btn-primary" (click)="downloadApplicationPdf()">
+                    <i class="bx bx-download"></i> Télécharger
+                </button>
+                <button id="payButton" type="button" class="btn btn-success">
+                    <i class="bx bx-credit-card"></i> Payer
+                </button>
             </div>
         </div>
     </div>
