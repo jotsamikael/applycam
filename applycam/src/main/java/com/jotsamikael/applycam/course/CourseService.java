@@ -139,9 +139,11 @@ public class CourseService {
 			
 			List<CourseResponse> courseResponses = courses.getContent().stream()
 				.map(course -> CourseResponse.builder()
+					.id(course.getId())
 					.name(course.getName())
 					.code(course.getCode())
 					.description(course.getDescription())
+					.priceForDqp(course.getPriceForCqp())
 					.build())
 				.toList();
 
@@ -177,16 +179,20 @@ public class CourseService {
 			
 			if (!course.isActived()) {
 				return CourseResponse.builder()
+					.id(course.getId())
 					.name(course.getName())
 					.code(course.getCode())
 					.description("Ce cours a été supprimé.")
+					.priceForDqp(course.getPriceForCqp())
 					.build();
 			}
 			
 			return CourseResponse.builder()
+				.id(course.getId())
 				.name(course.getName())
 				.code(course.getCode())
 				.description(course.getDescription())
+				.priceForDqp(course.getPriceForCqp())
 				.build();
 		} catch (EntityNotFoundException e) {
 			log.warn("Cours non trouvé: {}", e.getMessage());
@@ -344,9 +350,11 @@ public class CourseService {
 				.orElseThrow(() -> new EntityNotFoundException("Cours non trouvé avec l'ID: " + courseId));
 				
 			return CourseResponse.builder()
+				.id(course.getId())
 				.name(course.getName())
 				.code(course.getCode())
 				.description(course.getDescription())
+				.priceForDqp(course.getPriceForCqp())
 				.build();
 		} catch (EntityNotFoundException e) {
 			log.warn("Cours non trouvé: {}", e.getMessage());
@@ -374,9 +382,11 @@ public class CourseService {
 			
 			return courses.stream()
 				.map(course -> CourseResponse.builder()
+					.id(course.getId())
 					.name(course.getName())
 					.code(course.getCode())
 					.description(course.getDescription())
+					.priceForDqp(course.getPriceForCqp())
 					.build())
 				.toList();
 		} catch (ResponseStatusException e) {

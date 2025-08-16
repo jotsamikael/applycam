@@ -6,12 +6,10 @@ import { MatSort } from '@angular/material/sort';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import Swal from 'sweetalert2';
 import { ExamCenterControllerService } from '../../../services/services/exam-center-controller.service';
-import { CreateCenterRequest } from '../../../services/models/create-center-request';
-import { UpdateCenterRequest } from '../../../services/models/update-center-request';
+import { ApplicationService } from '../../../services/services/application.service';
+import { ApplicationResponse } from '../../../services/models/application-response';
 import { ExamCenterResponse } from '../../../services/models/exam-center-response';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { CandidateService } from '../../../services/services/candidate.service';
-import { CandidateResponse } from '../../../services/models/candidate-response';
+import { SessionService } from '../../../services/services/session.service';
 
 @Component({
   selector: 'app-exams-centers-management',
@@ -24,63 +22,51 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     { label: 'Gestion des Centres d\'Examen', active: true }
   ];
 
-  // Statistiques
+  // Onglets
+  activeTab = 'centers';
+  showAdvancedFilters = false;
+
+  // Statistiques des centres d'examen
   examCenterStats = [
     { title: 'Total Centres', value: 0, icon: 'building' },
     { title: 'Centres Actifs', value: 0, icon: 'check-circle' },
-    { title: 'Capacité Totale', value: 0, icon: 'users' },
-    { title: 'Candidats Assignés', value: 0, icon: 'user-check' }
+    { title: 'Capacité Totale', value: 0, icon: 'users' }
   ];
 
-  // Tableau des centres d'examen
-  displayedColumns: string[] = [
-    'name', 
-    'region', 
-    'division', 
-    'capacity', 
-    'actions'
+  // Statistiques des candidats par session
+  candidateStats = [
+    { title: 'Total Candidats', value: 0, icon: 'user-circle' },
+    { title: 'Validés', value: 0, icon: 'check-circle' },
+    { title: 'En attente', value: 0, icon: 'time' },
+    { title: 'Rejetés', value: 0, icon: 'x-circle' }
   ];
-  
+
+  // Centres d'examen
+  displayedColumns: string[] = ['name', 'region', 'division', 'capacity', 'actions'];
   dataSource = new MatTableDataSource<ExamCenterResponse>([]);
   processing = false;
   modalRef?: BsModalRef;
   examCenterForm!: FormGroup;
+  filterForm!: FormGroup;
   selectedExamCenter: ExamCenterResponse | null = null;
-  
-  // États
-  showModal = false;
   isEditMode = false;
-  currentExamCenterId: number | null = null;
+  showModal = false;
   
   // Pagination
   totalElements = 0;
   pageSize = 10;
   pageIndex = 0;
   
-  // Filtres
-  searchTerm = '';
-  showAdvancedFilters = false;
-  filterForm!: FormGroup;
-  refreshing = false;
-  
-  // Options pour les formulaires
-  regionOptions = [
-    'Adamaoua', 'Centre', 'Est', 'Extrême-Nord', 'Littoral', 
-    'Nord', 'Nord-Ouest', 'Ouest', 'Sud', 'Sud-Ouest'
-  ];
+  // Options pour les filtres
+  regionOptions: string[] = ['Adamaoua', 'Centre', 'Est', 'Extrême-Nord', 'Littoral', 'Nord', 'Nord-Ouest', 'Ouest', 'Sud', 'Sud-Ouest'];
+  divisionOptions: string[] = ['Bamenda', 'Buea', 'Douala', 'Ebolowa', 'Garoua', 'Kribi', 'Kumba', 'Kumbo', 'Limbe', 'Maroua', 'Ngaoundere', 'Yaounde'];
 
-  divisionOptions = [
-    'Dja-et-Lobo', 'Haute-Sanaga', 'Lekie', 'Mbam-et-Inoubou', 'Mbam-et-Kim', 'Mefou-et-Afamba', 'Mefou-et-Akono', 'Mfoundi', 'Nyong-et-Kelle', 'Nyong-et-Mfoumou', 'Nyong-et-So\'o',
-    'Boumba-et-Ngoko', 'Haut-Nyong', 'Kadey', 'Lom-et-Djerem',
-    'Diamare', 'Logone-et-Chari', 'Mayo-Danay', 'Mayo-Kani', 'Mayo-Sava', 'Mayo-Tsanaga',
-    'Fako', 'Koupé-Manengouba', 'Lebialem', 'Manyu', 'Meme', 'Ndian',
-    'Bénoué', 'Faro', 'Mayo-Louti', 'Mayo-Rey',
-    'Boyo', 'Bui', 'Donga-Mantung', 'Menchum', 'Mezam', 'Momo', 'Ngo-Ketunjia',
-    'Bamboutos', 'Haut-Nkam', 'Hauts-Plateaux', 'Koung-Khi', 'Ménoua', 'Mifi', 'Ndé', 'Noun'
-  ];
-
-  candidates: CandidateResponse[] = [];
-  selectedCandidateId: number | null = null;
+  // Candidats par session
+  displayedCandidateColumns: string[] = ['candidateName', 'examCenter', 'session', 'speciality', 'status', 'actions'];
+  candidatesDataSource = new MatTableDataSource<any>([]);
+  candidatesBySession: any[] = [];
+  sessions: string[] = [];
+  selectedSession: string = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -89,15 +75,14 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private modalService: BsModalService,
     private examCenterService: ExamCenterControllerService,
-    private snackBar: MatSnackBar,
-    private candidateService: CandidateService
+    private applicationService: ApplicationService,
+    private sessionService: SessionService
   ) {}
 
   ngOnInit(): void {
     this.initForms();
     this.loadExamCenters();
-    this.updateStats();
-    this.loadCandidates();
+    this.loadCandidatesBySession();
   }
 
   ngAfterViewInit() {
@@ -120,63 +105,44 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     });
   }
 
-  get f() {
-    return this.examCenterForm.controls;
+  // Méthode pour changer d'onglet
+  switchTab(tab: string) {
+    this.activeTab = tab;
+    if (tab === 'candidates') {
+      this.loadCandidatesBySession();
+    }
   }
 
+  // Méthodes pour les centres d'examen
   loadExamCenters(event?: PageEvent) {
-    console.log('[ExamCentersManagement] loadExamCenters appelé avec event:', event);
-    this.processing = true;
     const offset = event?.pageIndex ?? this.pageIndex;
     const pageSize = event?.pageSize ?? this.pageSize;
 
-    const params: any = {
+    this.examCenterService.getAllExamCenters({
       offset,
       pageSize,
       field: 'name',
       order: true
-    };
-
-    console.log('[ExamCentersManagement] Paramètres de requête:', params);
-
-    this.examCenterService.getAllExamCenters(params).subscribe({
+    }).subscribe({
       next: (res) => {
-        console.log('[ExamCentersManagement] getAllExamCenters succès:', res);
-        console.log('[ExamCentersManagement] Contenu reçu:', res.content);
-        console.log('[ExamCentersManagement] Nombre d\'éléments:', res.content?.length);
-        
         this.dataSource.data = res.content || [];
         this.totalElements = res.totalElements || 0;
         this.pageSize = res.size || pageSize;
         this.pageIndex = res.number || offset;
-        
-        console.log('[ExamCentersManagement] DataSource mis à jour:', this.dataSource.data);
-        console.log('[ExamCentersManagement] Total elements:', this.totalElements);
-        
-        this.updateStats();
-        this.processing = false;
-        this.showSnackBar(`Chargement de ${this.dataSource.data.length} centres d'examen`, 'success');
+        this.updateExamCenterStats();
       },
       error: (err) => {
-        console.error('[ExamCentersManagement] Erreur lors du chargement:', err);
-        console.error('[ExamCentersManagement] Détails de l\'erreur:', {
-          status: err.status,
-          statusText: err.statusText,
-          message: err.message,
-          error: err.error
-        });
-        this.showSnackBar('Erreur lors du chargement des centres d\'examen', 'error');
-        this.processing = false;
+        console.error('Erreur lors du chargement des centres:', err);
+        Swal.fire('Error', 'Failed to load exam centers', 'error');
       }
     });
   }
 
-  updateStats() {
+  updateExamCenterStats() {
     const all = this.dataSource.data;
     this.examCenterStats[0].value = all.length;
     this.examCenterStats[1].value = all.length; // Tous les centres sont actifs par défaut
     this.examCenterStats[2].value = all.reduce((sum, center) => sum + (center.capacity || 0), 0);
-    this.examCenterStats[3].value = 0; // À calculer si nécessaire
   }
 
   applyFilter(event: Event) {
@@ -184,218 +150,40 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue;
   }
 
-  // Modal pour les centres d'examen
-  openCreateExamCenterModal() {
+  openCreateModal() {
     this.isEditMode = false;
-    this.currentExamCenterId = null;
-    this.examCenterForm.reset({
-      capacity: 0
-    });
-    this.showModal = true;
-  }
-
-  editExamCenter(examCenter: ExamCenterResponse) {
-    this.selectedExamCenter = examCenter;
-    this.isEditMode = true;
-    this.currentExamCenterId = examCenter.id || null;
-    
-    this.examCenterForm.patchValue({
-      name: examCenter.name,
-      region: examCenter.region,
-      division: examCenter.division,
-      capacity: examCenter.capacity || 0
-    });
-    
-    this.showModal = true;
-  }
-
-  closeModal() {
-    this.showModal = false;
-    this.isEditMode = false;
-    this.currentExamCenterId = null;
     this.selectedExamCenter = null;
     this.examCenterForm.reset();
+    this.showModal = true;
   }
 
-  onSubmit() {
-    if (this.examCenterForm.invalid) {
-      this.markFormGroupTouched(this.examCenterForm);
-      this.showSnackBar('Veuillez corriger les erreurs dans le formulaire', 'error');
-      return;
-    }
-
-    this.processing = true;
-    const formValue = this.examCenterForm.value;
-    
-    if (this.isEditMode && this.currentExamCenterId) {
-      const updateRequest: UpdateCenterRequest = {
-        ...formValue,
-        examCenterId: this.currentExamCenterId
-      };
-      
-      this.examCenterService.updateExamCenter({ body: updateRequest }).subscribe({
-        next: (id) => {
-          this.loadExamCenters();
-          this.processing = false;
-          this.closeModal();
-          this.showSnackBar('Centre d\'examen mis à jour avec succès', 'success');
-        },
-        error: (error) => {
-          console.error('Erreur mise à jour centre d\'examen:', error);
-          this.processing = false;
-          this.showSnackBar('Erreur lors de la mise à jour du centre d\'examen', 'error');
-        }
-      });
-    } else {
-      const createRequest: CreateCenterRequest = formValue;
-      
-      this.examCenterService.createExamCenter({ body: createRequest }).subscribe({
-        next: (result) => {
-          this.loadExamCenters();
-          this.processing = false;
-          this.closeModal();
-          this.showSnackBar('Centre d\'examen créé avec succès', 'success');
-        },
-        error: (error) => {
-          console.error('Erreur création centre d\'examen:', error);
-          this.processing = false;
-          this.showSnackBar('Erreur lors de la création du centre d\'examen', 'error');
-        }
-      });
-    }
-  }
-
-  deleteExamCenter(examCenter: ExamCenterResponse) {
-    if (!examCenter.id) return;
-    
-    Swal.fire({
-      title: 'Êtes-vous sûr ?',
-      text: `Voulez-vous vraiment supprimer le centre d'examen "${examCenter.name}" ?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Oui, supprimer !',
-      cancelButtonText: 'Annuler'
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.processing = true;
-        this.examCenterService.deleteSession1({ examCenterId: examCenter.id }).subscribe({
-          next: () => {
-            this.loadExamCenters();
-            this.processing = false;
-            this.showSnackBar('Centre d\'examen supprimé avec succès', 'success');
-          },
-          error: (error) => {
-            console.error('Erreur suppression:', error);
-            this.processing = false;
-            this.showSnackBar('Erreur lors de la suppression', 'error');
-          }
-        });
-      }
+  edit(row: ExamCenterResponse) {
+    this.isEditMode = true;
+    this.selectedExamCenter = row;
+    this.examCenterForm.patchValue({
+      name: row.name,
+      region: row.region,
+      division: row.division,
+      capacity: row.capacity
     });
+    this.showModal = true;
   }
 
-  assignExamCenter(examCenter: ExamCenterResponse) {
-    // Charger les candidats si ce n'est pas déjà fait
-    if (this.candidates.length === 0) {
-      this.loadCandidates();
-    }
-
-    // Préparer les options pour le select
-    const inputOptions: Record<string, string> = {};
-    this.candidates.forEach(candidate => {
-      inputOptions[candidate.email!] = `${candidate.firstname} ${candidate.lastname}`;
-    });
-    
-    Swal.fire({
-      title: `Assigner le centre "${examCenter.name}"`,
-      input: 'select',
-      inputOptions: inputOptions,
-      inputPlaceholder: 'Choisir un candidat',
-      showCancelButton: true,
-      confirmButtonText: 'Assigner',
-      cancelButtonText: 'Annuler',
-      inputValidator: (value) => {
-        if (!value) {
-          return 'Veuillez sélectionner un candidat';
-        }
-        return null;
-      }
-    }).then(result => {
-      if (result.isConfirmed && result.value) {
-        const candidateEmail = result.value;
-        this.processing = true;
-        this.examCenterService.assignExamCenter({ id: candidateEmail }).subscribe({
-          next: () => {
-            this.processing = false;
-            this.showSnackBar('Centre d\'examen assigné avec succès', 'success');
-          },
-          error: (error) => {
-            this.processing = false;
-            if (error?.error?.message?.includes('aucun historique de formation')) {
-              this.showSnackBar('Ce candidat n\'a pas d\'historique de formation. Impossible d\'assigner un centre.', 'error');
-            } else {
-            this.showSnackBar('Erreur lors de l\'assignation', 'error');
-            }
-          }
-        });
-      }
-    });
-  }
-
-  searchByDivision(division: string) {
-    if (!division || division.trim().length < 2) {
-      this.showSnackBar('Veuillez saisir au moins 2 caractères pour la recherche', 'warning');
-      return;
-    }
-
-    console.log('[ExamCentersManagement] Recherche par division:', division);
-    this.processing = true;
-
-    const params: any = {
-      division: division.trim(),
-      offset: 0,
-      pageSize: 100,
-      field: 'name',
-      order: true
-    };
-
-    this.examCenterService.findByName4(params).subscribe({
-      next: (res) => {
-        console.log('[ExamCentersManagement] Recherche par division succès:', res);
-        this.dataSource.data = res.content || [];
-        this.totalElements = res.totalElements || 0;
-        this.processing = false;
-        this.showSnackBar(`Recherche terminée: ${res.content?.length || 0} centre(s) trouvé(s)`, 'success');
-      },
-      error: (error) => {
-        console.error('[ExamCentersManagement] Erreur recherche par division:', error);
-        this.processing = false;
-        this.showSnackBar('Erreur lors de la recherche par division', 'error');
-      }
-    });
-  }
-
-  openDetailExamCenterPopup(examCenter: ExamCenterResponse) {
-    const detailsHtml = `
+  viewDetails(row: ExamCenterResponse) {
+    let detailsHtml = `
       <div class="text-start">
         <div class="row">
           <div class="col-md-6">
-            <h6 class="text-primary mb-3">Informations du centre</h6>
-            <p><strong>ID:</strong> ${examCenter.id || 'N/A'}</p>
-            <p><strong>Nom:</strong> ${examCenter.name || 'N/A'}</p>
-            <p><strong>Région:</strong> ${examCenter.region || 'N/A'}</p>
+            <p><strong>Nom:</strong> ${row.name || 'N/A'}</p>
+            <p><strong>Région:</strong> ${row.region || 'N/A'}</p>
           </div>
           <div class="col-md-6">
-            <h6 class="text-primary mb-3">Détails</h6>
-            <p><strong>Division:</strong> ${examCenter.division || 'N/A'}</p>
-            <p><strong>Capacité:</strong> ${examCenter.capacity || 0} candidats</p>
+            <p><strong>Division:</strong> ${row.division || 'N/A'}</p>
+            <p><strong>Capacité:</strong> ${row.capacity || 0} candidats</p>
           </div>
         </div>
       </div>
     `;
-
     Swal.fire({
       title: `Détails du centre d'examen`,
       html: detailsHtml,
@@ -409,115 +197,328 @@ export class ExamsCentersManagementComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Utilitaires
-  markFormGroupTouched(formGroup: FormGroup) {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
+  delete(row: ExamCenterResponse) {
+    Swal.fire({
+      title: 'Êtes-vous sûr ?',
+      text: 'Cette action ne peut pas être annulée !',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, supprimer !',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed && row.id) {
+        this.examCenterService.deleteSession1({ examCenterId: row.id }).subscribe({
+          next: () => {
+            this.loadExamCenters();
+            Swal.fire('Supprimé !', 'Le centre d\'examen a été supprimé.', 'success');
+          },
+          error: () => {
+            Swal.fire('Erreur', 'Échec de la suppression du centre d\'examen', 'error');
+          }
+        });
       }
     });
   }
 
-  showSnackBar(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') {
-    this.snackBar.open(message, 'Fermer', {
-      duration: 4000,
-      panelClass: `snackbar-${type}`
-    });
-  }
-
-  // Gestion des filtres et exportation
-  refreshExamCenters(): void {
-    this.refreshing = true;
-    this.loadExamCenters();
-    setTimeout(() => {
-      this.refreshing = false;
-    }, 1000);
-  }
-
-  toggleAdvancedFilters(): void {
-    this.showAdvancedFilters = !this.showAdvancedFilters;
-  }
-
-  applyAdvancedFilters(): void {
-    const filterValue = this.filterForm.value;
-    if (filterValue.division) {
-      // Recherche par division via le backend
-      this.searchByDivision(filterValue.division);
-    } else if (filterValue.region) {
-      // Filtrage local par région
-      this.filterByRegion(filterValue.region);
-      this.showSnackBar('Filtre par région appliqué', 'success');
-    } else {
-      this.loadExamCenters();
-      this.showSnackBar('Aucun filtre appliqué, affichage de tous les centres', 'info');
-    }
-  }
-
-  filterByRegion(region: string) {
-    // Recharge tous les centres puis filtre localement
+  onSubmit() {
+    if (this.examCenterForm.invalid) return;
     this.processing = true;
-    this.examCenterService.getAllExamCenters({ offset: 0, pageSize: 1000, field: 'name', order: true }).subscribe({
-      next: (res) => {
-        this.dataSource.data = (res.content || []).filter(center => center.region === region);
-        this.totalElements = this.dataSource.data.length;
-        this.processing = false;
-      },
-      error: (err) => {
-        this.processing = false;
-        this.showSnackBar('Erreur lors du filtrage par région', 'error');
+
+    const formValue = this.examCenterForm.value;
+    
+    if (this.isEditMode && this.selectedExamCenter) {
+      // Mise à jour
+      this.examCenterService.updateExamCenter({ body: { ...formValue, examCenterId: this.selectedExamCenter.id } }).subscribe({
+        next: () => {
+          this.loadExamCenters();
+          this.processing = false;
+          this.closeModal();
+          Swal.fire('Success', 'Centre d\'examen mis à jour avec succès', 'success');
+        },
+        error: () => {
+          this.processing = false;
+          Swal.fire('Error', 'Failed to update exam center', 'error');
+        }
+      });
+    } else {
+      // Création
+      this.examCenterService.createExamCenter({ body: formValue }).subscribe({
+        next: () => {
+          this.loadExamCenters();
+          this.processing = false;
+          this.closeModal();
+          Swal.fire('Success', 'Centre d\'examen créé avec succès', 'success');
+        },
+        error: () => {
+          this.processing = false;
+          Swal.fire('Error', 'Failed to create exam center', 'error');
+        }
+      });
     }
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.examCenterForm.reset();
+    this.selectedExamCenter = null;
+  }
+
+  onPageChange(event: PageEvent) {
+    this.loadExamCenters(event);
+  }
+
+  applyAdvancedFilters() {
+    // Implémentation des filtres avancés
+    console.log('Filtres appliqués:', this.filterForm.value);
+  }
+
+  clearFilters() {
+    this.filterForm.reset();
+            this.loadExamCenters();
+  }
+
+  // Méthodes pour les candidats par session
+  loadCandidatesBySession() {
+    // Récupérer toutes les sessions du système
+    this.sessionService.getall().subscribe({
+      next: (sessionsResponse) => {
+        // Créer la liste des sessions avec type d'examen
+        this.sessions = sessionsResponse.content.map(session => 
+          `${session.sessionYear} (${session.examType})`
+        );
+        
+        // Maintenant charger les candidatures
+        this.loadApplicationsForSessions();
+          },
+          error: (error) => {
+        console.error('Erreur lors du chargement des sessions:', error);
+      }
     });
   }
 
-  clearFilters(): void {
-    this.filterForm.reset();
-    this.loadExamCenters();
-    this.showSnackBar('Filtres effacés', 'info');
+  loadApplicationsForSessions() {
+    this.applicationService.getAllApplicationsIncludingInactive().subscribe({
+      next: (response) => {
+        console.log('DEBUG - Applications reçues:', response.content);
+        
+        // Grouper les candidatures par année de session
+        const groupedByYear = new Map<string, any[]>();
+        
+        response.content.forEach(application => {
+          const year = application.applicationYear || 'N/A';
+          if (!groupedByYear.has(year)) {
+            groupedByYear.set(year, []);
+          }
+          groupedByYear.get(year)!.push(application);
+          
+          // Debug pour chaque application
+          console.log(`DEBUG - Application ${application.id}:`, {
+            candidateName: application.candidateName,
+            examCenterName: application.examCenterName,
+            examCenterRegion: application.examCenterRegion,
+            status: application.status
+          });
+        });
+        
+        // Convertir en tableau et trier par année décroissante
+        this.candidatesBySession = Array.from(groupedByYear.entries())
+          .map(([year, applications]) => ({
+            year,
+            applications,
+            examType: applications[0]?.examType || 'N/A'
+          }))
+          .sort((a, b) => b.year.localeCompare(a.year));
+        
+        // Sélectionner la première session par défaut
+        if (this.sessions.length > 0 && !this.selectedSession) {
+          this.selectedSession = this.sessions[0];
+          this.updateCandidatesDataSource();
+        }
+          },
+          error: (error) => {
+        console.error('Erreur lors du chargement des candidatures:', error);
+      }
+    });
   }
 
-  exportExamCentersToExcel(): void {
-    const data = this.dataSource.data;
-    if (data.length === 0) {
-      this.showSnackBar('Aucune donnée à exporter', 'warning');
-      return;
+  updateCandidatesDataSource() {
+    if (this.selectedSession) {
+      // Extraire l'année et le type d'examen de la session (format: "2024 (DQP)")
+      const yearMatch = this.selectedSession.match(/^(\d{4})/);
+      const examTypeMatch = this.selectedSession.match(/\(([^)]+)\)/);
+      
+      const year = yearMatch ? yearMatch[1] : this.selectedSession;
+      const examType = examTypeMatch ? examTypeMatch[1] : '';
+      
+      // Chercher les candidatures pour cette session
+      const sessionData = this.candidatesBySession.find(s => s.year === year);
+      this.candidatesDataSource.data = sessionData ? sessionData.applications : [];
+      
+      // Si aucune candidature pour cette session, afficher un message
+      if (!sessionData || sessionData.applications.length === 0) {
+        console.log(`Aucune candidature trouvée pour la session ${year} (${examType})`);
+      }
+    } else {
+      this.candidatesDataSource.data = [];
     }
-
-    // Créer un fichier CSV simple
-    const headers = ['ID', 'Nom', 'Région', 'Division', 'Capacité'];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(center => [
-        center.id || '',
-        center.name || '',
-        center.region || '',
-        center.division || '',
-        center.capacity || ''
-      ].join(','))
-    ].join('\n');
-
-    // Télécharger le fichier
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `centres_examen_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    this.showSnackBar(`Export terminé: ${data.length} centre(s) exporté(s)`, 'success');
+    this.updateCandidateStats();
   }
 
-  loadCandidates() {
-    this.candidateService.getAllCandidates({ offset: 0, pageSize: 1000, field: 'id', order: true }).subscribe({
-      next: (res) => {
-        this.candidates = res.content || [];
-      },
-      error: (err) => {
-        this.showSnackBar('Erreur lors du chargement des candidats', 'error');
+  updateCandidateStats() {
+    const all = this.candidatesDataSource.data;
+    this.candidateStats[0].value = all.length;
+    this.candidateStats[1].value = all.filter(c => c.status === 'VALIDATED').length;
+    this.candidateStats[2].value = all.filter(c => c.status === 'PENDING').length;
+    this.candidateStats[3].value = all.filter(c => c.status === 'REJECTED').length;
+  }
+
+  // Changer de session
+  onSessionChange(event: any) {
+    this.selectedSession = event.target.value;
+    this.updateCandidatesDataSource();
+  }
+
+  // Obtenir le statut coloré
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'VALIDATED': return 'success';
+      case 'PAID': return 'info';
+      case 'PENDING': return 'warning';
+      case 'REJECTED': return 'danger';
+      case 'DRAFT': return 'secondary';
+      default: return 'secondary';
+    }
+  }
+
+  // Obtenir le nom du centre d'examen
+  getExamCenterName(application: any): string {
+    // Si l'application a un centre d'examen assigné
+    if (application.examCenterName && application.examCenterName !== 'Non assigné') {
+      // Afficher le nom du centre avec la région si disponible
+      if (application.examCenterRegion) {
+        return `${application.examCenterName} (${application.examCenterRegion})`;
+      }
+      return application.examCenterName;
+    }
+    
+    // Si le statut est VALIDATED mais pas de centre assigné
+    if (application.status === 'VALIDATED') {
+      return 'En cours d\'assignation';
+    }
+    
+    // Par défaut
+    return 'Non assigné';
+  }
+
+  // Obtenir la couleur du badge pour le centre d'examen
+  getExamCenterBadgeColor(application: any): string {
+    if (application.examCenterName && application.examCenterName !== 'Non assigné') {
+      return 'success'; // Vert pour centre assigné
+    }
+    if (application.status === 'VALIDATED') {
+      return 'warning'; // Orange pour en cours d'assignation
+    }
+    return 'secondary'; // Gris pour non assigné
+  }
+
+  // Méthodes pour les actions sur les candidats
+  viewApplicationDetails(application: ApplicationResponse) {
+    let detailsHtml = `
+      <div class="text-start">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Candidat:</strong> ${application.candidateName || 'N/A'}</p>
+            <p><strong>Spécialité:</strong> ${application.speciality || 'N/A'}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Type d'examen:</strong> ${application.examType || 'N/A'}</p>
+            <p><strong>Région:</strong> ${application.applicationRegion || 'N/A'}</p>
+            <p><strong>Année:</strong> ${application.applicationYear || 'N/A'}</p>
+            <p><strong>Statut:</strong> <span class="badge bg-info">${application.status || 'DRAFT'}</span></p>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <p><strong>Méthode de paiement:</strong> ${application.paymentMethod || 'N/A'}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Montant:</strong> ${application.amount ? application.amount + ' FCFA' : 'N/A'}</p>
+          </div>
+        </div>
+        <div class='row mt-3'><div class='col-12'>
+          ${application.paymentReceiptUrl ? `<p><strong>Reçu de paiement :</strong> <a href='${application.paymentReceiptUrl}' target='_blank' class='btn btn-sm btn-outline-primary'>Voir le reçu <i class='bx bx-link-external'></i></a></p>` : ''}
+          ${application.cniUrl ? `<p><strong>CNI :</strong> <a href='${application.cniUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la CNI</a></p>` : ''}
+          ${application.diplomaUrl ? `<p><strong>Diplôme :</strong> <a href='${application.diplomaUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le diplôme</a></p>` : ''}
+          ${application.photoUrl ? `<p><strong>Photo :</strong> <a href='${application.photoUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la photo</a></p>` : ''}
+          ${application.birthCertificateUrl ? `<p><strong>Certificat de naissance :</strong> <a href='${application.birthCertificateUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le certificat</a></p>` : ''}
+          ${application.cvUrl ? `<p><strong>CV :</strong> <a href='${application.cvUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le CV</a></p>` : ''}
+          ${application.letterUrl ? `<p><strong>Lettre de motivation :</strong> <a href='${application.letterUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la lettre</a></p>` : ''}
+          ${application.financialJustificationUrl ? `<p><strong>Justification financière :</strong> <a href='${application.financialJustificationUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir la justification</a></p>` : ''}
+          ${application.stageCertificateUrl ? `<p><strong>Certificat de stage :</strong> <a href='${application.stageCertificateUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir le certificat de stage</a></p>` : ''}
+          ${application.oldApplyanceUrl ? `<p><strong>Ancienne candidature :</strong> <a href='${application.oldApplyanceUrl}' target='_blank' class='btn btn-sm btn-outline-secondary'>Voir l'ancienne candidature</a></p>` : ''}
+        </div></div>
+      </div>
+    `;
+    Swal.fire({
+      title: `Détails de la candidature`,
+      html: detailsHtml,
+      width: '600px',
+      confirmButtonText: 'Fermer',
+      confirmButtonColor: '#3085d6',
+      showCloseButton: true,
+      customClass: {
+        popup: 'swal-wide'
+      }
+    });
+  }
+
+  validateApplication(application: ApplicationResponse) {
+    if (!application.id) return;
+    
+    Swal.fire({
+      title: 'Valider la candidature',
+      text: 'Êtes-vous sûr de vouloir valider cette candidature ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, valider',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.applicationService.validateApplication({ id: application.id }).subscribe({
+          next: () => {
+            this.loadCandidatesBySession();
+            Swal.fire('Succès', 'Candidature validée avec succès', 'success');
+          },
+          error: () => {
+            Swal.fire('Erreur', 'Échec de la validation de la candidature', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  rejectApplication(application: ApplicationResponse) {
+    if (!application.id) return;
+    
+    Swal.fire({
+      title: 'Rejeter la candidature',
+      input: 'text',
+      inputLabel: 'Motif du rejet',
+      inputPlaceholder: 'Saisir un commentaire...',
+      showCancelButton: true,
+      confirmButtonText: 'Rejeter',
+      cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.applicationService.rejectApplication({ id: application.id, comment: result.value }).subscribe({
+          next: () => {
+            this.loadCandidatesBySession();
+            Swal.fire('Succès', 'Candidature rejetée avec succès', 'success');
+          },
+          error: () => {
+            Swal.fire('Erreur', 'Échec du rejet de la candidature', 'error');
+          }
+        });
       }
     });
   }

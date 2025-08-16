@@ -1,15 +1,35 @@
 <div class="container-fluid">
-    <h2>Gestion des Centres d'Examen</h2>
-    
+    <!-- Navigation par onglets -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <button class="nav-link" [class.active]="activeTab === 'centers'" (click)="switchTab('centers')">
+                        <i class="bx bx-building me-1"></i>
+                        Centres d'Examen
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" [class.active]="activeTab === 'candidates'" (click)="switchTab('candidates')">
+                        <i class="bx bx-user me-1"></i>
+                        Candidats par Session
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Onglet Centres d'Examen -->
+    <div *ngIf="activeTab === 'centers'">
     <!-- Barre d'outils -->
     <div class="row mb-3">
         <div class="col-md-6">
             <div class="d-flex gap-2">
-                <button class="btn btn-outline-primary" (click)="refreshExamCenters()" [disabled]="refreshing">
-                    <i class="bx bx-refresh" [class.bx-spin]="refreshing"></i>
-                    {{ refreshing ? 'Actualisation...' : 'Actualiser' }}
+                    <button class="btn btn-outline-primary" (click)="loadExamCenters()" [disabled]="processing">
+                        <i class="bx bx-refresh" [class.bx-spin]="processing"></i>
+                        {{ processing ? 'Actualisation...' : 'Actualiser' }}
                 </button>
-                <button class="btn btn-outline-info" (click)="exportExamCentersToExcel()">
+                    <button class="btn btn-outline-info" (click)="loadExamCenters()">
                     <i class="bx bx-export"></i>
                     Exporter
                 </button>
@@ -17,13 +37,12 @@
         </div>
         <div class="col-md-6 text-end">
             <div class="d-flex gap-2 justify-content-end">
-                <button class="btn btn-outline-secondary" (click)="toggleAdvancedFilters()">
+                    <button class="btn btn-outline-secondary" (click)="showAdvancedFilters = !showAdvancedFilters">
                     <i class="bx bx-filter-alt"></i>
                     {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} les filtres
                 </button>
-                <button class="btn btn-soft-primary waves-effect waves-light" 
-                        (click)="openCreateExamCenterModal()">
-                    <i class="bx bx-plus"></i> Créer un Centre d'Examen
+                    <button class="btn btn-soft-primary waves-effect waves-light" (click)="openCreateModal()">
+                        <i class="bx bx-plus"></i> Nouveau Centre
                 </button>
             </div>
         </div>
@@ -45,18 +64,14 @@
                             <label class="form-label">Région</label>
                             <select class="form-select" formControlName="region">
                                 <option value="">Toutes</option>
-                                <option *ngFor="let region of regionOptions" [value]="region">
-                                    {{ region }}
-                                </option>
+                                    <option *ngFor="let region of regionOptions" [value]="region">{{ region }}</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Division</label>
                             <select class="form-select" formControlName="division">
                                 <option value="">Toutes</option>
-                                <option *ngFor="let division of divisionOptions" [value]="division">
-                                    {{ division }}
-                                </option>
+                                    <option *ngFor="let division of divisionOptions" [value]="division">{{ division }}</option>
                             </select>
                         </div>
                         <div class="col-12">
@@ -79,12 +94,12 @@
     
     <!-- Statistiques des centres d'examen -->
     <div class="row">
-        <div *ngFor="let stat of examCenterStats" class="col-md-3">
+            <div *ngFor="let stat of examCenterStats" class="col-md-4">
             <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
         </div>
     </div>
     
-    <!-- Table des centres d'examen -->
+        <!-- Tableau des centres d'examen -->
     <div class="row mt-3">
         <div class="col-md-12">
             <div class="card">
@@ -92,8 +107,8 @@
                     <div class="row justify-content-between mb-3">
                         <div class="col-md-4">
                             <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Filtrer les centres d'examen</mat-label>
-                                <input matInput (keyup)="applyFilter($event)" #inputExamCenters placeholder="Rechercher par nom ou région">
+                                    <mat-label>Filtrer les centres</mat-label>
+                                    <input matInput (keyup)="applyFilter($event)" #input placeholder="Rechercher par nom">
                                 <mat-icon matSuffix>search</mat-icon>
                             </mat-form-field>
                         </div>
@@ -107,52 +122,179 @@
                         <table mat-table [dataSource]="dataSource" matSort class="w-100">
                             <!-- Name Column -->
                             <ng-container matColumnDef="name">
-                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
-                                    <i class="bx bx-building me-1"></i>Nom du Centre 
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom du Centre </th>
+                                    <td mat-cell *matCellDef="let row"> {{row.name}} </td>
+                                </ng-container>
+                                <!-- Region Column -->
+                                <ng-container matColumnDef="region">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Région </th>
+                                    <td mat-cell *matCellDef="let row"> {{row.region}} </td>
+                                </ng-container>
+                                <!-- Division Column -->
+                                <ng-container matColumnDef="division">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Division </th>
+                                    <td mat-cell *matCellDef="let row"> {{row.division}} </td>
+                                </ng-container>
+                                <!-- Capacity Column -->
+                                <ng-container matColumnDef="capacity">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Capacité </th>
+                                    <td mat-cell *matCellDef="let row"> {{row.capacity}} </td>
+                                </ng-container>
+                                <!-- Actions Column -->
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                                        <i class="bx bx-cog me-1"></i>Actions
+                                    </th>
+                                    <td mat-cell *matCellDef="let row" class="text-end">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="viewDetails(row)">
+                                                <mat-icon>visibility</mat-icon>
+                                            </button>
+                                            <button mat-icon-button color="accent" matTooltip="Modifier" (click)="edit(row)">
+                                                <mat-icon>edit</mat-icon>
+                                            </button>
+                                            <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="delete(row)">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </ng-container>
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                <tr class="mat-row" *matNoDataRow>
+                                    <td class="mat-cell text-center py-4" colspan="5">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <mat-icon class="mb-2" style="font-size: 48px;">search_off</mat-icon>
+                                            <h4 class="text-muted">Aucun centre trouvé</h4>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <!-- Paginator -->
+                        <mat-paginator
+                            [length]="totalElements"
+                            [pageSize]="pageSize"
+                            [pageIndex]="pageIndex"
+                            [pageSizeOptions]="[5, 10, 25, 100]"
+                            showFirstLastButtons
+                            aria-label="Select page of exam centers"
+                            (page)="onPageChange($event)">
+                        </mat-paginator>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglet Candidats par Session -->
+    <div *ngIf="activeTab === 'candidates'">
+        <!-- Barre d'outils pour les candidats -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" (click)="loadCandidatesBySession()" [disabled]="processing">
+                        <i class="bx bx-refresh" [class.bx-spin]="processing"></i>
+                        {{ processing ? 'Actualisation...' : 'Actualiser' }}
+                    </button>
+                    <button class="btn btn-outline-info" (click)="loadCandidatesBySession()">
+                        <i class="bx bx-export"></i>
+                        Exporter
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-2 justify-content-end">
+                    <label class="form-label me-2">Session:</label>
+                    <select class="form-select" [value]="selectedSession" (change)="onSessionChange($event)" style="width: auto;">
+                        <option *ngFor="let session of sessions" [value]="session">
+                            Session {{ session }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques des candidats -->
+        <div class="row">
+            <div *ngFor="let stat of candidateStats" class="col-md-3">
+                <app-stat [title]="stat.title" [value]="stat.value" [icon]="stat.icon"></app-stat>
+            </div>
+        </div>
+
+        <!-- Table des candidats par session -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bx bx-user me-2"></i>
+                            Candidats - Session {{ selectedSession }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table mat-table [dataSource]="candidatesDataSource" class="w-100">
+                                <!-- Candidate Name Column -->
+                                <ng-container matColumnDef="candidateName">
+                                    <th mat-header-cell *matHeaderCellDef> 
+                                        <i class="bx bx-user me-1"></i>Nom du Candidat
                                 </th>
-                                <td mat-cell *matCellDef="let examCenter"> 
+                                    <td mat-cell *matCellDef="let candidate"> 
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-sm me-2">
                                             <div class="avatar-title bg-light rounded-circle">
-                                                <i class="bx bx-building"></i>
+                                                    <i class="bx bx-user"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{candidate.candidateName || 'N/A'}}</div>
+                                                <small class="text-muted">ID: {{candidate.id}}</small>
                                             </div>
                                         </div>
-                                        <div>
-                                            <div class="fw-semibold">{{examCenter.name || 'N/A'}}</div>
-                                            <small class="text-muted">ID: {{examCenter.id}}</small>
-                                        </div>
-                                    </div>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Exam Center Column -->
+                                <ng-container matColumnDef="examCenter">
+                                    <th mat-header-cell *matHeaderCellDef> 
+                                        <i class="bx bx-building me-1"></i>Centre d'Examen
+                                    </th>
+                                    <td mat-cell *matCellDef="let candidate"> 
+                                        <span [class]="'badge bg-' + getExamCenterBadgeColor(candidate)">
+                                            {{getExamCenterName(candidate)}}
+                                        </span>
                                 </td>
                             </ng-container>
 
-                            <!-- Region Column -->
-                            <ng-container matColumnDef="region">
-                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
-                                    <i class="bx bx-map me-1"></i>Région 
+                                <!-- Session Column -->
+                                <ng-container matColumnDef="session">
+                                    <th mat-header-cell *matHeaderCellDef> 
+                                        <i class="bx bx-calendar me-1"></i>Session
                                 </th>
-                                <td mat-cell *matCellDef="let examCenter"> 
-                                    <span class="badge bg-primary">{{examCenter.region || 'N/A'}}</span>
+                                    <td mat-cell *matCellDef="let candidate"> 
+                                        <span class="badge bg-secondary">{{candidate.applicationYear || 'N/A'}}</span>
                                 </td>
                             </ng-container>
 
-                            <!-- Division Column -->
-                            <ng-container matColumnDef="division">
-                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
-                                    <i class="bx bx-map-pin me-1"></i>Division 
+                                <!-- Speciality Column -->
+                                <ng-container matColumnDef="speciality">
+                                    <th mat-header-cell *matHeaderCellDef> 
+                                        <i class="bx bx-book me-1"></i>Spécialité
                                 </th>
-                                <td mat-cell *matCellDef="let examCenter"> 
-                                    <span class="badge bg-info">{{examCenter.division || 'N/A'}}</span>
+                                    <td mat-cell *matCellDef="let candidate"> 
+                                        <span class="fw-semibold">{{candidate.speciality || 'N/A'}}</span>
                                 </td>
                             </ng-container>
 
-                            <!-- Capacity Column -->
-                            <ng-container matColumnDef="capacity">
-                                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
-                                    <i class="bx bx-users me-1"></i>Capacité 
+                                <!-- Status Column -->
+                                <ng-container matColumnDef="status">
+                                    <th mat-header-cell *matHeaderCellDef> 
+                                        <i class="bx bx-check-circle me-1"></i>Statut
                                 </th>
-                                <td mat-cell *matCellDef="let examCenter"> 
-                                    <span class="fw-semibold text-success">
-                                        {{examCenter.capacity || 0}} candidats
+                                    <td mat-cell *matCellDef="let candidate"> 
+                                        <span [class]="'badge bg-' + getStatusColor(candidate.status)">
+                                            {{candidate.status || 'N/A'}}
                                     </span>
                                 </td>
                             </ng-container>
@@ -162,44 +304,43 @@
                                 <th mat-header-cell *matHeaderCellDef class="text-end">
                                     <i class="bx bx-cog me-1"></i>Actions
                                 </th>
-                                <td mat-cell *matCellDef="let examCenter" class="text-end">
+                                    <td mat-cell *matCellDef="let candidate" class="text-end">
                                     <div class="d-flex justify-content-end gap-1">
-                                        <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="openDetailExamCenterPopup(examCenter)">
+                                            <button mat-icon-button color="primary" matTooltip="Voir les détails" (click)="viewApplicationDetails(candidate)">
                                             <mat-icon>visibility</mat-icon>
                                         </button>
-                                        <button mat-icon-button color="accent" matTooltip="Modifier" (click)="editExamCenter(examCenter)">
-                                            <mat-icon>edit</mat-icon>
+                                            <button mat-icon-button color="success" matTooltip="Valider" 
+                                                    (click)="validateApplication(candidate)"
+                                                    *ngIf="candidate.status !== 'VALIDATED' && candidate.status !== 'REJECTED'"
+                                                    [disabled]="processing">
+                                                <mat-icon>check_circle</mat-icon>
                                         </button>
-                                        <button mat-icon-button color="success" matTooltip="Assigner" (click)="assignExamCenter(examCenter)">
-                                            <mat-icon>assignment</mat-icon>
-                                        </button>
-                                        <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteExamCenter(examCenter)" 
+                                            <button mat-icon-button color="warn" matTooltip="Rejeter" 
+                                                    (click)="rejectApplication(candidate)"
+                                                    *ngIf="candidate.status !== 'REJECTED'"
                                                 [disabled]="processing">
-                                            <mat-icon>delete</mat-icon>
+                                                <mat-icon>cancel</mat-icon>
                                         </button>
                                     </div>
                                 </td>
                             </ng-container>
 
-                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                <tr mat-header-row *matHeaderRowDef="displayedCandidateColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedCandidateColumns;"></tr>
                             <tr class="mat-row" *matNoDataRow>
-                                <td class="mat-cell text-center py-4" [attr.colspan]="displayedColumns.length">
+                                    <td class="mat-cell text-center py-4" [attr.colspan]="displayedCandidateColumns.length">
                                     <div class="d-flex flex-column align-items-center">
-                                        <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">search_off</mat-icon>
-                                        <h4 class="text-muted">Aucun centre d'examen trouvé</h4>
-                                        <p *ngIf="inputExamCenters.value" class="text-muted">
-                                            Aucun résultat pour "{{inputExamCenters.value}}"
-                                        </p>
-                                        <button mat-raised-button color="primary" class="mt-2" (click)="openCreateExamCenterModal()" *ngIf="!inputExamCenters.value">
-                                            Créer votre premier centre d'examen
-                                        </button>
+                                            <mat-icon class="mb-2" style="font-size: 48px; height: 48px; width: 48px;">people_outline</mat-icon>
+                                            <h4 class="text-muted">Aucun candidat trouvé</h4>
+                                            <p class="text-muted">
+                                                Aucun candidat pour la session {{ selectedSession }}
+                                            </p>
                                     </div>
                                 </td>
                             </tr>
                         </table>
                     </div>
-                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons aria-label="Select page of exam centers" class="mt-3"></mat-paginator>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,9 +361,9 @@
                                 <div class="mb-3">
                                     <label class="form-label">Nom du Centre *</label>
                                     <input type="text" class="form-control" formControlName="name" placeholder="Nom du centre d'examen">
-                                    <div *ngIf="f['name'].touched && f['name'].invalid" class="text-danger">
-                                        <small *ngIf="f['name'].errors?.['required']">Le nom est requis</small>
-                                        <small *ngIf="f['name'].errors?.['minlength']">Le nom doit contenir au moins 2 caractères</small>
+                                    <div *ngIf="examCenterForm.get('name')?.touched && examCenterForm.get('name')?.invalid" class="text-danger">
+                                        <small *ngIf="examCenterForm.get('name')?.errors?.['required']">Le nom est requis</small>
+                                        <small *ngIf="examCenterForm.get('name')?.errors?.['minlength']">Le nom doit contenir au moins 2 caractères</small>
                                     </div>
                                 </div>
                             </div>
@@ -230,9 +371,9 @@
                                 <div class="mb-3">
                                     <label class="form-label">Capacité *</label>
                                     <input type="number" class="form-control" formControlName="capacity" placeholder="Nombre de candidats" min="1">
-                                    <div *ngIf="f['capacity'].touched && f['capacity'].invalid" class="text-danger">
-                                        <small *ngIf="f['capacity'].errors?.['required']">La capacité est requise</small>
-                                        <small *ngIf="f['capacity'].errors?.['min']">La capacité doit être supérieure à 0</small>
+                                    <div *ngIf="examCenterForm.get('capacity')?.touched && examCenterForm.get('capacity')?.invalid" class="text-danger">
+                                        <small *ngIf="examCenterForm.get('capacity')?.errors?.['required']">La capacité est requise</small>
+                                        <small *ngIf="examCenterForm.get('capacity')?.errors?.['min']">La capacité doit être supérieure à 0</small>
                                     </div>
                                 </div>
                             </div>
@@ -247,8 +388,8 @@
                                             {{ region }}
                                         </option>
                                     </select>
-                                    <div *ngIf="f['region'].touched && f['region'].invalid" class="text-danger">
-                                        <small *ngIf="f['region'].errors?.['required']">La région est requise</small>
+                                    <div *ngIf="examCenterForm.get('region')?.touched && examCenterForm.get('region')?.invalid" class="text-danger">
+                                        <small *ngIf="examCenterForm.get('region')?.errors?.['required']">La région est requise</small>
                                     </div>
                                 </div>
                             </div>
@@ -261,8 +402,8 @@
                                             {{ division }}
                                         </option>
                                     </select>
-                                    <div *ngIf="f['division'].touched && f['division'].invalid" class="text-danger">
-                                        <small *ngIf="f['division'].errors?.['required']">La division est requise</small>
+                                    <div *ngIf="examCenterForm.get('division')?.touched && examCenterForm.get('division')?.invalid" class="text-danger">
+                                        <small *ngIf="examCenterForm.get('division')?.errors?.['required']">La division est requise</small>
                                     </div>
                                 </div>
                             </div>

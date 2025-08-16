@@ -686,7 +686,12 @@ public class ApplicationService {
                     "La spécialité n'appartient pas à la session en cours");
             }
             
-            return speciality.getDqpPrice();
+            // Récupérer le prix depuis l'entité Payment
+            Double amount = 25000.0; // valeur par défaut
+            if (speciality.getPayment() != null) {
+                amount = speciality.getPayment().getAmount();
+            }
+            return amount;
         } else if ("CQP".equalsIgnoreCase(request.getExamType())) {
             if (request.getCourseName() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le cours est requis pour CQP");

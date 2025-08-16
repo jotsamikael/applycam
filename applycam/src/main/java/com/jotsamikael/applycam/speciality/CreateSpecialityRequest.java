@@ -21,8 +21,9 @@ public class CreateSpecialityRequest {
     @NotBlank(message = "the type d'exam is required")
     private String examType;
     
+    // Optionnel - utilisé seulement pour la création directe avec courseId
+    private Long courseId;
     
-    
-   
-
+    // Prix de la spécialité
+    private Double paymentAmount;
 }

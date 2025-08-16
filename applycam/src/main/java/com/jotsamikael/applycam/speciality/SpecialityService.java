@@ -88,6 +88,8 @@ public class SpecialityService {
         .name(speciality.getName())
         .description(speciality.getDescription())
         .examType(speciality.getExamType())
+        .courseId(speciality.getCourse() != null ? speciality.getCourse().getId() : null)
+        .courseName(speciality.getCourse() != null ? speciality.getCourse().getName() : null)
         .build()).toList();
 
        
@@ -106,16 +108,35 @@ public class SpecialityService {
     	
     	User user = ((User) connectedUser.getPrincipal());
     	
+    	Course course = null;
+    	// Récupérer le cours associé si courseId est fourni
+    	if (createSpecialityRequest.getCourseId() != null) {
+    		course = courseRepository.findById(createSpecialityRequest.getCourseId())
+    			.orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + createSpecialityRequest.getCourseId()));
+    	}
+    	
         var speciality = Speciality.builder()
         .name(createSpecialityRequest.getName())
         .description(createSpecialityRequest.getDescription())
         .examType(createSpecialityRequest.getExamType())
+        .course(course)
         .createdBy(user.getIdUser())
 	    .createdDate(LocalDateTime.now())
 	    .isActived(false)
         .isArchived(true)
         .build();
         specialityRepository.save(speciality);
+        
+        // Créer le paiement si le montant est fourni
+        if (createSpecialityRequest.getPaymentAmount() != null) {
+            Payment payment = Payment.builder()
+                .speciality(speciality)
+                .amount(createSpecialityRequest.getPaymentAmount())
+                .createdDate(LocalDateTime.now())
+                .build();
+            paymentRepository.save(payment);
+        }
+        
         return speciality.getName();
     }
 
@@ -136,6 +157,8 @@ public class SpecialityService {
                         .description(speciality.getDescription())
                         .examType(speciality.getExamType())
                         .paymentAmount(amount)
+                        .courseId(speciality.getCourse() != null ? speciality.getCourse().getId() : null)
+                        .courseName(speciality.getCourse() != null ? speciality.getCourse().getName() : null)
                         .build();
                 })
                 .toList();
@@ -195,6 +218,8 @@ public class SpecialityService {
     		        .name(speciality.getName())
     		        .description(speciality.getDescription())
     		        .examType(speciality.getExamType())
+    		        .courseId(speciality.getCourse() != null ? speciality.getCourse().getId() : null)
+    		        .courseName(speciality.getCourse() != null ? speciality.getCourse().getName() : null)
     		        .build()).toList();
 
     		       
@@ -243,7 +268,20 @@ public class SpecialityService {
        speciality.setLastModifiedBy(user.getIdUser());
        speciality.setLastModifiedDate(LocalDateTime.now());
        
-       speciality.setDqpPrice(updateSpecialityRequest.getAmount());
+       // Mettre à jour le prix via l'entité Payment
+       if (updateSpecialityRequest.getAmount() != null) {
+           Payment payment = speciality.getPayment();
+           if (payment == null) {
+               payment = Payment.builder()
+                   .speciality(speciality)
+                   .amount(updateSpecialityRequest.getAmount())
+                   .createdDate(LocalDateTime.now())
+                   .build();
+           } else {
+               payment.setAmount(updateSpecialityRequest.getAmount());
+           }
+           paymentRepository.save(payment);
+       }
           
           
        specialityRepository.save(speciality);
@@ -314,7 +352,20 @@ public class SpecialityService {
             .orElseThrow(() -> new EntityNotFoundException("Session not found with  " ));
 
         // Activer la spécialité et lui assigner une session
-        speciality.setDqpPrice(request.getDqpPrice());
+        // Mettre à jour le prix via l'entité Payment
+        if (request.getDqpPrice() != null) {
+            Payment payment = speciality.getPayment();
+            if (payment == null) {
+                payment = Payment.builder()
+                    .speciality(speciality)
+                    .amount(request.getDqpPrice())
+                    .createdDate(LocalDateTime.now())
+                    .build();
+            } else {
+                payment.setAmount(request.getDqpPrice());
+            }
+            paymentRepository.save(payment);
+        }
         speciality.setActived(true);
         speciality.setSession(session);
         speciality.setLastModifiedBy(user.getIdUser());
@@ -511,8 +562,22 @@ public class SpecialityService {
                     List<Speciality> specList = entry.getValue();
 
                     List<SpecialityResponse> specialityResponses = specList.stream()
-                            .map(speciality -> new SpecialityResponse(speciality.getId(), speciality.getName(), speciality.getCode(), 
-                            		speciality.getDescription(), speciality.getExamType(), speciality.getDqpPrice()))
+                            .map(speciality -> {
+                                Double amount = 25000.0; // valeur par défaut
+                                if (speciality.getPayment() != null ) {
+                                    amount = speciality.getPayment().getAmount();
+                                }
+                                return SpecialityResponse.builder()
+                                        .id(speciality.getId())
+                                        .name(speciality.getName())
+                                        .code(speciality.getCode())
+                                        .description(speciality.getDescription())
+                                        .examType(speciality.getExamType())
+                                        .paymentAmount(amount)
+                                        .courseId(speciality.getCourse() != null ? speciality.getCourse().getId() : null)
+                                        .courseName(speciality.getCourse() != null ? speciality.getCourse().getName() : null)
+                                        .build();
+                            })
                             .toList();
 
                     return new CourseWithSpecialitiesResponse(course.getId(), course.getName(), specialityResponses);
@@ -529,8 +594,22 @@ public class SpecialityService {
         List<CourseWithSpecialitiesResponse> content = page.getContent().stream()
                 .map(course -> {
                     List<SpecialityResponse> specialityResponses = course.getSpecialityList().stream()
-                            .map(speciality -> new SpecialityResponse(speciality.getId(), speciality.getName(),speciality.getCode(), 
-                            		speciality.getDescription(), speciality.getExamType(), speciality.getDqpPrice()))
+                            .map(speciality -> {
+                                Double amount = 25000.0; // valeur par défaut
+                                if (speciality.getPayment() != null ) {
+                                    amount = speciality.getPayment().getAmount();
+                                }
+                                return SpecialityResponse.builder()
+                                        .id(speciality.getId())
+                                        .name(speciality.getName())
+                                        .code(speciality.getCode())
+                                        .description(speciality.getDescription())
+                                        .examType(speciality.getExamType())
+                                        .paymentAmount(amount)
+                                        .courseId(speciality.getCourse() != null ? speciality.getCourse().getId() : null)
+                                        .courseName(speciality.getCourse() != null ? speciality.getCourse().getName() : null)
+                                        .build();
+                            })
                             .toList();
 
                     return new CourseWithSpecialitiesResponse(course.getId(), course.getName(), specialityResponses);

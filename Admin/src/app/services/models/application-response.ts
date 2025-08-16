@@ -23,4 +23,6 @@ export interface ApplicationResponse {
   financialJustificationUrl?: string;
   stageCertificateUrl?: string;
   oldApplyanceUrl?: string;
+  examCenterName?: string;
+  examCenterRegion?: string;
 }

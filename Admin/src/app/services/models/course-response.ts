@@ -5,6 +5,7 @@
 export interface CourseResponse {
   code?: string;
   description?: string;
+  id?: number;
   name?: string;
   priceForDqp?: number;
 }

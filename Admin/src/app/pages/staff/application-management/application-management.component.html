@@ -373,12 +373,50 @@
             <p><strong>Région de candidature :</strong> {{selectedApplication?.applicationRegion}}</p>
             <p><strong>Nationalité :</strong> {{selectedApplication?.nationality}}</p>
             <p><strong>Statut :</strong> <span class="badge bg-info">{{selectedApplication?.status || 'DRAFT'}}</span></p>
-            <p *ngIf="selectedApplication?.paymentReceiptUrl">
-                <strong>Reçu de paiement :</strong>
-                <a [href]="selectedApplication.paymentReceiptUrl" target="_blank" class="btn btn-sm btn-outline-primary">
-                    Voir le reçu <i class="bx bx-link-external"></i>
-                </a>
-            </p>
+            <ng-container *ngIf="selectedApplication">
+                <p *ngIf="selectedApplication.paymentReceiptUrl">
+                    <strong>Reçu de paiement :</strong>
+                    <a [href]="selectedApplication.paymentReceiptUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                        Voir le reçu <i class="bx bx-link-external"></i>
+                    </a>
+                </p>
+                <p *ngIf="selectedApplication.cniUrl">
+                    <strong>CNI :</strong>
+                    <a [href]="selectedApplication.cniUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir la CNI</a>
+                </p>
+                <p *ngIf="selectedApplication.diplomaUrl">
+                    <strong>Diplôme :</strong>
+                    <a [href]="selectedApplication.diplomaUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir le diplôme</a>
+                </p>
+                <p *ngIf="selectedApplication.photoUrl">
+                    <strong>Photo :</strong>
+                    <a [href]="selectedApplication.photoUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir la photo</a>
+                </p>
+                <p *ngIf="selectedApplication.birthCertificateUrl">
+                    <strong>Certificat de naissance :</strong>
+                    <a [href]="selectedApplication.birthCertificateUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir le certificat</a>
+                </p>
+                <p *ngIf="selectedApplication.cvUrl">
+                    <strong>CV :</strong>
+                    <a [href]="selectedApplication.cvUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir le CV</a>
+                </p>
+                <p *ngIf="selectedApplication.letterUrl">
+                    <strong>Lettre de motivation :</strong>
+                    <a [href]="selectedApplication.letterUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir la lettre</a>
+                </p>
+                <p *ngIf="selectedApplication.financialJustificationUrl">
+                    <strong>Justification financière :</strong>
+                    <a [href]="selectedApplication.financialJustificationUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir la justification</a>
+                </p>
+                <p *ngIf="selectedApplication.stageCertificateUrl">
+                    <strong>Certificat de stage :</strong>
+                    <a [href]="selectedApplication.stageCertificateUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir le certificat de stage</a>
+                </p>
+                <p *ngIf="selectedApplication.oldApplyanceUrl">
+                    <strong>Ancienne candidature :</strong>
+                    <a [href]="selectedApplication.oldApplyanceUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Voir l'ancienne candidature</a>
+                </p>
+            </ng-container>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-light" (click)="modalRef?.hide()">Fermer</button>

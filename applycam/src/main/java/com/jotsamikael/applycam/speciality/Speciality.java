@@ -42,7 +42,6 @@ public class Speciality extends BaseEntity {
     
     private String examType;
     
-    private double dqpPrice;
     @ManyToOne
     @JoinColumn(name="session_id")
     @JsonIgnore

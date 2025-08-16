@@ -20,5 +20,17 @@ public class ApplicationResponse {
     private Double amount;
     private String examType;
     private LocalDate examDate;
+    private String paymentReceiptUrl;
+    private String cniUrl;
+    private String diplomaUrl;
+    private String photoUrl;
+    private String birthCertificateUrl;
+    private String cvUrl;
+    private String letterUrl;
+    private String financialJustificationUrl;
+    private String stageCertificateUrl;
+    private String oldApplyanceUrl;
+    private String examCenterName;
+    private String examCenterRegion;
     
 }

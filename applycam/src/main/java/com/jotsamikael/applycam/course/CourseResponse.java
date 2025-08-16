@@ -12,6 +12,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CourseResponse {
 
+    private Long id;
+    
     private String name;
 
     private String code;
@@ -19,7 +21,4 @@ public class CourseResponse {
     private String description;
     
     private Double priceForDqp;
-    
-    
-
 }

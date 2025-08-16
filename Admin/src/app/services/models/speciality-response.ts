@@ -4,6 +4,8 @@
 
 export interface SpecialityResponse {
   code?: string;
+  courseId?: number;
+  courseName?: string;
   description?: string;
   examType?: string;
   id?: number;

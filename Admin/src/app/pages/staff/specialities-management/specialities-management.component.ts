@@ -47,7 +47,7 @@ export class SpecialitiesManagementComponent implements OnInit {
 
   // Données pour les spécialités
   trainingCenters: TrainingCenterResponse[] = [];
-  displayedColumnsSpecialities: string[] = ['name', 'code', 'description', 'examType', 'isActived', 'actions'];
+  displayedColumnsSpecialities: string[] = ['name', 'code', 'description', 'examType', 'course', 'isActived', 'actions'];
   dataSourceSpecialities: MatTableDataSource<SpecialityResponse>;
   specialities: SpecialityResponse[] = [];
   specialityForm: FormGroup;
@@ -96,10 +96,36 @@ export class SpecialitiesManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Vérifier l'authentification
+    const token = localStorage.getItem('token');
+    console.log('Component initialized - Token present:', !!token);
+    if (!token) {
+      console.warn('No authentication token found. User may not be logged in.');
+      this.showSnackBar('Vous devez être connecté pour accéder à cette page.', 'error');
+    } else {
+      // Tester l'authentification avec une requête simple
+      this.testAuthentication();
+    }
+    
     this.loadSpecialities();
     this.loadCourses();
     this.loadTrainingCenters();
     this.loadSessions();
+  }
+
+  testAuthentication(): void {
+    // Tester l'authentification avec une requête GET simple
+    this.specialityService.getallSpeciality({ offset: 0, pageSize: 1 }).subscribe({
+      next: (response) => {
+        console.log('Authentication test successful:', response);
+      },
+      error: (error) => {
+        console.error('Authentication test failed:', error);
+        if (error.status === 401) {
+          this.showSnackBar('Votre session a expiré. Veuillez vous reconnecter.', 'error');
+        }
+      }
+    });
   }
 
   // ==================== GESTION DES SPÉCIALITÉS ====================
@@ -135,14 +161,15 @@ export class SpecialitiesManagementComponent implements OnInit {
 
   initForms(): void {
     // Formulaire pour les spécialités
-    this.specialityForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(100)]],
-      description: ['', [Validators.required, Validators.maxLength(500)]], // REQUIS selon le backend
-      code: ['', [Validators.required, Validators.maxLength(20)]],
-      examTypeCQP: [false],
-      examTypeDQP: [false],
-      trainingCenterId: [''] // Optionnel pour la création simple
-    }, { validators: this.examTypeValidator });
+      this.specialityForm = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    description: ['', [Validators.required, Validators.maxLength(500)]], // REQUIS selon le backend
+    code: ['', [Validators.required, Validators.maxLength(20)]],
+    examTypeCQP: [false],
+    examTypeDQP: [false],
+    courseId: ['', [Validators.required]], // OBLIGATOIRE pour l'interface utilisateur
+    price: ['', [Validators.required, Validators.min(0)]] // Prix obligatoire
+  }, { validators: this.examTypeValidator });
 
     // Formulaire pour les filières
     this.courseForm = this.fb.group({
@@ -237,7 +264,8 @@ export class SpecialitiesManagementComponent implements OnInit {
       name: speciality.name,
       description: speciality.description,
       code: speciality.code || '',
-      trainingCenterId: ''
+      courseId: speciality.courseId || '',
+      price: speciality.paymentAmount || 0
     });
     this.setExamTypeCheckboxes(speciality.examType || '');
     this.showSpecialityModal = true;
@@ -252,6 +280,7 @@ export class SpecialitiesManagementComponent implements OnInit {
         <p><strong>Code:</strong> ${speciality.code}</p>
         <p><strong>Description:</strong> ${speciality.description}</p>
         <p><strong>Exam Type:</strong> ${speciality.examType}</p>
+        <p><strong>Course:</strong> ${speciality.courseName || 'Not assigned'}</p>
         <p><strong>State:</strong> ${speciality['isActived'] !== undefined ? (speciality['isActived'] ? 'Active' : (speciality['isArchived'] ? 'Archived' : 'Inactive')) : 'N/A'}</p>
       `,
       icon: 'info',
@@ -387,10 +416,35 @@ export class SpecialitiesManagementComponent implements OnInit {
       code: formValue.code,
       name: formValue.name,
       description: formValue.description || '',
-      examType: examType
+      examType: examType,
+      courseId: formValue.courseId,
+      paymentAmount: formValue.price
     };
     
     console.log('Creating speciality with request:', createSpecialityRequest);
+    
+    // Vérifier l'authentification
+    const token = localStorage.getItem('token');
+    console.log('Token present:', !!token);
+    if (token) {
+      console.log('Token length:', token.length);
+      console.log('Token starts with:', token.substring(0, 20) + '...');
+      
+      // Décoder le token pour vérifier son contenu
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length >= 2) {
+          const payload = tokenParts[1];
+          const decodedPayload = JSON.parse(atob(payload));
+          console.log('Token payload:', decodedPayload);
+          console.log('Token subject (username):', decodedPayload.sub);
+          console.log('Token authorities:', decodedPayload.authorities);
+          console.log('Token expiration:', new Date(decodedPayload.exp * 1000));
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
     
     if (this.isEditModeSpeciality && this.currentSpecialityId) {
       // Update existing
@@ -406,7 +460,13 @@ export class SpecialitiesManagementComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating speciality:', error);
-          this.handleSpecialityError('Error creating speciality', error);
+          console.error('Error status:', error.status);
+          console.error('Error message:', error.message);
+          if (error.status === 401) {
+            this.showSnackBar('Vous devez être connecté pour créer une spécialité. Veuillez vous reconnecter.', 'error');
+          } else {
+            this.handleSpecialityError('Error creating speciality', error);
+          }
         }
       });
     }

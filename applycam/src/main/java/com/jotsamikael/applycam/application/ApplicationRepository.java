@@ -23,6 +23,7 @@ public interface ApplicationRepository  extends JpaRepository<Application, Long>
 	              SELECT a
 	              FROM Application a
 	              LEFT JOIN FETCH a.candidate
+	              LEFT JOIN FETCH a.candidate.examCenter
 	              LEFT JOIN FETCH a.speciality
 	              LEFT JOIN FETCH a.session
 	              LEFT JOIN FETCH a.payment
@@ -38,6 +39,7 @@ public interface ApplicationRepository  extends JpaRepository<Application, Long>
 	              SELECT a
 	              FROM Application a
 	              LEFT JOIN FETCH a.candidate
+	              LEFT JOIN FETCH a.candidate.examCenter
 	              LEFT JOIN FETCH a.speciality
 	              LEFT JOIN FETCH a.session
 	              LEFT JOIN FETCH a.payment
@@ -52,6 +54,7 @@ public interface ApplicationRepository  extends JpaRepository<Application, Long>
 	              SELECT a
 	              FROM Application a
 	              LEFT JOIN FETCH a.candidate
+	              LEFT JOIN FETCH a.candidate.examCenter
 	              LEFT JOIN FETCH a.speciality
 	              LEFT JOIN FETCH a.session
 	              LEFT JOIN FETCH a.payment
@@ -63,6 +66,7 @@ public interface ApplicationRepository  extends JpaRepository<Application, Long>
 	 // Méthode pour récupérer toutes les applications d'un candidat (actives et inactives)
 	 @Query("SELECT a FROM Application a " +
 	           "LEFT JOIN FETCH a.candidate " +
+	           "LEFT JOIN FETCH a.candidate.examCenter " +
 	           "LEFT JOIN FETCH a.speciality " +
 	           "LEFT JOIN FETCH a.session " +
 	           "LEFT JOIN FETCH a.payment " +
@@ -75,6 +79,7 @@ public interface ApplicationRepository  extends JpaRepository<Application, Long>
 	              SELECT a
 	              FROM Application a
 	              LEFT JOIN FETCH a.candidate
+	              LEFT JOIN FETCH a.candidate.examCenter
 	              LEFT JOIN FETCH a.speciality
 	              LEFT JOIN FETCH a.session
 	              LEFT JOIN FETCH a.payment
@@ -96,6 +101,7 @@ public interface ApplicationRepository  extends JpaRepository<Application, Long>
 	 
 	 @Query("SELECT a FROM Application a " +
 	           "LEFT JOIN FETCH a.candidate " +
+	           "LEFT JOIN FETCH a.candidate.examCenter " +
 	           "LEFT JOIN FETCH a.speciality " +
 	           "LEFT JOIN FETCH a.session " +
 	           "LEFT JOIN FETCH a.payment " +

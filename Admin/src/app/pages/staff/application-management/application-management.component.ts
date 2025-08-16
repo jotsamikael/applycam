@@ -302,12 +302,13 @@ export class ApplicationManagementComponent implements OnInit, AfterViewInit {
   }
 
   showDetails(application: ApplicationResponse) {
+    console.log('Détail application:', application);
     this.selectedApplication = application;
     let detailsHtml = `
       <div class="text-start">
         <div class="row">
           <div class="col-md-6">
-            <p><strong>ID:</strong> ${application.id || 'N/A'}</p>
+            
             <p><strong>Candidat:</strong> ${application.candidateName || 'N/A'}</p>
             <p><strong>Spécialité:</strong> ${application.speciality || 'N/A'}</p>
           </div>

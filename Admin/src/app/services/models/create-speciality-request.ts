@@ -4,7 +4,9 @@
 
 export interface CreateSpecialityRequest {
   code: string;
+  courseId?: number;
   description: string;
   examType: string;
   name: string;
+  paymentAmount?: number;
 }
